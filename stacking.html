@@ -105,8 +105,6 @@
     .btn-outline:hover { background: #f1f5f9; border-color: #94a3b8; }
     .btn-excel-save { background: #15803d; color: #ffffff; }
     .btn-excel-save:hover { background: #166534; }
-    .btn-excel-load { background: #0284c7; color: #ffffff; }
-    .btn-excel-load:hover { background: #0369a1; }
     .btn-reset { background: #ef4444; color: #ffffff; }
     .btn-reset:hover { background: #dc2626; }
     .btn-indigo { background: #6366f1; color: #ffffff; }
@@ -321,9 +319,6 @@
     <button class="tab-btn tab-all" onclick="switchTab('tab-all', this)">🏆 개인 종합 랭킹전</button>
   </div>
 
-  <!-- 숨김 파일 입력창 (엑셀 불러오기용) -->
-  <input type="file" id="excelFileInput" style="display:none;" accept=".xlsx, .xls" onchange="handleExcelUpload(event)">
-
   <!-- ======================= 탭 1: 3-3-3 랭킹전 ======================= -->
   <div id="tab-333" class="tab-content active">
     <div class="print-title">⚡ 스포츠스태킹 3-3-3 랭킹전 기록표</div>
@@ -336,7 +331,6 @@
       </div>
       <div class="btn-group">
         <button class="btn btn-excel-save" onclick="exportToExcel('333')">📥 엑셀 저장</button>
-        <button class="btn btn-excel-load" onclick="triggerExcelUpload('333')">📤 엑셀 불러오기</button>
         <button class="btn btn-indigo" onclick="printPage()">🖨️ 인쇄 / PDF</button>
         <button class="btn btn-reset" onclick="resetData('333')">🔄 초기화</button>
       </div>
@@ -376,7 +370,6 @@
       </div>
       <div class="btn-group">
         <button class="btn btn-excel-save" onclick="exportToExcel('363')">📥 엑셀 저장</button>
-        <button class="btn btn-excel-load" onclick="triggerExcelUpload('363')">📤 엑셀 불러오기</button>
         <button class="btn btn-primary" onclick="printPage()">🖨️ 인쇄 / PDF</button>
         <button class="btn btn-reset" onclick="resetData('363')">🔄 초기화</button>
       </div>
@@ -416,7 +409,6 @@
       </div>
       <div class="btn-group">
         <button class="btn btn-excel-save" onclick="exportToExcel('cycle')">📥 엑셀 저장</button>
-        <button class="btn btn-excel-load" onclick="triggerExcelUpload('cycle')">📤 엑셀 불러오기</button>
         <button class="btn btn-success" onclick="printPage()">🖨️ 인쇄 / PDF</button>
         <button class="btn btn-reset" onclick="resetData('cycle')">🔄 초기화</button>
       </div>
@@ -456,7 +448,6 @@
       </div>
       <div class="btn-group">
         <button class="btn btn-excel-save" onclick="exportToExcelAll()">📥 엑셀 저장</button>
-        <button class="btn btn-excel-load" onclick="triggerExcelUpload('all')">📤 엑셀 불러오기</button>
         <button class="btn btn-amber" onclick="printPage()">🖨️ 인쇄 / PDF</button>
         <button class="btn btn-reset" onclick="resetDataAll()">🔄 초기화</button>
       </div>
@@ -493,8 +484,6 @@
   </div>
 
   <script>
-    let currentUploadTarget = '333';
-
     function switchTab(tabId, element) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -505,11 +494,11 @@
     // -------------------------------------------------------------
     // 상태 관리 및 localStorage 연동
     // -------------------------------------------------------------
-    const STORAGE_KEY_SINGLE = 'stacking_state_single_v1';
-    const STORAGE_KEY_ALL = 'stacking_state_all_v1';
+    const STORAGE_KEY_SINGLE = 'stacking_state_single_v2';
+    const STORAGE_KEY_ALL = 'stacking_state_all_v2';
 
     function createStudentObj(id, name = '', practice = ['', ''], official = ['', '', ''], bestScore = null) {
-      return { id, name, practice, official, bestScore };
+      return { id, name, practice: [...practice], official: [...official], bestScore };
     }
 
     function createAllStudentObj(id, name = '') {
@@ -531,7 +520,12 @@
     function loadSingleState() {
       const saved = localStorage.getItem(STORAGE_KEY_SINGLE);
       if (saved) {
-        try { return JSON.parse(saved); } catch (e) { console.error(e); }
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed['333'] && parsed['363'] && parsed['cycle']) {
+            return parsed;
+          }
+        } catch (e) { console.error(e); }
       }
       return {
         '333': { total: 21, students: Array.from({ length: 21 }, (_, i) => createStudentObj(i + 1)) },
@@ -549,7 +543,12 @@
     function loadAllState() {
       const saved = localStorage.getItem(STORAGE_KEY_ALL);
       if (saved) {
-        try { return JSON.parse(saved); } catch (e) { console.error(e); }
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && Array.isArray(parsed.students)) {
+            return parsed;
+          }
+        } catch (e) { console.error(e); }
       }
       return {
         total: 21,
@@ -567,42 +566,45 @@
     function renderTable(type) {
       const current = state[type];
       const tbody = document.getElementById(`studentTableBody-${type}`);
+      if (!tbody) return;
+
       const bestColClass = `best-col-${type}`;
 
       tbody.innerHTML = current.students.map((s, idx) => `
         <tr id="row-${type}-${idx}">
           <td>${s.id}</td>
           <td>
-            <input type="text" class="name-input" placeholder="이름" value="${s.name}"
+            <input type="text" class="name-input" placeholder="이름" value="${s.name || ''}"
                    oninput="updateName('${type}', ${idx}, this.value)">
           </td>
           <td class="practice-col">
-            <input type="number" step="0.001" placeholder="초" value="${s.practice[0]}"
+            <input type="number" step="0.001" placeholder="초" value="${s.practice[0] || ''}"
                    oninput="updatePractice('${type}', ${idx}, 0, this.value)">
           </td>
           <td class="practice-col">
-            <input type="number" step="0.001" placeholder="초" value="${s.practice[1]}"
+            <input type="number" step="0.001" placeholder="초" value="${s.practice[1] || ''}"
                    oninput="updatePractice('${type}', ${idx}, 1, this.value)">
           </td>
           <td class="official-col">
-            <input type="number" step="0.001" placeholder="초" value="${s.official[0]}"
+            <input type="number" step="0.001" placeholder="초" value="${s.official[0] || ''}"
                    oninput="updateOfficial('${type}', ${idx}, 0, this.value)">
           </td>
           <td class="official-col">
-            <input type="number" step="0.001" placeholder="초" value="${s.official[1]}"
+            <input type="number" step="0.001" placeholder="초" value="${s.official[1] || ''}"
                    oninput="updateOfficial('${type}', ${idx}, 1, this.value)">
           </td>
           <td class="official-col">
-            <input type="number" step="0.001" placeholder="초" value="${s.official[2]}"
+            <input type="number" step="0.001" placeholder="초" value="${s.official[2] || ''}"
                    oninput="updateOfficial('${type}', ${idx}, 2, this.value)">
           </td>
           <td class="${bestColClass}" id="best-${type}-${idx}">
-            ${s.bestScore !== null ? Number(s.bestScore).toFixed(3) + 's' : '-'}
+            ${s.bestScore !== null && s.bestScore !== undefined ? Number(s.bestScore).toFixed(3) + 's' : '-'}
           </td>
         </tr>
       `).join('');
 
-      document.getElementById(`studentCountLabel-${type}`).textContent = current.total;
+      const countLabel = document.getElementById(`studentCountLabel-${type}`);
+      if (countLabel) countLabel.textContent = current.total;
     }
 
     function addStudent(type) {
@@ -649,23 +651,28 @@
       const student = state[type].students[idx];
       const validScores = student.official.map(v => parseFloat(v)).filter(v => !isNaN(v) && v > 0);
       student.bestScore = validScores.length > 0 ? Math.min(...validScores) : null;
-      document.getElementById(`best-${type}-${idx}`).textContent = student.bestScore !== null ? student.bestScore.toFixed(3) + 's' : '-';
+      const bestEl = document.getElementById(`best-${type}-${idx}`);
+      if (bestEl) {
+        bestEl.textContent = student.bestScore !== null ? Number(student.bestScore).toFixed(3) + 's' : '-';
+      }
     }
 
     function updateRankings(type) {
       const current = state[type];
       const rankingGrid = document.getElementById(`rankingGrid-${type}`);
+      if (!rankingGrid) return;
+
       const sorted = [...current.students].sort((a, b) => {
-        if (a.bestScore === null) return 1;
-        if (b.bestScore === null) return -1;
+        if (a.bestScore === null || a.bestScore === undefined) return 1;
+        if (b.bestScore === null || b.bestScore === undefined) return -1;
         return a.bestScore - b.bestScore;
       });
 
       rankingGrid.innerHTML = sorted.map((s, rankIdx) => {
         const rank = rankIdx + 1;
         const nameText = s.name || `학생 ${s.id}`;
-        const scoreText = s.bestScore !== null ? `${Number(s.bestScore).toFixed(3)}s` : '-';
-        const isTop3 = rank <= 3 && s.bestScore !== null ? 'top3' : '';
+        const scoreText = (s.bestScore !== null && s.bestScore !== undefined) ? `${Number(s.bestScore).toFixed(3)}s` : '-';
+        const isTop3 = rank <= 3 && s.bestScore !== null && s.bestScore !== undefined ? 'top3' : '';
         return `
           <div class="ranking-item ${isTop3} theme-${type}">
             <span><strong class="rank">${rank}위</strong> ${nameText}</span>
@@ -692,32 +699,35 @@
     // -------------------------------------------------------------
     function renderTableAll() {
       const tbody = document.getElementById('studentTableBody-all');
+      if (!tbody) return;
+
       tbody.innerHTML = allState.students.map((s, idx) => `
         <tr id="row-all-${idx}">
           <td>${s.id}</td>
           <td>
-            <input type="text" class="name-input" placeholder="이름" value="${s.name}"
+            <input type="text" class="name-input" placeholder="이름" value="${s.name || ''}"
                    oninput="updateAllName(${idx}, this.value)">
           </td>
-          <td><input type="number" step="0.001" placeholder="초" value="${s.trials333[0]}" oninput="updateAllTrial(${idx}, 'trials333', 0, this.value)"></td>
-          <td><input type="number" step="0.001" placeholder="초" value="${s.trials333[1]}" oninput="updateAllTrial(${idx}, 'trials333', 1, this.value)"></td>
-          <td class="col-border-right"><input type="number" step="0.001" placeholder="초" value="${s.trials333[2]}" oninput="updateAllTrial(${idx}, 'trials333', 2, this.value)"></td>
+          <td><input type="number" step="0.001" placeholder="초" value="${s.trials333[0] || ''}" oninput="updateAllTrial(${idx}, 'trials333', 0, this.value)"></td>
+          <td><input type="number" step="0.001" placeholder="초" value="${s.trials333[1] || ''}" oninput="updateAllTrial(${idx}, 'trials333', 1, this.value)"></td>
+          <td class="col-border-right"><input type="number" step="0.001" placeholder="초" value="${s.trials333[2] || ''}" oninput="updateAllTrial(${idx}, 'trials333', 2, this.value)"></td>
 
-          <td><input type="number" step="0.001" placeholder="초" value="${s.trials363[0]}" oninput="updateAllTrial(${idx}, 'trials363', 0, this.value)"></td>
-          <td><input type="number" step="0.001" placeholder="초" value="${s.trials363[1]}" oninput="updateAllTrial(${idx}, 'trials363', 1, this.value)"></td>
-          <td class="col-border-right"><input type="number" step="0.001" placeholder="초" value="${s.trials363[2]}" oninput="updateAllTrial(${idx}, 'trials363', 2, this.value)"></td>
+          <td><input type="number" step="0.001" placeholder="초" value="${s.trials363[0] || ''}" oninput="updateAllTrial(${idx}, 'trials363', 0, this.value)"></td>
+          <td><input type="number" step="0.001" placeholder="초" value="${s.trials363[1] || ''}" oninput="updateAllTrial(${idx}, 'trials363', 1, this.value)"></td>
+          <td class="col-border-right"><input type="number" step="0.001" placeholder="초" value="${s.trials363[2] || ''}" oninput="updateAllTrial(${idx}, 'trials363', 2, this.value)"></td>
 
-          <td><input type="number" step="0.001" placeholder="초" value="${s.trialsCycle[0]}" oninput="updateAllTrial(${idx}, 'trialsCycle', 0, this.value)"></td>
-          <td><input type="number" step="0.001" placeholder="초" value="${s.trialsCycle[1]}" oninput="updateAllTrial(${idx}, 'trialsCycle', 1, this.value)"></td>
-          <td class="col-border-right"><input type="number" step="0.001" placeholder="초" value="${s.trialsCycle[2]}" oninput="updateAllTrial(${idx}, 'trialsCycle', 2, this.value)"></td>
+          <td><input type="number" step="0.001" placeholder="초" value="${s.trialsCycle[0] || ''}" oninput="updateAllTrial(${idx}, 'trialsCycle', 0, this.value)"></td>
+          <td><input type="number" step="0.001" placeholder="초" value="${s.trialsCycle[1] || ''}" oninput="updateAllTrial(${idx}, 'trialsCycle', 1, this.value)"></td>
+          <td class="col-border-right"><input type="number" step="0.001" placeholder="초" value="${s.trialsCycle[2] || ''}" oninput="updateAllTrial(${idx}, 'trialsCycle', 2, this.value)"></td>
 
           <td class="best-col-all" id="best-all-${idx}">
-            ${s.totalScore !== null ? Number(s.totalScore).toFixed(3) + 's' : '-'}
+            ${s.totalScore !== null && s.totalScore !== undefined ? Number(s.totalScore).toFixed(3) + 's' : '-'}
           </td>
         </tr>
       `).join('');
 
-      document.getElementById('studentCountLabel-all').textContent = allState.total;
+      const countLabel = document.getElementById('studentCountLabel-all');
+      if (countLabel) countLabel.textContent = allState.total;
     }
 
     function addStudentAll() {
@@ -766,26 +776,30 @@
 
       if (s.best333 !== null && s.best363 !== null && s.bestCycle !== null) {
         s.totalScore = s.best333 + s.best363 + s.bestCycle;
-        document.getElementById(`best-all-${idx}`).textContent = s.totalScore.toFixed(3) + 's';
+        const totalEl = document.getElementById(`best-all-${idx}`);
+        if (totalEl) totalEl.textContent = Number(s.totalScore).toFixed(3) + 's';
       } else {
         s.totalScore = null;
-        document.getElementById(`best-all-${idx}`).textContent = '-';
+        const totalEl = document.getElementById(`best-all-${idx}`);
+        if (totalEl) totalEl.textContent = '-';
       }
     }
 
     function updateRankingsAll() {
       const rankingGrid = document.getElementById('rankingGrid-all');
+      if (!rankingGrid) return;
+
       const sorted = [...allState.students].sort((a, b) => {
-        if (a.totalScore === null) return 1;
-        if (b.totalScore === null) return -1;
+        if (a.totalScore === null || a.totalScore === undefined) return 1;
+        if (b.totalScore === null || b.totalScore === undefined) return -1;
         return a.totalScore - b.totalScore;
       });
 
       rankingGrid.innerHTML = sorted.map((s, rankIdx) => {
         const rank = rankIdx + 1;
         const nameText = s.name || `학생 ${s.id}`;
-        const scoreText = s.totalScore !== null ? `${Number(s.totalScore).toFixed(3)}s` : '-';
-        const isTop3 = rank <= 3 && s.totalScore !== null ? 'top3' : '';
+        const scoreText = (s.totalScore !== null && s.totalScore !== undefined) ? `${Number(s.totalScore).toFixed(3)}s` : '-';
+        const isTop3 = rank <= 3 && s.totalScore !== null && s.totalScore !== undefined ? 'top3' : '';
         return `
           <div class="ranking-item ${isTop3} theme-all">
             <span><strong class="rank">${rank}위</strong> ${nameText}</span>
@@ -831,7 +845,7 @@
           s.official[0] !== '' ? parseFloat(s.official[0]) : '',
           s.official[1] !== '' ? parseFloat(s.official[1]) : '',
           s.official[2] !== '' ? parseFloat(s.official[2]) : '',
-          s.bestScore !== null ? Number(s.bestScore) : ''
+          (s.bestScore !== null && s.bestScore !== undefined) ? Number(s.bestScore) : ''
         ]);
       });
 
@@ -865,7 +879,7 @@
           s.trialsCycle[0] !== '' ? parseFloat(s.trialsCycle[0]) : '',
           s.trialsCycle[1] !== '' ? parseFloat(s.trialsCycle[1]) : '',
           s.trialsCycle[2] !== '' ? parseFloat(s.trialsCycle[2]) : '',
-          s.totalScore !== null ? Number(s.totalScore) : ''
+          (s.totalScore !== null && s.totalScore !== undefined) ? Number(s.totalScore) : ''
         ]);
       });
 
@@ -875,95 +889,24 @@
       XLSX.writeFile(wb, `스포츠스태킹_개인종합_기록_${getTodayStr()}.xlsx`);
     }
 
-    // -------------------------------------------------------------
-    // 엑셀(.xlsx) 불러오기 (Import)
-    // -------------------------------------------------------------
-    function triggerExcelUpload(targetTab) {
-      currentUploadTarget = targetTab;
-      const fileInput = document.getElementById('excelFileInput');
-      fileInput.value = '';
-      fileInput.click();
-    }
-
-    function handleExcelUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheetName = workbook.SheetNames[0];
-          const sheet = workbook.Sheets[firstSheetName];
-          const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-
-          if (rawRows.length <= 1) {
-            alert('엑셀 파일에 유효한 데이터가 없습니다.');
-            return;
-          }
-
-          const rows = rawRows.slice(1).filter(r => r.length > 0 && r[0] !== '');
-
-          if (currentUploadTarget === 'all') {
-            // 개인 종합 탭 파싱
-            allState.total = rows.length;
-            allState.students = rows.map((r, i) => {
-              const obj = createAllStudentObj(r[0] || (i + 1), String(r[1] || ''));
-              obj.trials333 = [r[2] !== '' ? String(r[2]) : '', r[3] !== '' ? String(r[3]) : '', r[4] !== '' ? String(r[4]) : ''];
-              obj.trials363 = [r[5] !== '' ? String(r[5]) : '', r[6] !== '' ? String(r[6]) : '', r[7] !== '' ? String(r[7]) : ''];
-              obj.trialsCycle = [r[8] !== '' ? String(r[8]) : '', r[9] !== '' ? String(r[9]) : '', r[10] !== '' ? String(r[10]) : ''];
-              return obj;
-            });
-
-            allState.students.forEach((_, idx) => calculateAllTotal(idx));
-            renderTableAll();
-            updateRankingsAll();
-            saveAllState();
-            alert(`개인 종합 탭에 ${rows.length}명의 데이터가 성공적으로 로드되었습니다.`);
-
-          } else {
-            // 단독 3종목 (333, 363, cycle) 파싱
-            state[currentUploadTarget].total = rows.length;
-            state[currentUploadTarget].students = rows.map((r, i) => {
-              const obj = createStudentObj(
-                r[0] || (i + 1),
-                String(r[1] || ''),
-                [r[2] !== '' ? String(r[2]) : '', r[3] !== '' ? String(r[3]) : ''],
-                [r[4] !== '' ? String(r[4]) : '', r[5] !== '' ? String(r[5]) : '', r[6] !== '' ? String(r[6]) : '']
-              );
-              return obj;
-            });
-
-            state[currentUploadTarget].students.forEach((_, idx) => calculateBest(currentUploadTarget, idx));
-            renderTable(currentUploadTarget);
-            updateRankings(currentUploadTarget);
-            saveSingleState();
-            alert(`[${currentUploadTarget}] 탭에 ${rows.length}명의 데이터가 성공적으로 로드되었습니다.`);
-          }
-
-        } catch (err) {
-          console.error(err);
-          alert('엑셀 파일을 읽는 도중 오류가 발생했습니다. 양식을 확인해주세요.');
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
     function printPage() {
       window.print();
     }
 
-    // 초기 로딩 렌더링
-    ['333', '363', 'cycle'].forEach(t => {
-      state[t].students.forEach((_, idx) => calculateBest(t, idx));
-      renderTable(t);
-      updateRankings(t);
-    });
+    // -------------------------------------------------------------
+    // 초기 실행: HTML이 완전히 로드된 후 즉시 표와 순위 렌더링
+    // -------------------------------------------------------------
+    document.addEventListener('DOMContentLoaded', () => {
+      ['333', '363', 'cycle'].forEach(t => {
+        state[t].students.forEach((_, idx) => calculateBest(t, idx));
+        renderTable(t);
+        updateRankings(t);
+      });
 
-    allState.students.forEach((_, idx) => calculateAllTotal(idx));
-    renderTableAll();
-    updateRankingsAll();
+      allState.students.forEach((_, idx) => calculateAllTotal(idx));
+      renderTableAll();
+      updateRankingsAll();
+    });
   </script>
 </body>
 </html>
