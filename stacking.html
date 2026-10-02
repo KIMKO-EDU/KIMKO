@@ -39,7 +39,7 @@
       background: #e2e8f0;
       border: 1px solid #cbd5e1;
       border-bottom: none;
-      padding: 10px 22px;
+      padding: 10px 20px;
       border-radius: 8px 8px 0 0;
       cursor: pointer;
       font-weight: 600;
@@ -49,17 +49,19 @@
     }
     .tab-btn.active {
       background: #ffffff;
-      color: #2563eb;
       border-color: #cbd5e1;
-      border-top: 3px solid #2563eb;
       margin-bottom: -2px;
       padding-bottom: 11px;
     }
+    /* 탭별 포인트 컬러 */
+    .tab-btn.tab-333.active { color: #6366f1; border-top: 3px solid #6366f1; }
+    .tab-btn.tab-363.active { color: #2563eb; border-top: 3px solid #2563eb; }
+    .tab-btn.tab-cycle.active { color: #059669; border-top: 3px solid #059669; }
 
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* 도구 제어 바 (인원 증감 및 인쇄/PDF) */
+    /* 도구 제어 바 */
     .control-toolbar {
       display: flex;
       justify-content: space-between;
@@ -97,11 +99,12 @@
       background: #f1f5f9;
       border-color: #94a3b8;
     }
-    .btn-primary {
-      background: #2563eb;
-      color: #ffffff;
-    }
+    .btn-indigo { background: #6366f1; color: #ffffff; }
+    .btn-indigo:hover { background: #4f46e5; }
+    .btn-primary { background: #2563eb; color: #ffffff; }
     .btn-primary:hover { background: #1d4ed8; }
+    .btn-success { background: #059669; color: #ffffff; }
+    .btn-success:hover { background: #047857; }
     .btn-danger {
       background: #ffffff;
       border-color: #fca5a5;
@@ -145,7 +148,9 @@
       background: #fef3c7;
       font-weight: bold;
     }
-    .ranking-item .rank { color: #2563eb; }
+    .ranking-item.theme-333 .rank { color: #6366f1; }
+    .ranking-item.theme-363 .rank { color: #2563eb; }
+    .ranking-item.theme-cycle .rank { color: #059669; }
 
     /* 입력 테이블 스타일 */
     .table-container {
@@ -174,7 +179,9 @@
     }
     .practice-col { background: #fdf2f8; }
     .official-col { background: #f0fdf4; }
-    .best-col { background: #eff6ff; font-weight: bold; color: #1d4ed8; }
+    .best-col-333 { background: #eef2ff; font-weight: bold; color: #4338ca; }
+    .best-col-363 { background: #eff6ff; font-weight: bold; color: #1d4ed8; }
+    .best-col-cycle { background: #ecfdf5; font-weight: bold; color: #047857; }
 
     input {
       width: 85px;
@@ -187,9 +194,11 @@
     input.name-input { width: 105px; }
     input:focus {
       outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+      box-shadow: 0 0 0 2px rgba(99,102,241,0.2);
     }
+    .table-333 input:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,0.2); }
+    .table-363 input:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.2); }
+    .table-cycle input:focus { border-color: #059669; box-shadow: 0 0 0 2px rgba(5,150,105,0.2); }
 
     /* 하단 메인 이동 버튼 */
     .footer-nav {
@@ -212,16 +221,7 @@
     }
     .home-btn:hover { background: #1e293b; }
 
-    .empty-card {
-      background: #ffffff;
-      border: 1px dashed #cbd5e1;
-      border-radius: 12px;
-      padding: 60px 20px;
-      text-align: center;
-      color: #64748b;
-    }
-
-    /* A4 인쇄 / PDF 최적화 스타일 */
+    /* A4 인쇄 / PDF 최적화 */
     @media print {
       @page {
         size: A4 portrait;
@@ -234,14 +234,14 @@
         color: #000000 !important;
         max-width: 100% !important;
       }
-      /* 인쇄 시 불필요한 UI 숨김 */
       .header-nav,
       .tab-bar,
       .control-toolbar,
-      .footer-nav,
-      #tab-cycle {
+      .footer-nav {
         display: none !important;
       }
+      .tab-content { display: none !important; }
+      .tab-content.active { display: block !important; }
       .ranking-container,
       .table-container {
         box-shadow: none !important;
@@ -259,17 +259,12 @@
         padding: 4px 6px !important;
         border: 1px solid #e2e8f0;
       }
-      .ranking-item.top3 {
-        background: #fef9c3 !important;
-      }
-      table {
-        font-size: 11px !important;
-      }
+      .ranking-item.top3 { background: #fef9c3 !important; }
+      table { font-size: 11px !important; }
       th, td {
         padding: 5px 3px !important;
         border-bottom: 1px solid #cbd5e1 !important;
       }
-      /* input 필드 인쇄 시 텍스트처럼 보이도록 처리 */
       input {
         border: none !important;
         background: transparent !important;
@@ -297,37 +292,33 @@
     <span style="font-size:13px; color:#94a3b8;">스포츠스태킹 연구실</span>
   </div>
 
-  <!-- 상단 파일 탭 -->
+  <!-- 상단 3단 파일 탭 -->
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('tab-363', this)">⏱️ 3-6-3 랭킹전</button>
-    <button class="tab-btn" onclick="switchTab('tab-cycle', this)">🔄 사이클 랭킹전 (준비중)</button>
+    <button class="tab-btn tab-333 active" onclick="switchTab('tab-333', this)">⚡ 3-3-3 랭킹전</button>
+    <button class="tab-btn tab-363" onclick="switchTab('tab-363', this)">⏱️ 3-6-3 랭킹전</button>
+    <button class="tab-btn tab-cycle" onclick="switchTab('tab-cycle', this)">🔄 사이클(Cycle) 랭킹전</button>
   </div>
 
-  <!-- 탭 1: 3-6-3 랭킹전 -->
-  <div id="tab-363" class="tab-content active">
-    
-    <div class="print-title">⏱️ 스포츠스태킹 3-6-3 랭킹전 기록표</div>
-
-    <!-- 인원 조절 & 인쇄/PDF 도구 모음 -->
+  <!-- ======================= 탭 1: 3-3-3 랭킹전 ======================= -->
+  <div id="tab-333" class="tab-content active">
+    <div class="print-title">⚡ 스포츠스태킹 3-3-3 랭킹전 기록표</div>
     <div class="control-toolbar">
       <div class="btn-group">
-        <span class="count-badge">참여 학생: <strong id="studentCountLabel">21</strong>명</span>
-        <button class="btn btn-outline" onclick="addStudent()">➕ 인원 추가</button>
-        <button class="btn btn-danger" onclick="removeStudent()">➖ 인원 제거</button>
+        <span class="count-badge">참여 학생: <strong id="studentCountLabel-333">21</strong>명</span>
+        <button class="btn btn-outline" onclick="addStudent('333')">➕ 인원 추가</button>
+        <button class="btn btn-danger" onclick="removeStudent('333')">➖ 인원 제거</button>
       </div>
       <div class="btn-group">
-        <button class="btn btn-primary" onclick="printPage()">🖨️ 페이지 인쇄 / PDF 저장</button>
+        <button class="btn btn-indigo" onclick="printPage()">🖨️ 페이지 인쇄 / PDF 저장</button>
       </div>
     </div>
 
-    <!-- 실시간 랭킹 보드 -->
-    <div class="ranking-container">
-      <h2 style="margin:0 0 8px 0; font-size:17px; text-align:center;">🏆 실시간 순위 현황</h2>
-      <div class="ranking-grid" id="rankingGrid"></div>
+    <div class="ranking-container" style="border-color:#c7d2fe;">
+      <h2 style="margin:0 0 8px 0; font-size:17px; text-align:center; color:#4338ca;">🏆 3-3-3 실시간 순위 현황</h2>
+      <div class="ranking-grid" id="rankingGrid-333"></div>
     </div>
 
-    <!-- 기록 테이블 -->
-    <div class="table-container">
+    <div class="table-container table-333">
       <table>
         <thead>
           <tr>
@@ -338,20 +329,87 @@
             <th class="official-col">1차시기</th>
             <th class="official-col">2차시기</th>
             <th class="official-col">3차시기</th>
-            <th class="best-col">기록 (최고)</th>
+            <th class="best-col-333">기록 (최고)</th>
           </tr>
         </thead>
-        <tbody id="studentTableBody"></tbody>
+        <tbody id="studentTableBody-333"></tbody>
       </table>
     </div>
-
   </div>
 
-  <!-- 탭 2: 사이클 랭킹전 -->
+  <!-- ======================= 탭 2: 3-6-3 랭킹전 ======================= -->
+  <div id="tab-363" class="tab-content">
+    <div class="print-title">⏱️ 스포츠스태킹 3-6-3 랭킹전 기록표</div>
+    <div class="control-toolbar">
+      <div class="btn-group">
+        <span class="count-badge">참여 학생: <strong id="studentCountLabel-363">21</strong>명</span>
+        <button class="btn btn-outline" onclick="addStudent('363')">➕ 인원 추가</button>
+        <button class="btn btn-danger" onclick="removeStudent('363')">➖ 인원 제거</button>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="printPage()">🖨️ 페이지 인쇄 / PDF 저장</button>
+      </div>
+    </div>
+
+    <div class="ranking-container">
+      <h2 style="margin:0 0 8px 0; font-size:17px; text-align:center;">🏆 3-6-3 실시간 순위 현황</h2>
+      <div class="ranking-grid" id="rankingGrid-363"></div>
+    </div>
+
+    <div class="table-container table-363">
+      <table>
+        <thead>
+          <tr>
+            <th>번호</th>
+            <th>이름</th>
+            <th class="practice-col">연습 1</th>
+            <th class="practice-col">연습 2</th>
+            <th class="official-col">1차시기</th>
+            <th class="official-col">2차시기</th>
+            <th class="official-col">3차시기</th>
+            <th class="best-col-363">기록 (최고)</th>
+          </tr>
+        </thead>
+        <tbody id="studentTableBody-363"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======================= 탭 3: 사이클 랭킹전 ======================= -->
   <div id="tab-cycle" class="tab-content">
-    <div class="empty-card">
-      <h3 style="color:#1e293b; margin-top:0;">🔄 사이클(Cycle) 랭킹전</h3>
-      <p>동일한 인원 증감 및 인쇄/PDF 저장 포맷으로 곧 추가 탑재됩니다.</p>
+    <div class="print-title">🔄 스포츠스태킹 사이클(Cycle) 랭킹전 기록표</div>
+    <div class="control-toolbar">
+      <div class="btn-group">
+        <span class="count-badge">참여 학생: <strong id="studentCountLabel-cycle">21</strong>명</span>
+        <button class="btn btn-outline" onclick="addStudent('cycle')">➕ 인원 추가</button>
+        <button class="btn btn-danger" onclick="removeStudent('cycle')">➖ 인원 제거</button>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-success" onclick="printPage()">🖨️ 페이지 인쇄 / PDF 저장</button>
+      </div>
+    </div>
+
+    <div class="ranking-container" style="border-color:#a7f3d0;">
+      <h2 style="margin:0 0 8px 0; font-size:17px; text-align:center; color:#065f46;">🏆 사이클(Cycle) 실시간 순위 현황</h2>
+      <div class="ranking-grid" id="rankingGrid-cycle"></div>
+    </div>
+
+    <div class="table-container table-cycle">
+      <table>
+        <thead>
+          <tr>
+            <th>번호</th>
+            <th>이름</th>
+            <th class="practice-col">연습 1</th>
+            <th class="practice-col">연습 2</th>
+            <th class="official-col">1차시기</th>
+            <th class="official-col">2차시기</th>
+            <th class="official-col">3차시기</th>
+            <th class="best-col-cycle">기록 (최고)</th>
+          </tr>
+        </thead>
+        <tbody id="studentTableBody-cycle"></tbody>
+      </table>
     </div>
   </div>
 
@@ -368,105 +426,122 @@
       element.classList.add('active');
     }
 
-    // 기본 학생 수: 21명
-    let totalStudents = 21;
-    let studentsData = Array.from({ length: totalStudents }, (_, i) => createStudentObj(i + 1));
+    const state = {
+      '333': {
+        total: 21,
+        students: Array.from({ length: 21 }, (_, i) => createStudentObj(i + 1))
+      },
+      '363': {
+        total: 21,
+        students: Array.from({ length: 21 }, (_, i) => createStudentObj(i + 1))
+      },
+      'cycle': {
+        total: 21,
+        students: Array.from({ length: 21 }, (_, i) => createStudentObj(i + 1))
+      }
+    };
 
     function createStudentObj(id, name = '', practice = ['', ''], official = ['', '', ''], bestScore = null) {
       return { id, name, practice, official, bestScore };
     }
 
-    // 테이블 렌더링
-    function renderTable() {
-      const tbody = document.getElementById('studentTableBody');
-      tbody.innerHTML = studentsData.map((s, idx) => `
-        <tr id="row-${idx}">
+    function renderTable(type) {
+      const current = state[type];
+      const tbody = document.getElementById(`studentTableBody-${type}`);
+      const bestColClass = `best-col-${type}`;
+
+      tbody.innerHTML = current.students.map((s, idx) => `
+        <tr id="row-${type}-${idx}">
           <td>${s.id}</td>
           <td>
             <input type="text" class="name-input" placeholder="이름" value="${s.name}"
-                   oninput="updateName(${idx}, this.value)">
+                   oninput="updateName('${type}', ${idx}, this.value)">
           </td>
           <td class="practice-col">
             <input type="number" step="0.001" placeholder="초" value="${s.practice[0]}"
-                   oninput="updatePractice(${idx}, 0, this.value)">
+                   oninput="updatePractice('${type}', ${idx}, 0, this.value)">
           </td>
           <td class="practice-col">
             <input type="number" step="0.001" placeholder="초" value="${s.practice[1]}"
-                   oninput="updatePractice(${idx}, 1, this.value)">
+                   oninput="updatePractice('${type}', ${idx}, 1, this.value)">
           </td>
           <td class="official-col">
             <input type="number" step="0.001" placeholder="초" value="${s.official[0]}"
-                   oninput="updateOfficial(${idx}, 0, this.value)">
+                   oninput="updateOfficial('${type}', ${idx}, 0, this.value)">
           </td>
           <td class="official-col">
             <input type="number" step="0.001" placeholder="초" value="${s.official[1]}"
-                   oninput="updateOfficial(${idx}, 1, this.value)">
+                   oninput="updateOfficial('${type}', ${idx}, 1, this.value)">
           </td>
           <td class="official-col">
             <input type="number" step="0.001" placeholder="초" value="${s.official[2]}"
-                   oninput="updateOfficial(${idx}, 2, this.value)">
+                   oninput="updateOfficial('${type}', ${idx}, 2, this.value)">
           </td>
-          <td class="best-col" id="best-${idx}">${s.bestScore !== null ? s.bestScore.toFixed(3) + 's' : '-'}</td>
+          <td class="${bestColClass}" id="best-${type}-${idx}">
+            ${s.bestScore !== null ? s.bestScore.toFixed(3) + 's' : '-'}
+          </td>
         </tr>
       `).join('');
 
-      document.getElementById('studentCountLabel').textContent = totalStudents;
+      document.getElementById(`studentCountLabel-${type}`).textContent = current.total;
     }
 
-    // 1. 인원 추가 기능
-    function addStudent() {
-      totalStudents++;
-      studentsData.push(createStudentObj(totalStudents));
-      renderTable();
-      updateRankings();
+    function addStudent(type) {
+      const current = state[type];
+      current.total++;
+      current.students.push(createStudentObj(current.total));
+      renderTable(type);
+      updateRankings(type);
     }
 
-    // 1. 인원 제거 기능
-    function removeStudent() {
-      if (totalStudents <= 1) {
+    function removeStudent(type) {
+      const current = state[type];
+      if (current.total <= 1) {
         alert('최소 1명 이상의 학생이 필요합니다.');
         return;
       }
-      totalStudents--;
-      studentsData.pop();
-      renderTable();
-      updateRankings();
+      current.total--;
+      current.students.pop();
+      renderTable(type);
+      updateRankings(type);
     }
 
-    function updateName(idx, value) {
-      studentsData[idx].name = value.trim();
-      updateRankings();
+    function updateName(type, idx, value) {
+      state[type].students[idx].name = value.trim();
+      updateRankings(type);
     }
 
-    function updatePractice(idx, round, value) {
-      studentsData[idx].practice[round] = value;
+    function updatePractice(type, idx, round, value) {
+      state[type].students[idx].practice[round] = value;
     }
 
-    function updateOfficial(idx, round, value) {
-      studentsData[idx].official[round] = value;
-      calculateBest(idx);
-      updateRankings();
+    function updateOfficial(type, idx, round, value) {
+      state[type].students[idx].official[round] = value;
+      calculateBest(type, idx);
+      updateRankings(type);
     }
 
-    function calculateBest(idx) {
-      const validScores = studentsData[idx].official
+    function calculateBest(type, idx) {
+      const student = state[type].students[idx];
+      const validScores = student.official
         .map(v => parseFloat(v))
         .filter(v => !isNaN(v) && v > 0);
 
       if (validScores.length > 0) {
         const minVal = Math.min(...validScores);
-        studentsData[idx].bestScore = minVal;
-        document.getElementById(`best-${idx}`).textContent = minVal.toFixed(3) + 's';
+        student.bestScore = minVal;
+        document.getElementById(`best-${type}-${idx}`).textContent = minVal.toFixed(3) + 's';
       } else {
-        studentsData[idx].bestScore = null;
-        document.getElementById(`best-${idx}`).textContent = '-';
+        student.bestScore = null;
+        document.getElementById(`best-${type}-${idx}`).textContent = '-';
       }
     }
 
-    // 실시간 순위 계산
-    function updateRankings() {
-      const rankingGrid = document.getElementById('rankingGrid');
-      const sorted = [...studentsData].sort((a, b) => {
+    function updateRankings(type) {
+      const current = state[type];
+      const rankingGrid = document.getElementById(`rankingGrid-${type}`);
+
+      const sorted = [...current.students].sort((a, b) => {
         if (a.bestScore === null) return 1;
         if (b.bestScore === null) return -1;
         return a.bestScore - b.bestScore;
@@ -479,7 +554,7 @@
         const isTop3 = rank <= 3 && s.bestScore !== null ? 'top3' : '';
 
         return `
-          <div class="ranking-item ${isTop3}">
+          <div class="ranking-item ${isTop3} theme-${type}">
             <span><strong class="rank">${rank}위</strong> ${nameText}</span>
             <span>${scoreText}</span>
           </div>
@@ -487,13 +562,15 @@
       }).join('');
     }
 
-    // 2. 인쇄 및 PDF 저장 함수
     function printPage() {
       window.print();
     }
 
-    renderTable();
-    updateRankings();
+    // 3개 종목 전체 초기화
+    ['333', '363', 'cycle'].forEach(t => {
+      renderTable(t);
+      updateRankings(t);
+    });
   </script>
 </body>
 </html>
