@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>무제한 초코 경매 - 진행자 전용</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Pretendard', sans-serif, -apple-system;
+      margin: 20px auto;
+      max-width: 1200px;
+      background: #fdf8f6;
+      color: #332724;
+      padding: 0 15px 40px;
+    }
+    .header-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .back-btn {
+      text-decoration: none;
+      color: #78350f;
+      font-size: 14px;
+      font-weight: 600;
+      transition: color 0.15s;
+    }
+    .back-btn:hover { color: #451a03; }
+
+    h1 { text-align: center; margin: 4px 0 6px 0; color: #451a03; }
+    .subtitle { text-align: center; color: #78350f; font-size: 14px; margin-bottom: 20px; font-weight: 600; }
+
+    /* 대시보드 / 스코어보드 */
+    .scoreboard-container {
+      background: #ffffff;
+      border: 2px solid #edded9;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .score-card {
+      background: #fcf4f1;
+      border: 1px solid #ebd3cb;
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      position: relative;
+    }
+    .score-card.winner {
+      background: #ffedd5;
+      border-color: #f97316;
+      box-shadow: 0 0 0 2px #f97316;
+    }
+    .score-card.bankrupt {
+      background: #fee2e2;
+      border-color: #ef4444;
+      opacity: 0.85;
+    }
+    .bankrupt-tag {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .team-title { font-size: 17px; font-weight: bold; margin-bottom: 4px; color: #2d1810; }
+    .team-points { font-size: 26px; font-weight: 800; color: #b45309; }
+    .team-spent { font-size: 13px; color: #475569; margin-top: 4px; font-weight: 600; }
+    .team-rank { font-size: 12px; color: #78350f; margin-top: 4px; }
+
+    /* 3·6·9 라운드 공지 바 */
+    .notice-box {
+      background: #eff6ff;
+      border: 2px dashed #3b82f6;
+      border-radius: 10px;
+      padding: 12px 18px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: #1e3a8a;
+    }
+    .notice-btn {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 13px;
+    }
+    .notice-btn:hover { background: #1d4ed8; }
+
+    /* 입력 테이블 스타일 */
+    .table-container {
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid #edded9;
+      padding: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      overflow-x: auto;
+      margin-bottom: 24px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+    }
+    th, td {
+      padding: 8px 6px;
+      border-bottom: 1px solid #f0e6e4;
+      vertical-align: middle;
+      font-size: 14px;
+    }
+    th {
+      background: #fbf0ec;
+      font-weight: 600;
+      color: #5c3d2e;
+    }
+    .round-col { width: 60px; font-weight: bold; }
+    .point-col { width: 85px; }
+    .status-col { width: 240px; font-size: 12px; text-align: left; padding-left: 10px; }
+
+    input {
+      padding: 6px 4px;
+      border: 1px solid #d4c2bc;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 14px;
+    }
+    input.point-input { width: 60px; }
+    input.bid-input { width: 80px; }
+    input:focus {
+      outline: none;
+      border-color: #92400e;
+      box-shadow: 0 0 0 2px rgba(146,64,14,0.15);
+    }
+
+    button.check-btn {
+      background: #78350f;
+      color: #ffffff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 12px;
+    }
+    button.check-btn:hover { background: #5c280b; }
+    button.check-btn.checked { background: #a8a29e; }
+
+    .tag-win { color: #dc2626; font-weight: bold; }
+    .tag-loss { color: #2563eb; }
+    .tag-spent { color: #15803d; font-weight: bold; }
+    .tag-draw { color: #9333ea; font-size: 11px; }
+
+    /* 하단 버튼 바 */
+    .bottom-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-reset {
+      background: #ef4444;
+      color: #ffffff;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn-reset:hover { background: #dc2626; }
+    .home-btn {
+      text-decoration: none;
+      background: #78350f;
+      color: #ffffff;
+      padding: 9px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .home-btn:hover { background: #5c280b; }
+
+    /* 모달 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #ffffff;
+      padding: 24px 30px;
+      border-radius: 12px;
+      max-width: 460px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .modal-content .big-text { font-size: 32px; font-weight: 800; color: #dc2626; margin: 16px 0; }
+    .modal-close-btn {
+      background: #334155;
+      color: #fff;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-nav">
+    <a href="play.html" class="back-btn">← 놀이 목록으로 돌아가기</a>
+    <span style="font-size:13px; color:#8c6a5e; font-weight:600;">진행자 단독 화면</span>
+  </div>
+
+  <h1>🍫 무제한 초코 경매</h1>
+  <div class="subtitle">※ 낙찰자만 금액 차감 | 동점 입찰 무효(단독 차순위 낙찰) | 최고 누적 지출 조 파산 패배</div>
+
+  <!-- 대시보드 -->
+  <div class="scoreboard-container">
+    <h2 style="margin:0 0 10px 0; font-size:17px; text-align:center; color:#451a03;">🏆 조별 누적 현황</h2>
+    <div class="score-grid" id="scoreGrid"></div>
+  </div>
+
+  <!-- 마일스톤 안내 배너 -->
+  <div class="notice-box" id="noticeBox">
+    <span id="noticeText">📌 3R, 6R, 9R가 완료되면 아이들에게 공개할 낙찰 총액 안내 버튼이 나타납니다.</span>
+    <button class="notice-btn" id="noticeBtn" style="display:none;" onclick="openNoticeModal()">아이들에게 총합 공개</button>
+  </div>
+
+  <!-- 입력 테이블 -->
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th class="round-col">라운드</th>
+          <th class="point-col">초코점수</th>
+          <th>1조 (만원)</th>
+          <th>2조 (만원)</th>
+          <th>3조 (만원)</th>
+          <th>4조 (만원)</th>
+          <th>확인</th>
+          <th class="status-col">결과 및 지출</th>
+        </tr>
+      </thead>
+      <tbody id="auctionTableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- 하단 제어 바 -->
+  <div class="bottom-bar">
+    <button class="btn-reset" onclick="resetGame()">🔄 게임 초기화 (새 게임)</button>
+    <a href="play.html" class="home-btn">놀이 목록(메뉴)으로 나가기</a>
+  </div>
+
+  <!-- 3·6·9 라운드 공개 모달 -->
+  <div class="modal-overlay" id="noticeModal">
+    <div class="modal-content">
+      <h3 style="margin-top:0; color:#1e3a8a;" id="modalTitle">📢 학생 공개용 공지</h3>
+      <p style="color:#475569; margin-bottom:4px;">지금까지 낙찰자들이 실제 사용한 총합 금액입니다.</p>
+      <div class="big-text" id="modalAmount">0 만원</div>
+      <button class="modal-close-btn" onclick="closeNoticeModal()">닫기</button>
+    </div>
+  </div>
+
+  <script>
+    const TOTAL_ROUNDS = 12;
+    const STORAGE_KEY_AUCTION = 'choco_auction_data_v1';
+
+    let roundsData = loadRoundsData();
+
+    function defaultRoundsData() {
+      return Array.from({ length: TOTAL_ROUNDS }, (_, i) => ({
+        round: i + 1,
+        chocoPoint: 1,
+        bids: ['', '', '', ''],
+        isEvaluated: false,
+        winner: null,
+        winningBid: 0,
+        losers: [],
+        spentAmounts: [0, 0, 0, 0],
+        summaryHtml: '-'
+      }));
+    }
+
+    function loadRoundsData() {
+      const saved = localStorage.getItem(STORAGE_KEY_AUCTION);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length === TOTAL_ROUNDS) return parsed;
+        } catch (e) { console.error(e); }
+      }
+      return defaultRoundsData();
+    }
+
+    function saveRoundsData() {
+      localStorage.setItem(STORAGE_KEY_AUCTION, JSON.stringify(roundsData));
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('auctionTableBody');
+      tbody.innerHTML = roundsData.map((r, rIdx) => `
+        <tr>
+          <td class="round-col">${r.round}R</td>
+          <td class="point-col">
+            <input type="number" min="1" max="4" value="${r.chocoPoint}" class="point-input"
+                   onchange="updatePoint(${rIdx}, this.value)"> 점
+          </td>
+          ${[0, 1, 2, 3].map(tIdx => `
+            <td>
+              <input type="number" min="0" placeholder="만원" class="bid-input"
+                     value="${r.bids[tIdx]}"
+                     oninput="updateBid(${rIdx},${tIdx}, this.value)">
+            </td>
+          `).join('')}
+          <td>
+            <button class="check-btn ${r.isEvaluated ? 'checked' : ''}" id="btn-${rIdx}" onclick="evaluateRound(${rIdx})">
+              ${r.isEvaluated ? '수정/재확인' : '결과 판정'}
+            </button>
+          </td>
+          <td class="status-col" id="status-${rIdx}">${r.summaryHtml || '-'}</td>
+        </tr>
+      `).join('');
+    }
+
+    function updatePoint(rIdx, val) {
+      const parsed = parseInt(val, 10);
+      roundsData[rIdx].chocoPoint = isNaN(parsed) ? 1 : Math.max(1, Math.min(4, parsed));
+      if (roundsData[rIdx].isEvaluated) evaluateRound(rIdx);
+      saveRoundsData();
+    }
+
+    function updateBid(rIdx, tIdx, val) {
+      roundsData[rIdx].bids[tIdx] = val.trim();
+      saveRoundsData();
+    }
+
+    function evaluateRound(rIdx) {
+      const r = roundsData[rIdx];
+      const parsedBids = r.bids.map(b => b === '' ? NaN : parseFloat(b));
+
+      if (parsedBids.some(b => isNaN(b))) {
+        alert(`${r.round}라운드: 4개 조의 입찰 금액을 빠짐없이 입력해주세요.`);
+        return;
+      }
+
+      r.winner = null;
+      r.winningBid = 0;
+      r.losers = [];
+      r.spentAmounts = [0, 0, 0, 0];
+
+      // 최저 입찰 조 감점(-1)
+      const minBid = Math.min(...parsedBids);
+      parsedBids.forEach((bid, idx) => { if (bid === minBid) r.losers.push(idx); });
+
+      // 빈도수 계산
+      const bidCountMap = {};
+      parsedBids.forEach(b => { bidCountMap[b] = (bidCountMap[b] || 0) + 1; });
+
+      const uniqueBidsDescending = Object.keys(bidCountMap).map(Number).sort((a, b) => b - a);
+
+      let winnerIdx = null;
+      let winningAmount = 0;
+      let drawMessages = [];
+
+      for (const amount of uniqueBidsDescending) {
+        if (bidCountMap[amount] === 1) {
+          winnerIdx = parsedBids.indexOf(amount);
+          winningAmount = amount;
+          break;
+        } else {
+          const drawTeams = parsedBids.map((b, idx) => b === amount ? (idx + 1) + '조' : null).filter(Boolean);
+          drawMessages.push(`${amount}만 무효(${drawTeams.join(',')})`);
+        }
+      }
+
+      r.winner = winnerIdx;
+      r.winningBid = winningAmount;
+      if (winnerIdx !== null) r.spentAmounts[winnerIdx] = winningAmount;
+      r.isEvaluated = true;
+
+      let summary = '';
+      if (drawMessages.length > 0) summary += `<span class="tag-draw">${drawMessages.join(' | ')}</span><br>`;
+      if (r.winner !== null) {
+        summary += `<span class="tag-win">낙찰: ${r.winner + 1}조 (+${r.chocoPoint})</span> / <span class="tag-spent">지출: ${r.winningBid}만</span><br>`;
+      } else {
+        summary += `<span style="color:#64748b;">모두 동점으로 유찰</span><br>`;
+      }
+      summary += `<span class="tag-loss">감점: ${r.losers.map(i => (i + 1) + '조').join(',')}</span>`;
+
+      r.summaryHtml = summary;
+
+      const statusEl = document.getElementById(`status-${rIdx}`);
+      if (statusEl) statusEl.innerHTML = summary;
+
+      const btn = document.getElementById(`btn-${rIdx}`);
+      if (btn) {
+        btn.classList.add('checked');
+        btn.textContent = '수정/재확인';
+      }
+
+      recalculateAll();
+      saveRoundsData();
+    }
+
+    function recalculateAll() {
+      const totalPoints = [0, 0, 0, 0];
+      const totalSpent = [0, 0, 0, 0];
+
+      roundsData.forEach(r => {
+        if (r.isEvaluated) {
+          if (r.winner !== null) {
+            totalPoints[r.winner] += r.chocoPoint;
+            totalSpent[r.winner] += r.spentAmounts[r.winner];
+          }
+          r.losers.forEach(lIdx => { totalPoints[lIdx] -= 1; });
+        }
+      });
+
+      const isGameFinished = roundsData.every(r => r.isEvaluated);
+      let bankruptTeams = [];
+      if (isGameFinished) {
+        const maxSpent = Math.max(...totalSpent);
+        if (maxSpent > 0) {
+          totalSpent.forEach((spent, idx) => { if (spent === maxSpent) bankruptTeams.push(idx); });
+        }
+      }
+
+      const teamIndices = [0, 1, 2, 3];
+      teamIndices.sort((a, b) => {
+        const aBankrupt = bankruptTeams.includes(a);
+        const bBankrupt = bankruptTeams.includes(b);
+        if (aBankrupt && !bBankrupt) return 1;
+        if (!aBankrupt && bBankrupt) return -1;
+        return totalPoints[b] - totalPoints[a];
+      });
+
+      const finalRankMap = {};
+      teamIndices.forEach((tIdx, rankIdx) => { finalRankMap[tIdx] = rankIdx + 1; });
+
+      const scoreGrid = document.getElementById('scoreGrid');
+      const hasEvaluated = roundsData.some(r => r.isEvaluated);
+
+      scoreGrid.innerHTML = [0, 1, 2, 3].map(idx => {
+        const isBankrupt = bankruptTeams.includes(idx);
+        const isTop = hasEvaluated && finalRankMap[idx] === 1 && !isBankrupt;
+
+        return `
+          <div class="score-card ${isTop ? 'winner' : ''} ${isBankrupt ? 'bankrupt' : ''}">
+            ${isBankrupt ? '<div class="bankrupt-tag">파산 패배</div>' : ''}
+            <div class="team-title">${idx + 1}조</div>
+            <div class="team-points">${totalPoints[idx]}점</div>
+            <div class="team-spent">사용 누적: ${totalSpent[idx]}만원</div>
+            <div class="team-rank">${hasEvaluated ? (isBankrupt ? '파산 (최하위)' : finalRankMap[idx] + '위') : '-'}</div>
+          </div>
+        `;
+      }).join('');
+
+      checkMilestones();
+    }
+
+    let currentMilestoneSum = 0;
+    let currentMilestoneRound = 0;
+
+    function checkMilestones() {
+      const noticeText = document.getElementById('noticeText');
+      const noticeBtn = document.getElementById('noticeBtn');
+
+      const milestones = [9, 6, 3];
+      let activeM = null;
+
+      for (const m of milestones) {
+        if (roundsData.slice(0, m).every(r => r.isEvaluated)) {
+          activeM = m;
+          break;
+        }
+      }
+
+      if (activeM !== null) {
+        currentMilestoneRound = activeM;
+        currentMilestoneSum = roundsData.slice(0, activeM).reduce((acc, cur) => acc + (cur.winner !== null ? cur.winningBid : 0), 0);
+        noticeText.innerHTML = `📢 <strong>${activeM}라운드 종료!</strong> 아이들에게 공개할 지금까지 낙찰 총액이 준비되었습니다.`;
+        noticeBtn.style.display = 'inline-block';
+      } else {
+        noticeBtn.style.display = 'none';
+        noticeText.innerHTML = '📌 3R, 6R, 9R가 완료되면 아이들에게 공개할 낙찰 총액 안내 버튼이 나타납니다.';
+      }
+    }
+
+    function openNoticeModal() {
+      document.getElementById('modalTitle').textContent = `📢 [${currentMilestoneRound}라운드 종료] 전체 낙찰 총액 공개`;
+      document.getElementById('modalAmount').textContent = `${currentMilestoneSum} 만원`;
+      document.getElementById('noticeModal').style.display = 'flex';
+    }
+
+    function closeNoticeModal() {
+      document.getElementById('noticeModal').style.display = 'none';
+    }
+
+    function resetGame() {
+      if (!confirm('초코 경매를 새로 시작하시겠습니까? 현재 입력된 모든 라운드 기록이 초기화됩니다.')) return;
+      roundsData = defaultRoundsData();
+      saveRoundsData();
+      renderTable();
+      recalculateAll();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderTable();
+      recalculateAll();
+    });
+  </script>
+</body>
+</html>
