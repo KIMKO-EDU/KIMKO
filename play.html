@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>교실 놀이 수업실</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Pretendard', sans-serif, -apple-system;
+      margin: 0;
+      padding: 40px 20px 60px;
+      background: #fdf8f6;
+      color: #332724;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .top-nav {
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: 24px;
+    }
+    .back-btn {
+      text-decoration: none;
+      color: #78350f;
+      font-size: 14px;
+      font-weight: 600;
+      transition: color 0.15s;
+    }
+    .back-btn:hover { color: #451a03; }
+
+    .header-box {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    h1 { font-size: 28px; margin: 0 0 8px 0; color: #451a03; }
+    .subtitle { color: #8c6a5e; font-size: 15px; margin: 0; }
+
+    /* 놀이 카드 그리드 */
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 800px;
+    }
+    .game-card {
+      background: #ffffff;
+      border: 1px solid #ebd3cb;
+      border-radius: 16px;
+      padding: 24px;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04);
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .game-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 20px -3px rgba(120,53,15,0.08);
+      border-color: #b45309;
+    }
+    .game-icon { font-size: 38px; margin-bottom: 12px; }
+    .game-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: #2d1810; }
+    .game-desc { font-size: 14px; color: #6e554d; line-height: 1.5; margin-bottom: 16px; }
+    .game-meta {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      background: #fcf4f1;
+      color: #9a3412;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .btn-launch {
+      font-size: 14px;
+      font-weight: 700;
+      color: #c2410c;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* 준비 중 카드 스타일 */
+    .game-card.disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      border-style: dashed;
+    }
+    .game-card.disabled:hover {
+      transform: none;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04);
+      border-color: #ebd3cb;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-nav">
+    <a href="index.html" class="back-btn">← 메인 플랫폼으로 돌아가기</a>
+  </div>
+
+  <div class="header-box">
+    <h1>🎲 교실 놀이 수업실</h1>
+    <p class="subtitle">진행할 교실 놀이 프로그램을 선택하여 개별 전용 페이지로 입장하세요.</p>
+  </div>
+
+  <div class="game-grid">
+    <!-- 1. 무제한 초코 경매 (단독 페이지 연결) -->
+    <a href="choco-auction.html" class="game-card">
+      <div>
+        <div class="game-icon">🍫</div>
+        <div class="game-title">무제한 초코 경매</div>
+        <div class="game-desc">
+          최고가 단독 입찰자만 초코를 획득하는 고도의 심리 눈치 게임! 동점 입찰 무효, 최저가 감점, 12R 종료 시 최고 지출 조 파산 패배 룰이 적용된 진행자 전용 스코어보드입니다.
+        </div>
+        <div class="game-meta">
+          <span class="badge">👥 4개 조 대결</span>
+          <span class="badge">⏱️ 12 라운드</span>
+          <span class="badge">📢 3·6·9R 총액 공개</span>
+        </div>
+      </div>
+      <div class="btn-launch">게임 진행 페이지 열기 →</div>
+    </a>
+
+    <!-- 2. 향후 추가할 놀이 (대기 슬롯) -->
+    <div class="game-card disabled">
+      <div>
+        <div class="game-icon">✨</div>
+        <div class="game-title">새로운 교실 놀이 (준비 중)</div>
+        <div class="game-desc">
+          학급 골든벨, 밸런스 토론 타이머, 팀 빌딩 보드게임 점수판 등 추후 제작될 새로운 수업 지원 도구가 탑재될 자리입니다.
+        </div>
+      </div>
+      <div style="font-size: 13px; color: #a8a29e; font-weight: 600;">업데이트 예정</div>
+    </div>
+  </div>
+
+</body>
+</html>
