@@ -5,86 +5,239 @@
   <title>스포츠스태킹 자율 기록실</title>
   <style>
     * { box-sizing: border-box; }
-    body { font-family: 'Pretendard', sans-serif; background: #f0fdf4; color: #166534; padding: 20px; max-width: 600px; margin: 0 auto; }
-    .card { background: #ffffff; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; }
-    h1 { text-align: center; color: #14532d; font-size: 24px; margin-bottom: 20px; }
+    body {
+      font-family: 'Pretendard', sans-serif, -apple-system;
+      background: #f0fdf4;
+      color: #166534;
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .top-nav {
+      margin-bottom: 14px;
+    }
+    .back-btn {
+      text-decoration: none;
+      color: #15803d;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+      border: 1px solid #dcfce7;
+    }
+    h1 {
+      text-align: center;
+      color: #14532d;
+      font-size: 24px;
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
     
-    .input-group { display: flex; gap: 10px; margin-bottom: 16px; }
-    .input-group input { flex: 1; padding: 12px; border: 1px solid #bbf7d0; border-radius: 8px; font-size: 16px; text-align: center; }
-    .btn-search { width: 100%; background: #16a34a; color: white; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    .input-group { display: flex; gap: 8px; margin-bottom: 14px; }
+    .input-group input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      font-size: 16px;
+      text-align: center;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: #16a34a;
+      box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.15);
+    }
+    .btn-search {
+      width: 100%;
+      background: #16a34a;
+      color: white;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
     .btn-search:hover { background: #15803d; }
     
     /* 최고 기록판 */
     #recordBoard { display: none; }
     .record-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
-    .record-item { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px; border-radius: 8px; text-align: center; }
+    .record-item {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+    }
     .record-title { font-size: 13px; color: #166534; font-weight: 600; margin-bottom: 4px; }
     .record-score { font-size: 18px; font-weight: 800; color: #15803d; }
 
     /* 새 기록 입력 영역 */
-    .submit-area { background: #fdfae8; border: 2px dashed #fef08a; padding: 20px; border-radius: 12px; margin-top: 24px; }
+    .submit-area {
+      background: #fdfae8;
+      border: 2px dashed #fde047;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 24px;
+    }
     .submit-area h3 { margin: 0 0 12px 0; color: #854d0e; text-align: center; font-size: 16px; }
     
     .event-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
-    .event-btn { padding: 10px; background: white; border: 1px solid #fde047; border-radius: 6px; cursor: pointer; font-size: 14px; text-align: center; }
-    .event-btn.selected { background: #eab308; color: white; font-weight: bold; border-color: #ca8a04; }
+    .event-btn {
+      padding: 10px;
+      background: white;
+      border: 1px solid #fde047;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .event-btn.selected {
+      background: #eab308;
+      color: white;
+      font-weight: bold;
+      border-color: #ca8a04;
+    }
 
-    .score-input-group { display: flex; gap: 10px; }
-    .score-input { flex: 2; padding: 12px; border: 1px solid #fde047; border-radius: 8px; font-size: 18px; text-align: center; }
-    .btn-submit { flex: 1; background: #eab308; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; }
+    .score-input-group { display: flex; gap: 8px; }
+    .score-input {
+      flex: 2;
+      padding: 12px;
+      border: 1px solid #fde047;
+      border-radius: 8px;
+      font-size: 18px;
+      text-align: center;
+    }
+    .score-input:focus {
+      outline: none;
+      border-color: #ca8a04;
+    }
+    .btn-submit {
+      flex: 1;
+      background: #eab308;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
     .btn-submit:hover { background: #ca8a04; }
     
     #loadingMsg { text-align: center; color: #166534; font-weight: bold; display: none; margin-top: 10px; }
+
+    /* 직접 접속 차단용 잠금 화면 */
+    #lockScreen {
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .lock-input {
+      padding: 12px;
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 16px;
+      text-align: center;
+      margin-bottom: 12px;
+      width: 200px;
+    }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h1>⏱️ 스포츠스태킹 자율 기록실</h1>
-    <p style="text-align:center; color:#15803d; font-size:14px;">본인의 정보를 입력하고 최고 기록을 조회하세요.</p>
-    
-    <div class="input-group">
-      <input type="number" id="grade" placeholder="학년 (예: 5)">
-      <input type="number" id="cls" placeholder="반 (예: 2)">
-      <input type="text" id="name" placeholder="이름 (예: 홍길동)">
-    </div>
-    <button class="btn-search" onclick="searchRecord()">🔍 내 기록 조회하기</button>
-    <div id="loadingMsg">통신 중입니다... 잠시만 기다려주세요! 🚀</div>
+  <!-- 학교 코드 미인증 시 차단 카드 -->
+  <div class="card" id="lockScreen">
+    <div style="font-size:48px; margin-bottom:12px;">🔒</div>
+    <h2>학교 코드 인증이 필요합니다</h2>
+    <p style="color:#64748b; font-size:14px; margin-bottom:20px;">우리 학교 학생만 접근 가능한 페이지입니다.</p>
+    <input type="password" id="directCodeInput" class="lock-input" placeholder="학교 코드"><br>
+    <button class="btn-search" style="max-width:200px;" onclick="unlockDirectly()">인증 및 입장</button>
   </div>
 
-  <div class="card" id="recordBoard">
-    <h2 style="font-size: 18px; text-align: center; margin-top: 0;">🏆 <span id="displayInfo"></span>의 최고 기록</h2>
-    
-    <div class="record-grid">
-      <div class="record-item"><div class="record-title">3-3-3</div><div class="record-score" id="score-3-3-3">-</div></div>
-      <div class="record-item"><div class="record-title">3-6-3</div><div class="record-score" id="score-3-6-3">-</div></div>
-      <div class="record-item"><div class="record-title">사이클</div><div class="record-score" id="score-사이클">-</div></div>
-      <div class="record-item"><div class="record-title">더블</div><div class="record-score" id="score-더블">-</div></div>
-      <div class="record-item"><div class="record-title">3-6-3릴레이</div><div class="record-score" id="score-3-6-3릴레이">-</div></div>
-      <div class="record-item"><div class="record-title">사이클릴레이</div><div class="record-score" id="score-사이클릴레이">-</div></div>
+  <!-- 실제 기록실 본문 (인증 완료 시 표시) -->
+  <div id="mainApp" style="display:none;">
+    <div class="top-nav">
+      <a href="index.html" class="back-btn">← 메인 플랫폼으로 돌아가기</a>
     </div>
 
-    <div class="submit-area">
-      <h3>🔥 최고 기록을 경신했나요? 새로 입력해주세요!</h3>
-      <div class="event-selector" id="eventSelector">
-        <div class="event-btn selected" onclick="selectEvent('3-3-3', this)">3-3-3</div>
-        <div class="event-btn" onclick="selectEvent('3-6-3', this)">3-6-3</div>
-        <div class="event-btn" onclick="selectEvent('사이클', this)">사이클</div>
-        <div class="event-btn" onclick="selectEvent('더블', this)">더블</div>
-        <div class="event-btn" onclick="selectEvent('3-6-3릴레이', this)">3-6-3릴레이</div>
-        <div class="event-btn" onclick="selectEvent('사이클릴레이', this)">사이클릴레이</div>
+    <div class="card">
+      <h1>⏱️ 스포츠스태킹 자율 기록실</h1>
+      <p style="text-align:center; color:#15803d; font-size:14px; margin-top:0;">본인의 정보를 입력하고 최고 기록을 조회하세요.</p>
+      
+      <div class="input-group">
+        <input type="number" id="grade" placeholder="학년 (예: 5)">
+        <input type="number" id="cls" placeholder="반 (예: 2)">
+        <input type="text" id="name" placeholder="이름 (예: 홍길동)">
       </div>
-      <div class="score-input-group">
-        <input type="number" step="0.001" id="newScore" class="score-input" placeholder="0.000 (초)">
-        <button class="btn-submit" onclick="submitRecord()">기록 갱신!</button>
+      <button class="btn-search" onclick="searchRecord()">🔍 내 기록 조회하기</button>
+      <div id="loadingMsg">기록을 불러오는 중입니다... 🚀</div>
+    </div>
+
+    <div class="card" id="recordBoard">
+      <h2 style="font-size: 18px; text-align: center; margin-top: 0;">🏆 <span id="displayInfo"></span>의 최고 기록</h2>
+      
+      <div class="record-grid">
+        <div class="record-item"><div class="record-title">3-3-3</div><div class="record-score" id="score-3-3-3">-</div></div>
+        <div class="record-item"><div class="record-title">3-6-3</div><div class="record-score" id="score-3-6-3">-</div></div>
+        <div class="record-item"><div class="record-title">사이클</div><div class="record-score" id="score-사이클">-</div></div>
+        <div class="record-item"><div class="record-title">더블</div><div class="record-score" id="score-더블">-</div></div>
+        <div class="record-item"><div class="record-title">3-6-3릴레이</div><div class="record-score" id="score-3-6-3릴레이">-</div></div>
+        <div class="record-item"><div class="record-title">사이클릴레이</div><div class="record-score" id="score-사이클릴레이">-</div></div>
+      </div>
+
+      <div class="submit-area">
+        <h3>🔥 최고 기록을 경신했나요? 새로 입력해주세요!</h3>
+        <div class="event-selector" id="eventSelector">
+          <div class="event-btn selected" onclick="selectEvent('3-3-3', this)">3-3-3</div>
+          <div class="event-btn" onclick="selectEvent('3-6-3', this)">3-6-3</div>
+          <div class="event-btn" onclick="selectEvent('사이클', this)">사이클</div>
+          <div class="event-btn" onclick="selectEvent('더블', this)">더블</div>
+          <div class="event-btn" onclick="selectEvent('3-6-3릴레이', this)">3-6-3릴레이</div>
+          <div class="event-btn" onclick="selectEvent('사이클릴레이', this)">사이클릴레이</div>
+        </div>
+        <div class="score-input-group">
+          <input type="number" step="0.001" id="newScore" class="score-input" placeholder="0.000 (초)">
+          <button class="btn-submit" onclick="submitRecord()">기록 갱신!</button>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    // ★★★ 여기에 복사한 웹 앱 URL을 붙여넣으세요! ★★★
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2ABEw49MhLsZ750gZwc98vOH7lVyFmVyQ8EslfgZjs4a_II4fuAoGjHqsz4CKHGY/exec'; 
+    const CORRECT_CODE = 'pr5811';
+    // ★★★ 구글 Apps Script에서 발급받은 웹 앱 배포 URL을 넣어주세요 ★★★
+    const SCRIPT_URL = '여기에_복사한_웹앱_URL_붙여넣기'; 
     let currentEvent = '3-3-3';
+
+    // 보안 검증 (페이지 진입 시 자동 실행)
+    document.addEventListener('DOMContentLoaded', () => {
+      if (sessionStorage.getItem('school_verified') === 'true') {
+        document.getElementById('mainApp').style.display = 'block';
+      } else {
+        document.getElementById('lockScreen').style.display = 'block';
+      }
+    });
+
+    function unlockDirectly() {
+      const code = document.getElementById('directCodeInput').value.trim();
+      if (code === CORRECT_CODE) {
+        sessionStorage.setItem('school_verified', 'true');
+        document.getElementById('lockScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+      } else {
+        alert('❌ 잘못된 학교 코드입니다. 메인 페이지로 이동합니다.');
+        window.location.href = 'index.html';
+      }
+    }
 
     function searchRecord() {
       const grade = document.getElementById('grade').value.trim();
@@ -111,7 +264,6 @@
             document.getElementById('score-3-6-3릴레이').innerText = data['3-6-3릴레이'] !== '-' ? data['3-6-3릴레이'] + '초' : '-';
             document.getElementById('score-사이클릴레이').innerText = data['사이클릴레이'] !== '-' ? data['사이클릴레이'] + '초' : '-';
           } else {
-            // 처음 입력하는 학생인 경우
             ['3-3-3', '3-6-3', '사이클', '더블', '3-6-3릴레이', '사이클릴레이'].forEach(ev => {
               document.getElementById(`score-${ev}`).innerText = '-';
             });
@@ -120,7 +272,7 @@
         })
         .catch(err => {
           document.getElementById('loadingMsg').style.display = 'none';
-          alert('데이터를 불러오지 못했습니다. 선생님께 문의해주세요.');
+          alert('데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
         });
     }
 
@@ -152,9 +304,9 @@
         if(res.status === '승인완료') {
           alert('🎉 새로운 기록이 데이터베이스에 성공적으로 등록되었습니다!');
           document.getElementById('newScore').value = '';
-          searchRecord(); // 새로고침해서 방금 넣은 데이터 표시
+          searchRecord();
         } else {
-          alert('🚨 입력하신 기록이 너무 빨라 [승인 대기] 상태로 처리되었습니다. 선생님이 확인 후 등록됩니다.');
+          alert('🚨 입력하신 기록이 너무 빨라 [승인 대기] 상태로 처리되었습니다. 지도 선생님 확인 후 등록됩니다.');
           document.getElementById('newScore').value = '';
         }
       })
