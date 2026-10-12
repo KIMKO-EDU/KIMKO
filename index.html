@@ -2,79 +2,261 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>체육 & 학급 활동 플랫폼</title>
+  <title>KIMKO-EDU 체육 & 교실 플랫폼</title>
   <style>
     * { box-sizing: border-box; }
     body {
       font-family: 'Pretendard', sans-serif, -apple-system;
       margin: 0;
-      padding: 50px 20px;
+      padding: 50px 20px 80px;
       background: #f8fafc;
-      color: #1e293b;
+      color: #0f172a;
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
     }
-    h1 { font-size: 30px; margin-bottom: 8px; color: #0f172a; }
-    p.subtitle { color: #64748b; margin-bottom: 40px; font-size: 15px; }
-    .hub-grid {
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    h1 {
+      font-size: 32px;
+      margin: 0 0 10px 0;
+      color: #1e293b;
+      font-weight: 800;
+    }
+    .subtitle {
+      font-size: 16px;
+      color: #64748b;
+      margin: 0;
+    }
+
+    /* 허브 카드 그리드 */
+    .card-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 24px;
       width: 100%;
-      max-width: 680px;
+      max-width: 980px;
     }
     .hub-card {
       background: #ffffff;
       border: 1px solid #e2e8f0;
-      border-radius: 16px;
+      border-radius: 18px;
       padding: 28px;
       text-decoration: none;
       color: inherit;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-      transition: all 0.2s ease;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04);
+      transition: all 0.25s ease;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      cursor: pointer;
     }
     .hub-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 20px -3px rgba(0,0,0,0.08);
-      border-color: #3b82f6;
+      transform: translateY(-5px);
+      box-shadow: 0 14px 25px -4px rgba(0,0,0,0.08);
+      border-color: #cbd5e1;
     }
-    .icon { font-size: 40px; margin-bottom: 14px; }
-    .title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
-    .desc { font-size: 14px; color: #64748b; line-height: 1.5; }
-    .action { margin-top: 20px; font-size: 14px; font-weight: 600; color: #2563eb; }
+    .card-icon { font-size: 44px; margin-bottom: 14px; }
+    .card-title { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+    .card-desc { font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 20px; }
+    .card-tag {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 14px;
+      width: fit-content;
+    }
+    .btn-link {
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* 카드별 테마 */
+    .theme-stacking { border-top: 4px solid #2563eb; }
+    .theme-stacking .card-title { color: #1e40af; }
+    .theme-stacking .card-tag { background: #eff6ff; color: #1d4ed8; }
+    .theme-stacking .btn-link { color: #2563eb; }
+
+    .theme-play { border-top: 4px solid #ea580c; }
+    .theme-play .card-title { color: #9a3412; }
+    .theme-play .card-tag { background: #fff7ed; color: #c2410c; }
+    .theme-play .btn-link { color: #ea580c; }
+
+    .theme-student { border-top: 4px solid #16a34a; }
+    .theme-student .card-title { color: #14532d; }
+    .theme-student .card-tag { background: #f0fdf4; color: #15803d; }
+    .theme-student .btn-link { color: #16a34a; }
+
+    /* 학교 코드 입력 팝업 모달 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-card {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    }
+    .modal-icon { font-size: 40px; margin-bottom: 12px; }
+    .modal-card h3 { margin: 0 0 8px 0; font-size: 20px; color: #1e293b; }
+    .modal-card p { font-size: 14px; color: #64748b; margin: 0 0 20px 0; }
+    .code-input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 18px;
+      text-align: center;
+      letter-spacing: 2px;
+      font-weight: bold;
+      margin-bottom: 14px;
+    }
+    .code-input:focus {
+      outline: none;
+      border-color: #16a34a;
+    }
+    .modal-btns {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-submit-code {
+      flex: 1;
+      background: #16a34a;
+      color: #ffffff;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-submit-code:hover { background: #15803d; }
+    .btn-cancel-code {
+      background: #e2e8f0;
+      color: #475569;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-cancel-code:hover { background: #cbd5e1; }
   </style>
 </head>
 <body>
 
-  <h1>체육 & 학급 활동 웹 플랫폼</h1>
-  <p class="subtitle">필요한 하위 카테고리를 선택하세요.</p>
-
-  <div class="hub-grid">
-    <!-- 스포츠스태킹 카테고리 -->
-    <a href="stacking.html" class="hub-card">
-      <div>
-        <div class="icon">⏱️</div>
-        <div class="title">스포츠스태킹 연구실</div>
-        <div class="desc">스포츠스태킹 랭킹전 및 수업 관련 자료</div>
-      </div>
-      <div class="action">입장하기 →</div>
-    </a>
-
-    <!-- 놀이 수업 카테고리 -->
-    <a href="play.html" class="hub-card">
-      <div>
-        <div class="icon">🎮</div>
-        <div class="title">교실 놀이 수업실</div>
-        <div class="desc">교실 놀이 활동 지원 프로그램</div>
-      </div>
-      <div class="action">입장하기 →</div>
-    </a>
+  <div class="header">
+    <h1>🏫 KIMKO-EDU 플랫폼</h1>
+    <p class="subtitle">체육 수업 및 교실 활동을 지원하는 교육 웹 도구 모음</p>
   </div>
 
+  <div class="card-grid">
+    <!-- 1. 스포츠스태킹 기록실 (체육 교과용 4개 탭) -->
+    <a href="stacking.html" class="hub-card theme-stacking">
+      <div>
+        <div class="card-icon">⚡</div>
+        <span class="card-tag">체육 수업용</span>
+        <div class="card-title">스포츠스태킹 기록실</div>
+        <div class="card-desc">
+          3-3-3, 3-6-3, 사이클, 개인 종합 4개 종목의 실시간 학급 순위 산출 및 엑셀(.xlsx) 저장/인쇄 최적화 도구입니다.
+        </div>
+      </div>
+      <div class="btn-link">수업 기록표 열기 →</div>
+    </a>
+
+    <!-- 2. 교실 놀이 수업실 -->
+    <a href="play.html" class="hub-card theme-play">
+      <div>
+        <div class="card-icon">🎲</div>
+        <span class="card-tag">교실 놀이</span>
+        <div class="card-title">교실 놀이 수업실</div>
+        <div class="card-desc">
+          무제한 초코 경매 등 학급에서 재미있게 진행할 수 있는 다양한 교실 놀이 전용 스코어보드 허브입니다.
+        </div>
+      </div>
+      <div class="btn-link">놀이 목록 보기 →</div>
+    </a>
+
+    <!-- 3. 학생 자율 기록실 (학교 코드 인증 보안) -->
+    <div class="hub-card theme-student" onclick="openCodeModal()">
+      <div>
+        <div class="card-icon">⏱️</div>
+        <span class="card-tag">🔒 학교 인증 전용</span>
+        <div class="card-title">스포츠스태킹 자율기록실</div>
+        <div class="card-desc">
+          자율 연습실에서 학생들이 자신의 누적 최고 기록을 조회하고, 신기록 달성 시 직접 입력하여 구글 시트로 전송합니다.
+        </div>
+      </div>
+      <div class="btn-link">인증 후 입장하기 →</div>
+    </div>
+  </div>
+
+  <!-- 학교 코드 입력 모달 -->
+  <div class="modal-overlay" id="codeModal">
+    <div class="modal-card">
+      <div class="modal-icon">🔐</div>
+      <h3>학교 코드 인증</h3>
+      <p>우리 학교 학생만 이용할 수 있습니다.<br>안내받은 학교 코드를 입력해주세요.</p>
+      <input type="password" id="schoolCodeInput" class="code-input" placeholder="학교 코드" onkeypress="handleEnter(event)">
+      <div class="modal-btns">
+        <button class="btn-cancel-code" onclick="closeCodeModal()">취소</button>
+        <button class="btn-submit-code" onclick="verifySchoolCode()">입장하기</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CORRECT_CODE = 'pr5811';
+
+    function openCodeModal() {
+      // 이미 이번 세션에서 인증한 경우 바로 이동
+      if (sessionStorage.getItem('school_verified') === 'true') {
+        window.location.href = 'student-record.html';
+        return;
+      }
+      document.getElementById('schoolCodeInput').value = '';
+      document.getElementById('codeModal').style.display = 'flex';
+      setTimeout(() => document.getElementById('schoolCodeInput').focus(), 100);
+    }
+
+    function closeCodeModal() {
+      document.getElementById('codeModal').style.display = 'none';
+    }
+
+    function handleEnter(e) {
+      if (e.key === 'Enter') verifySchoolCode();
+    }
+
+    function verifySchoolCode() {
+      const inputCode = document.getElementById('schoolCodeInput').value.trim();
+      if (inputCode === CORRECT_CODE) {
+        sessionStorage.setItem('school_verified', 'true');
+        window.location.href = 'student-record.html';
+      } else {
+        alert('❌ 잘못된 학교 코드입니다. 지도 선생님께 문의하세요.');
+        document.getElementById('schoolCodeInput').value = '';
+        document.getElementById('schoolCodeInput').focus();
+      }
+    }
+  </script>
 </body>
 </html>
