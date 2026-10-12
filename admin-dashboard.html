@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>스포츠스태킹 관리자 대시보드</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Pretendard', sans-serif; background: #f1f5f9; color: #1e293b; margin: 0; padding: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #e2e8f0; }
+    h1 { margin: 0; font-size: 24px; color: #0f172a; }
+    .logout-btn { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    
+    .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 800px) { .dashboard-grid { grid-template-columns: 1fr; } }
+    
+    .panel { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    h2 { margin-top: 0; font-size: 18px; color: #334155; border-left: 4px solid #3b82f6; padding-left: 8px; }
+    
+    /* 랭킹 테이블 */
+    table { width: 100%; border-collapse: collapse; text-align: center; margin-top: 12px; }
+    th, td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+    th { background: #f8fafc; font-weight: 600; color: #475569; }
+    .rank-1 { color: #d97706; font-weight: bold; }
+    .rank-2 { color: #64748b; font-weight: bold; }
+    .rank-3 { color: #854d0e; font-weight: bold; }
+    
+    /* 검색 및 필터 */
+    .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+    select, input { padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; }
+    
+    /* 대기 알림 */
+    .alert-box { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px; border-radius: 8px; margin-bottom: 20px; display: none; }
+    
+    #loading { text-align: center; font-size: 18px; font-weight: bold; padding: 40px; color: #3b82f6; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>👨‍🏫 광주푸른초등학교 스포츠스태킹 통합 관리 시스템</h1>
+    <div>
+      <a href="student-record.html" style="margin-right:12px; text-decoration:none; color:#3b82f6; font-weight:bold;">← 기록실로 가기</a>
+      <button class="logout-btn" onclick="logout()">로그아웃</button>
+    </div>
+  </div>
+
+  <div id="loading">데이터를 불러오는 중입니다... 잠시만 기다려주세요! 🚀</div>
+
+  <div id="dashboard" style="display:none;">
+    
+    <!-- 이상 기록 알림 -->
+    <div class="alert-box" id="alertBox">
+      <strong>🚨 승인 대기 기록 발생!</strong> 구글 스프레드시트의 '제출로그' 탭을 확인하여 비정상 기록을 점검해주세요.
+    </div>
+
+    <div class="dashboard-grid">
+      <!-- 패널 1: 종목별 명예의 전당 -->
+      <div class="panel">
+        <h2>🏆 종목별 통합 랭킹보드</h2>
+        <div class="filter-bar">
+          <select id="eventFilter" onchange="renderRanking()">
+            <option value="3-3-3">3-3-3</option>
+            <option value="3-6-3">3-6-3</option>
+            <option value="사이클">사이클</option>
+          </select>
+        </div>
+        <table>
+          <thead><tr><th>순위</th><th>소속</th><th>이름</th><th>최고기록</th></tr></thead>
+          <tbody id="rankingBody"></tbody>
+        </table>
+      </div>
+
+      <!-- 패널 2: 개인별 성장 궤적 그래프 -->
+      <div class="panel">
+        <h2>📈 학생별 성장 궤적 (기록 단축 추이)</h2>
+        <div class="filter-bar">
+          <input type="text" id="searchName" placeholder="학생 이름 입력" onkeyup="if(event.key==='Enter') renderChart()">
+          <button onclick="renderChart()" style="padding:8px 16px; background:#3b82f6; color:white; border:none; border-radius:6px; cursor:pointer;">조회</button>
+        </div>
+        <canvas id="growthChart" height="200"></canvas>
+        <p id="chartMsg" style="text-align:center; color:#64748b; font-size:13px;"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ★★★ 구글 Apps Script 웹 앱 URL ★★★
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2ABEw49MhLsZ750gZwc98vOH7lVyFmVyQ8EslfgZjs4a_II4fuAoGjHqsz4CKHGY/exec'; 
+    
+    let bestData = [];
+    let logData = [];
+    let growthChartInstance = null;
+
+    // 보안: 비밀번호를 치고 온 사람인지 확인
+    document.addEventListener('DOMContentLoaded', () => {
+      if (sessionStorage.getItem('admin_verified') !== 'true') {
+        alert('잘못된 접근입니다. 관리자 비밀번호를 입력해주세요.');
+        window.location.href = 'student-record.html';
+      } else {
+        fetchAdminData();
+      }
+    });
+
+    function logout() {
+      sessionStorage.removeItem('admin_verified');
+      window.location.href = 'student-record.html';
+    }
+
+    function fetchAdminData() {
+      fetch(SCRIPT_URL + '?action=getAdminData')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('dashboard').style.display = 'block';
+          
+          bestData = parseSheetData(data.best);
+          logData = parseSheetData(data.log);
+          
+          checkPendingApprovals();
+          renderRanking();
+        })
+        .catch(err => alert('데이터를 불러오지 못했습니다.'));
+    }
+
+    function parseSheetData(raw2DArray) {
+      if(raw2DArray.length <= 1) return [];
+      const headers = raw2DArray[0];
+      return raw2DArray.slice(1).map(row => {
+        let obj = {};
+        headers.forEach((h, i) => obj[h] = row[i]);
+        return obj;
+      });
+    }
+
+    function checkPendingApprovals() {
+      const hasPending = logData.some(log => log['승인상태'] && log['승인상태'].includes('승인대기'));
+      if (hasPending) document.getElementById('alertBox').style.display = 'block';
+    }
+
+    // 랭킹 렌더링
+    function renderRanking() {
+      const event = document.getElementById('eventFilter').value;
+      
+      let validRecords = bestData.filter(row => row[event] !== '' && !isNaN(row[event]));
+      validRecords.sort((a, b) => parseFloat(a[event]) - parseFloat(b[event]));
+      
+      // 상위 10명만 표시
+      const top10 = validRecords.slice(0, 10);
+      const tbody = document.getElementById('rankingBody');
+      
+      tbody.innerHTML = top10.map((r, idx) => {
+        const rank = idx + 1;
+        let rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
+        return `<tr>
+          <td class="${rankClass}">${rank}위</td>
+          <td>${r['학년']}학년 ${r['반']}반</td>
+          <td>${r['이름']}</td>
+          <td style="font-weight:bold;">${parseFloat(r[event]).toFixed(3)}s</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // 학생 개인 성장 그래프 (Chart.js)
+    function renderChart() {
+      const name = document.getElementById('searchName').value.trim();
+      const chartMsg = document.getElementById('chartMsg');
+      if(!name) { chartMsg.innerText = "이름을 입력해주세요."; return; }
+
+      // 해당 학생의 3-3-3 기록 로그만 필터링 (과거순)
+      const studentLogs = logData.filter(log => log['이름'] === name && log['종목'] === '3-3-3' && log['승인상태'] === '승인완료');
+      
+      if(studentLogs.length === 0) {
+        chartMsg.innerText = `${name} 학생의 3-3-3 측정 데이터가 없습니다.`;
+        if(growthChartInstance) growthChartInstance.destroy();
+        return;
+      }
+      chartMsg.innerText = `${name} 학생의 3-3-3 성장 그래프입니다. (제출일 기준)`;
+
+      const labels = studentLogs.map(log => new Date(log['타임스탬프']).toLocaleDateString().slice(5)); // 날짜(월/일)
+      const dataPoints = studentLogs.map(log => parseFloat(log['측정기록']));
+
+      const ctx = document.getElementById('growthChart').getContext('2d');
+      if(growthChartInstance) growthChartInstance.destroy(); // 기존 차트 초기화
+
+      growthChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '3-3-3 기록 (초)',
+            data: dataPoints,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderWidth: 3,
+            tension: 0.3,
+            fill: true,
+            pointBackgroundColor: '#1d4ed8'
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { reverse: true, title: { display: true, text: '기록 (낮을수록 좋음)' } } // 기록은 낮을수록 위로 향하게 설정
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
