@@ -165,7 +165,11 @@
 
   <!-- 실제 기록실 본문 (인증 완료 시 표시) -->
   <div id="mainApp" style="display:none;">
-    <div class="top-nav">
+    <!-- 상단 네비게이션 교체 -->
+    <div class="top-nav" style="display: flex; justify-content: space-between; align-items: center;">
+      <a href="index.html" class="back-btn">← 메인 플랫폼으로 돌아가기</a>
+      <button onclick="adminLogin()" style="background:none; border:none; color:#94a3b8; font-size:13px; cursor:pointer; font-weight:600;">👨‍🏫 관리자</button>
+    </div>
       <a href="index.html" class="back-btn">← 메인 플랫폼으로 돌아가기</a>
     </div>
 
