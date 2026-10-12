@@ -194,4 +194,195 @@
     <button class="btn-search" style="max-width:200px;" onclick="unlockDirectly()">인증 및 입장</button>
   </div>
 
-  <!-- 실제 기록실 본문 (인증 완료 시
+  <!-- 실제 기록실 본문 (인증 완료 시 표시) -->
+  <div id="mainApp" style="display:none;">
+    
+    <div class="top-nav">
+      <a href="index.html" class="back-btn">← 메인 플랫폼으로 돌아가기</a>
+      <button onclick="adminLogin()" class="admin-btn">👨‍🏫 관리자</button>
+    </div>
+
+    <div class="card">
+      <h1>⏱️ 스포츠스태킹 자율 기록실</h1>
+      <p style="text-align:center; color:#15803d; font-size:14px; margin-top:0;">본인의 정보를 입력하고 최고 기록을 조회하세요.</p>
+      
+      <div class="input-group">
+        <input type="number" id="grade" placeholder="학년">
+        <input type="number" id="cls" placeholder="반">
+        <input type="text" id="name" placeholder="이름 (예:홍길동)">
+      </div>
+      <button class="btn-search" onclick="searchRecord()">🔍 내 기록 조회하기</button>
+      <div id="loadingMsg">기록을 불러오는 중입니다... 🚀</div>
+    </div>
+
+    <!-- 조회 완료 시 나타나는 하단 영역 (기록판 + 입력칸) -->
+    <div class="card" id="recordBoard">
+      <h2 style="font-size: 18px; text-align: center; margin-top: 0; color:#14532d;">🏆 <span id="displayInfo"></span>의 최고 기록</h2>
+      
+      <!-- 최고 기록 표시 영역 -->
+      <div class="record-grid">
+        <div class="record-item"><div class="record-title">3-3-3</div><div class="record-score" id="score-3-3-3">기록 없음</div></div>
+        <div class="record-item"><div class="record-title">3-6-3</div><div class="record-score" id="score-3-6-3">기록 없음</div></div>
+        <div class="record-item"><div class="record-title">사이클</div><div class="record-score" id="score-사이클">기록 없음</div></div>
+        <div class="record-item"><div class="record-title">더블</div><div class="record-score" id="score-더블">기록 없음</div></div>
+        <div class="record-item"><div class="record-title">3-6-3릴레이</div><div class="record-score" id="score-3-6-3릴레이">기록 없음</div></div>
+        <div class="record-item"><div class="record-title">사이클릴레이</div><div class="record-score" id="score-사이클릴레이">기록 없음</div></div>
+      </div>
+
+      <!-- 새 기록 입력 영역 -->
+      <div class="submit-area">
+        <h3>🔥 최고 기록을 경신했나요? 새로 입력해주세요!</h3>
+        <div class="event-selector" id="eventSelector">
+          <div class="event-btn selected" onclick="selectEvent('3-3-3', this)">3-3-3</div>
+          <div class="event-btn" onclick="selectEvent('3-6-3', this)">3-6-3</div>
+          <div class="event-btn" onclick="selectEvent('사이클', this)">사이클</div>
+          <div class="event-btn" onclick="selectEvent('더블', this)">더블</div>
+          <div class="event-btn" onclick="selectEvent('3-6-3릴레이', this)">3-6-3릴레이</div>
+          <div class="event-btn" onclick="selectEvent('사이클릴레이', this)">사이클릴레이</div>
+        </div>
+        <div class="score-input-group">
+          <input type="number" step="0.001" id="newScore" class="score-input" placeholder="0.000 (초)">
+          <button class="btn-submit" onclick="submitRecord()">기록 갱신!</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CORRECT_CODE = 'pr5811';
+    // ★★★ 구글 Apps Script 웹 앱 URL (exec로 끝나는 주소) ★★★
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2ABEw49MhLsZ750gZwc98vOH7lVyFmVyQ8EslfgZjs4a_II4fuAoGjHqsz4CKHGY/exec'; 
+    let currentEvent = '3-3-3';
+
+    // 보안 검증 (페이지 진입 시 자동 실행)
+    document.addEventListener('DOMContentLoaded', () => {
+      if (sessionStorage.getItem('school_verified') === 'true') {
+        document.getElementById('mainApp').style.display = 'block';
+      } else {
+        document.getElementById('lockScreen').style.display = 'block';
+      }
+    });
+
+    function unlockDirectly() {
+      const code = document.getElementById('directCodeInput').value.trim();
+      if (code === CORRECT_CODE) {
+        sessionStorage.setItem('school_verified', 'true');
+        document.getElementById('lockScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+      } else {
+        alert('❌ 잘못된 학교 코드입니다. 메인 페이지로 이동합니다.');
+        window.location.href = 'index.html';
+      }
+    }
+    
+    // 관리자 로그인
+    function adminLogin() {
+      const pw = prompt("관리자 비밀번호를 입력하세요.");
+      if (pw === 'kimko1234') {
+        sessionStorage.setItem('admin_verified', 'true');
+        window.location.href = 'admin-dashboard.html';
+      } else if (pw !== null) {
+        alert("비밀번호가 일치하지 않습니다.");
+      }
+    }
+
+    // 기록 텍스트 렌더링 헬퍼 함수
+    function formatScore(scoreValue) {
+      if (!scoreValue || scoreValue === '-' || scoreValue === '') {
+        return '<span class="record-empty">기록 없음</span>';
+      }
+      return scoreValue + '초';
+    }
+
+    function searchRecord() {
+      const grade = document.getElementById('grade').value.trim();
+      const cls = document.getElementById('cls').value.trim();
+      const name = document.getElementById('name').value.trim();
+
+      if(!grade || !cls || !name) { alert('학년, 반, 이름을 모두 입력해주세요!'); return; }
+
+      document.getElementById('loadingMsg').style.display = 'block';
+      document.getElementById('recordBoard').style.display = 'none';
+      
+      const query = `?grade=${encodeURIComponent(grade)}&class=${encodeURIComponent(cls)}&name=${encodeURIComponent(name)}`;
+      
+      fetch(SCRIPT_URL + query, {
+        method: 'GET',
+        redirect: 'follow'
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('서버 응답 오류');
+        return res.json();
+      })
+      .then(data => {
+        document.getElementById('loadingMsg').style.display = 'none';
+        document.getElementById('displayInfo').innerText = `${grade}학년 ${cls}반 ${name}`;
+        document.getElementById('recordBoard').style.display = 'block';
+        
+        if (data && typeof data === 'object') {
+          document.getElementById('score-3-3-3').innerHTML = formatScore(data['3-3-3']);
+          document.getElementById('score-3-6-3').innerHTML = formatScore(data['3-6-3']);
+          document.getElementById('score-사이클').innerHTML = formatScore(data['사이클']);
+          document.getElementById('score-더블').innerHTML = formatScore(data['더블']);
+          document.getElementById('score-3-6-3릴레이').innerHTML = formatScore(data['3-6-3릴레이']);
+          document.getElementById('score-사이클릴레이').innerHTML = formatScore(data['사이클릴레이']);
+        } else {
+          // 데이터가 없는 신규 학생인 경우
+          ['3-3-3', '3-6-3', '사이클', '더블', '3-6-3릴레이', '사이클릴레이'].forEach(ev => {
+            document.getElementById(`score-${ev}`).innerHTML = '<span class="record-empty">기록 없음</span>';
+          });
+          alert('환영합니다! 아직 등록된 기록이 없습니다. 새로운 최고 기록을 달성하고 하단에 등록해보세요.');
+        }
+      })
+      .catch(err => {
+        console.error('Fetch Error:', err);
+        document.getElementById('loadingMsg').style.display = 'none';
+        alert('데이터를 불러오지 못했습니다.\n\n[확인사항]\n1. SCRIPT_URL 주소가 올바른지 확인해주세요.\n2. 구글 Apps Script 배포 시 액세스 권한이 "모든 사용자"인지 확인해주세요.');
+      });
+    }
+
+    function selectEvent(eventName, element) {
+      currentEvent = eventName;
+      document.querySelectorAll('.event-btn').forEach(btn => btn.classList.remove('selected'));
+      element.classList.add('selected');
+    }
+
+    function submitRecord() {
+      const grade = document.getElementById('grade').value.trim();
+      const cls = document.getElementById('cls').value.trim();
+      const name = document.getElementById('name').value.trim();
+      const score = document.getElementById('newScore').value.trim();
+
+      if(!score) { alert('측정된 기록을 입력해주세요!'); return; }
+      
+      document.getElementById('loadingMsg').style.display = 'block';
+
+      const payload = { grade: grade, cls: cls, name: name, event: currentEvent, score: score };
+
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+        redirect: 'follow'
+      })
+      .then(res => res.json())
+      .then(res => {
+        document.getElementById('loadingMsg').style.display = 'none';
+        if(res.status === '승인완료') {
+          alert('🎉 새로운 기록이 성공적으로 등록되었습니다!');
+          document.getElementById('newScore').value = '';
+          searchRecord(); // 갱신된 기록 다시 불러오기
+        } else {
+          alert('🚨 입력하신 기록이 [승인 대기] 상태로 처리되었습니다. 지도 선생님 확인 후 등록됩니다.');
+          document.getElementById('newScore').value = '';
+        }
+      })
+      .catch(err => {
+        console.error('Submit Error:', err);
+        document.getElementById('loadingMsg').style.display = 'none';
+        alert('기록 전송에 실패했습니다. 배포 설정을 확인해주세요.');
+      });
+    }
+  </script>
+</body>
+</html>
