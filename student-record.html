@@ -165,27 +165,29 @@
 
   <!-- 실제 기록실 본문 (인증 완료 시 표시) -->
   <div id="mainApp" style="display:none;">
-    <!-- 상단 네비게이션 교체 -->
-    <div class="top-nav" style="display: flex; justify-content: space-between; align-items: center;">
+<!-- 실제 기록실 본문 (인증 완료 시 표시) -->
+  <div id="mainApp" style="display:none;">
+    
+    <!-- 수정 1. 중복 제거된 상단 네비게이션 -->
+    <div class="top-nav" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
       <a href="index.html" class="back-btn">← 메인 플랫폼으로 돌아가기</a>
       <button onclick="adminLogin()" style="background:none; border:none; color:#94a3b8; font-size:13px; cursor:pointer; font-weight:600;">👨‍🏫 관리자</button>
-    </div>
-      <a href="index.html" class="back-btn">← 메인 플랫폼으로 돌아가기</a>
     </div>
 
     <div class="card">
       <h1>⏱️ 스포츠스태킹 자율 기록실</h1>
       <p style="text-align:center; color:#15803d; font-size:14px; margin-top:0;">본인의 정보를 입력하고 최고 기록을 조회하세요.</p>
       
-      <div class="input-group">
-        <input type="number" id="grade" placeholder="학년 (예: 5)">
-        <input type="number" id="cls" placeholder="반 (예: 2)">
-        <input type="text" id="name" placeholder="이름 (예: 홍길동)">
+      <!-- 수정 2. 학년/반 크기 축소 및 삐져나감(오버플로우) 방지 -->
+      <div class="input-group" style="display: flex; gap: 8px; margin-bottom: 14px; width: 100%;">
+        <input type="number" id="grade" placeholder="학년" style="flex: 1; min-width: 0; padding: 12px; border: 1px solid #bbf7d0; border-radius: 8px; text-align: center;">
+        <input type="number" id="cls" placeholder="반" style="flex: 1; min-width: 0; padding: 12px; border: 1px solid #bbf7d0; border-radius: 8px; text-align: center;">
+        <input type="text" id="name" placeholder="이름 (예:홍길동)" style="flex: 2.5; min-width: 0; padding: 12px; border: 1px solid #bbf7d0; border-radius: 8px; text-align: center;">
       </div>
+      
       <button class="btn-search" onclick="searchRecord()">🔍 내 기록 조회하기</button>
       <div id="loadingMsg">기록을 불러오는 중입니다... 🚀</div>
     </div>
-
     <div class="card" id="recordBoard">
       <h2 style="font-size: 18px; text-align: center; margin-top: 0;">🏆 <span id="displayInfo"></span>의 최고 기록</h2>
       
