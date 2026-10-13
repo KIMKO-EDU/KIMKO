@@ -27,12 +27,23 @@
     
     /* 검색 및 필터 */
     .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; }
-    select, input { padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; }
+    select, input { padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; flex: 1; }
+    .btn-action { padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    .btn-action:hover { background: #2563eb; }
     
     /* 대기 알림 */
     .alert-box { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px; border-radius: 8px; margin-bottom: 20px; display: none; }
     
     #loading { text-align: center; font-size: 18px; font-weight: bold; padding: 40px; color: #3b82f6; }
+
+    /* 기록 로그 리스트 스타일 */
+    .log-list { list-style: none; padding: 0; margin: 0; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+    .log-item { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 14px; background: #fff; }
+    .log-item:last-child { border-bottom: none; }
+    .log-date { color: #64748b; font-size: 13px; }
+    .log-score { font-weight: bold; color: #1d4ed8; font-size: 15px; }
+    .btn-expand { width: 100%; margin-top: 12px; padding: 12px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; color: #475569; font-weight: bold; transition: 0.2s; }
+    .btn-expand:hover { background: #f1f5f9; }
   </style>
 </head>
 <body>
@@ -63,6 +74,9 @@
             <option value="3-3-3">3-3-3</option>
             <option value="3-6-3">3-6-3</option>
             <option value="사이클">사이클</option>
+            <option value="더블">더블</option>
+            <option value="3-6-3릴레이">3-6-3릴레이</option>
+            <option value="사이클릴레이">사이클릴레이</option>
           </select>
         </div>
         <table>
@@ -71,28 +85,46 @@
         </table>
       </div>
 
-      <!-- 패널 2: 개인별 성장 궤적 그래프 -->
+      <!-- 패널 2: 개인별 성장 궤적 및 로그 -->
       <div class="panel">
-        <h2>📈 학생별 성장 궤적 (기록 단축 추이)</h2>
+        <h2>📈 학생별 성장 궤적 및 기록 로그</h2>
         <div class="filter-bar">
-          <input type="text" id="searchName" placeholder="학생 이름 입력" onkeyup="if(event.key==='Enter') renderChart()">
-          <button onclick="renderChart()" style="padding:8px 16px; background:#3b82f6; color:white; border:none; border-radius:6px; cursor:pointer;">조회</button>
+          <input type="text" id="searchName" placeholder="학생 이름 입력" onkeyup="if(event.key==='Enter') renderGrowth()">
+          <select id="growthEventFilter" style="flex: 0.5;">
+            <option value="3-3-3">3-3-3</option>
+            <option value="3-6-3">3-6-3</option>
+            <option value="사이클">사이클</option>
+            <option value="더블">더블</option>
+            <option value="3-6-3릴레이">3-6-3릴레이</option>
+            <option value="사이클릴레이">사이클릴레이</option>
+          </select>
+          <button class="btn-action" onclick="renderGrowth()">조회</button>
         </div>
+        
         <canvas id="growthChart" height="200"></canvas>
-        <p id="chartMsg" style="text-align:center; color:#64748b; font-size:13px;"></p>
+        <p id="chartMsg" style="text-align:center; color:#64748b; font-size:13px; margin-bottom: 20px;"></p>
+
+        <!-- 최근 기록 리스트 영역 -->
+        <div id="logContainer" style="display:none;">
+          <h3 style="font-size: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 12px; color: #334155;">⏱️ 상세 기록 로그 (최신순)</h3>
+          <ul id="logList" class="log-list"></ul>
+          <button id="expandBtn" class="btn-expand" onclick="toggleExpand()" style="display: none;">더보기</button>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    // ★★★ 구글 Apps Script 웹 앱 URL ★★★
+    // ★★★ 구글 Apps Script 웹 앱 URL (exec로 끝나는 주소) ★★★
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2ABEw49MhLsZ750gZwc98vOH7lVyFmVyQ8EslfgZjs4a_II4fuAoGjHqsz4CKHGY/exec'; 
     
     let bestData = [];
     let logData = [];
     let growthChartInstance = null;
+    let currentStudentLogs = []; // 현재 조회 중인 학생의 로그
+    let isExpanded = false;      // 리스트 펼치기 상태
 
-    // 보안: 비밀번호를 치고 온 사람인지 확인
+    // 보안 검증
     document.addEventListener('DOMContentLoaded', () => {
       if (sessionStorage.getItem('admin_verified') !== 'true') {
         alert('잘못된 접근입니다. 관리자 비밀번호를 입력해주세요.');
@@ -120,7 +152,7 @@
           checkPendingApprovals();
           renderRanking();
         })
-        .catch(err => alert('데이터를 불러오지 못했습니다.'));
+        .catch(err => alert('데이터를 불러오지 못했습니다. 권한 설정이나 인터넷 연결을 확인하세요.'));
     }
 
     function parseSheetData(raw2DArray) {
@@ -142,10 +174,10 @@
     function renderRanking() {
       const event = document.getElementById('eventFilter').value;
       
-      let validRecords = bestData.filter(row => row[event] !== '' && !isNaN(row[event]));
+      let validRecords = bestData.filter(row => row[event] !== '' && !isNaN(parseFloat(row[event])));
       validRecords.sort((a, b) => parseFloat(a[event]) - parseFloat(b[event]));
       
-      // 상위 10명만 표시
+      // 상위 10명 표시
       const top10 = validRecords.slice(0, 10);
       const tbody = document.getElementById('rankingBody');
       
@@ -161,34 +193,54 @@
       }).join('');
     }
 
-    // 학생 개인 성장 그래프 (Chart.js)
-    function renderChart() {
+    // 학생 개인 성장 그래프 및 리스트 초기화
+    function renderGrowth() {
       const name = document.getElementById('searchName').value.trim();
+      const eventName = document.getElementById('growthEventFilter').value;
       const chartMsg = document.getElementById('chartMsg');
-      if(!name) { chartMsg.innerText = "이름을 입력해주세요."; return; }
+      const logContainer = document.getElementById('logContainer');
+      
+      if(!name) { 
+        chartMsg.innerText = "이름을 입력해주세요."; 
+        logContainer.style.display = 'none';
+        return; 
+      }
 
-      // 해당 학생의 3-3-3 기록 로그만 필터링 (과거순)
-      const studentLogs = logData.filter(log => log['이름'] === name && log['종목'] === '3-3-3' && log['승인상태'] === '승인완료');
+      // 해당 학생 & 선택 종목 로그만 필터링 (승인 완료된 기록만)
+      let studentLogs = logData.filter(log => log['이름'] === name && log['종목'] === eventName && log['승인상태'].includes('승인완료'));
       
       if(studentLogs.length === 0) {
-        chartMsg.innerText = `${name} 학생의 3-3-3 측정 데이터가 없습니다.`;
+        chartMsg.innerText = `${name} 학생의 ${eventName} 측정 데이터가 없습니다.`;
         if(growthChartInstance) growthChartInstance.destroy();
+        logContainer.style.display = 'none';
         return;
       }
-      chartMsg.innerText = `${name} 학생의 3-3-3 성장 그래프입니다. (제출일 기준)`;
 
-      const labels = studentLogs.map(log => new Date(log['타임스탬프']).toLocaleDateString().slice(5)); // 날짜(월/일)
-      const dataPoints = studentLogs.map(log => parseFloat(log['측정기록']));
+      // 최신순 정렬 (내림차순 - 리스트 표시용)
+      studentLogs.sort((a, b) => new Date(b['타임스탬프']) - new Date(a['타임스탬프']));
+      currentStudentLogs = studentLogs;
+      isExpanded = false; // 검색 시 항상 접힌 상태로 초기화
 
+      chartMsg.innerText = `${name} 학생의 ${eventName} 성장 그래프입니다. (제출일 기준)`;
+
+      // 차트용 데이터 가공 (과거순 오름차순으로 보여주기 위해 reverse 복사)
+      const chartLogs = [...studentLogs].reverse();
+      const labels = chartLogs.map(log => {
+        const d = new Date(log['타임스탬프']);
+        return `${d.getMonth()+1}/${d.getDate()}`;
+      });
+      const dataPoints = chartLogs.map(log => parseFloat(log['측정기록']));
+
+      // 차트 그리기
       const ctx = document.getElementById('growthChart').getContext('2d');
-      if(growthChartInstance) growthChartInstance.destroy(); // 기존 차트 초기화
+      if(growthChartInstance) growthChartInstance.destroy(); 
 
       growthChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
           labels: labels,
           datasets: [{
-            label: '3-3-3 기록 (초)',
+            label: `${eventName} 기록 (초)`,
             data: dataPoints,
             borderColor: '#3b82f6',
             backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -201,10 +253,52 @@
         options: {
           responsive: true,
           scales: {
-            y: { reverse: true, title: { display: true, text: '기록 (낮을수록 좋음)' } } // 기록은 낮을수록 위로 향하게 설정
+            y: { reverse: true, title: { display: true, text: '기록 (낮을수록 좋음)' } }
           }
         }
       });
+
+      // 상세 로그 리스트 렌더링
+      logContainer.style.display = 'block';
+      renderLogList();
+    }
+
+    // 상세 로그 리스트 그리기 함수
+    function renderLogList() {
+      const ul = document.getElementById('logList');
+      const expandBtn = document.getElementById('expandBtn');
+      ul.innerHTML = '';
+      
+      // 펼치기 상태에 따라 보여줄 개수 결정 (기본 5개)
+      const displayCount = isExpanded ? currentStudentLogs.length : Math.min(5, currentStudentLogs.length);
+      
+      for(let i = 0; i < displayCount; i++) {
+        const log = currentStudentLogs[i];
+        const d = new Date(log['타임스탬프']);
+        // 날짜 포맷 (예: 2026.10.13 14:30)
+        const dateStr = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+        
+        ul.innerHTML += `
+          <li class="log-item">
+            <span class="log-date">${dateStr}</span>
+            <span class="log-score">${parseFloat(log['측정기록']).toFixed(3)}초</span>
+          </li>
+        `;
+      }
+      
+      // 5개 이상일 경우 더보기 버튼 표시 및 텍스트 전환
+      if(currentStudentLogs.length > 5) {
+        expandBtn.style.display = 'block';
+        expandBtn.innerText = isExpanded ? '접기 ▲' : `더보기 ▼ (총 ${currentStudentLogs.length}개 기록 펼치기)`;
+      } else {
+        expandBtn.style.display = 'none';
+      }
+    }
+
+    // 더보기 버튼 클릭 시 동작
+    function toggleExpand() {
+      isExpanded = !isExpanded;
+      renderLogList();
     }
   </script>
 </body>
