@@ -11,11 +11,12 @@
     h1 { margin: 0; font-size: 24px; color: #0f172a; }
     .logout-btn { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
     
-    .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
     @media (max-width: 800px) { .dashboard-grid { grid-template-columns: 1fr; } }
     
     .panel { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-    h2 { margin-top: 0; font-size: 18px; color: #334155; border-left: 4px solid #3b82f6; padding-left: 8px; }
+    h2 { margin-top: 0; font-size: 18px; color: #334155; border-left: 4px solid #3b82f6; padding-left: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .count-badge { font-size: 13px; font-weight: 600; color: #3b82f6; background: #eff6ff; padding: 4px 10px; border-radius: 20px; }
     
     /* 랭킹 테이블 */
     table { width: 100%; border-collapse: collapse; text-align: center; margin-top: 12px; }
@@ -66,9 +67,12 @@
     </div>
 
     <div class="dashboard-grid">
-      <!-- 패널 1: 종목별 명예의 전당 -->
+      <!-- 패널 1: 종목별 명예의 전당 (전체 학생 표시) -->
       <div class="panel">
-        <h2>🏆 종목별 통합 랭킹보드</h2>
+        <h2>
+          <span>🏆 종목별 통합 랭킹보드</span>
+          <span id="rankingCount" class="count-badge">총 0명</span>
+        </h2>
         <div class="filter-bar">
           <select id="eventFilter" onchange="renderRanking()">
             <option value="3-3-3">3-3-3</option>
@@ -115,7 +119,7 @@
   </div>
 
   <script>
-    // ★★★ 구글 Apps Script 웹 앱 URL (exec로 끝나는 주소) ★★★
+    // ★★★ 구글 Apps Script 웹 앱 URL ★★★
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2ABEw49MhLsZ750gZwc98vOH7lVyFmVyQ8EslfgZjs4a_II4fuAoGjHqsz4CKHGY/exec'; 
     
     let bestData = [];
@@ -170,18 +174,22 @@
       if (hasPending) document.getElementById('alertBox').style.display = 'block';
     }
 
-    // 랭킹 렌더링
+    // 랭킹 렌더링 (전체 학생 표시)
     function renderRanking() {
       const event = document.getElementById('eventFilter').value;
       
-      let validRecords = bestData.filter(row => row[event] !== '' && !isNaN(parseFloat(row[event])));
+      let validRecords = bestData.filter(row => row[event] !== '' && row[event] !== '-' && !isNaN(parseFloat(row[event])));
       validRecords.sort((a, b) => parseFloat(a[event]) - parseFloat(b[event]));
       
-      // 상위 10명 표시
-      const top10 = validRecords.slice(0, 10);
+      document.getElementById('rankingCount').innerText = `총 ${validRecords.length}명`;
       const tbody = document.getElementById('rankingBody');
       
-      tbody.innerHTML = top10.map((r, idx) => {
+      if (validRecords.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="color:#94a3b8; padding:24px;">아직 등록된 기록이 없습니다.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = validRecords.map((r, idx) => {
         const rank = idx + 1;
         let rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
         return `<tr>
