@@ -2,7 +2,6 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>스포츠스태킹 자율 기록실</title>
   <style>
     * { box-sizing: border-box; }
@@ -184,7 +183,7 @@
       margin-top: 8px;
     }
 
-    /* ★ 가요 인기차트 스타일 실시간 TOP 5 영역 ★ */
+    /* 🎵 가요 차트 스타일 실시간 랭킹보드 */
     .chart-header {
       display: flex;
       justify-content: space-between;
@@ -194,118 +193,113 @@
     .chart-title {
       font-size: 18px;
       font-weight: 800;
-      color: #14532d;
-      margin: 0;
+      color: #0f172a;
       display: flex;
       align-items: center;
       gap: 6px;
     }
     .live-badge {
-      background: #ef4444;
-      color: white;
+      background: #fee2e2;
+      color: #dc2626;
       font-size: 11px;
       font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 50px;
+      padding: 2px 8px;
+      border-radius: 12px;
       letter-spacing: 0.5px;
-      animation: pulse 2s infinite;
+      animation: pulse 1.5s infinite;
     }
     @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.6; }
-      100% { opacity: 1; }
-    }
-    
-    .chart-tabs {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      margin-bottom: 16px;
-    }
-    .chart-tab {
-      padding: 8px 6px;
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #166534;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.15s;
-    }
-    .chart-tab.active {
-      background: #16a34a;
-      color: white;
-      border-color: #15803d;
-      font-weight: 800;
-      box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
     }
 
+    /* 차트 종목 탭 */
+    .chart-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      scrollbar-width: none;
+    }
+    .chart-tabs::-webkit-scrollbar { display: none; }
+    .tab-chip {
+      flex: 0 0 auto;
+      padding: 6px 12px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-chip.active {
+      background: #16a34a;
+      color: white;
+      border-color: #16a34a;
+    }
+
+    /* 차트 리스트 */
     .chart-list {
       list-style: none;
       padding: 0;
       margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
     .chart-item {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 12px 14px;
+      padding: 10px 14px;
       border-radius: 10px;
-      margin-bottom: 8px;
       background: #f8fafc;
       border: 1px solid #e2e8f0;
-      transition: transform 0.15s;
+      transition: transform 0.15s ease;
     }
-    .chart-item:last-child { margin-bottom: 0; }
-    .chart-item.top-1 {
-      background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%);
-      border-color: #fde047;
+    .chart-item:hover {
+      transform: translateX(4px);
+      background: #f1f5f9;
     }
-    .chart-item.top-2 {
-      background: #f8fafc;
-      border-color: #cbd5e1;
-    }
-    .chart-item.top-3 {
-      background: #fffbeb;
-      border-color: #fde68a;
-    }
-
-    .chart-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .rank-num {
+    .chart-rank {
+      width: 32px;
       font-size: 16px;
       font-weight: 900;
-      width: 28px;
       text-align: center;
-      color: #475569;
+      margin-right: 10px;
     }
-    .player-info {
+    .rank-1-badge { color: #d97706; font-size: 18px; }
+    .rank-2-badge { color: #64748b; font-size: 18px; }
+    .rank-3-badge { color: #b45309; font-size: 18px; }
+    .rank-etc-badge { color: #94a3b8; font-size: 14px; }
+
+    .chart-info {
+      flex: 1;
       display: flex;
       flex-direction: column;
     }
-    .player-name {
+    .chart-student-name {
       font-size: 15px;
-      font-weight: 800;
-      color: #0f172a;
+      font-weight: 700;
+      color: #1e293b;
     }
-    .player-class {
+    .chart-student-class {
       font-size: 12px;
       color: #64748b;
-      font-weight: 600;
     }
     .chart-record {
-      font-size: 17px;
-      font-weight: 900;
+      font-size: 16px;
+      font-weight: 800;
       color: #15803d;
-      background: white;
-      padding: 4px 10px;
-      border-radius: 8px;
-      border: 1px solid #dcfce7;
+      letter-spacing: -0.3px;
+    }
+    .chart-empty {
+      text-align: center;
+      padding: 24px;
+      color: #94a3b8;
+      font-size: 14px;
     }
 
     /* 직접 접속 차단용 잠금 화면 */
@@ -344,6 +338,7 @@
       <button onclick="adminLogin()" class="admin-btn">👨‍🏫 관리자</button>
     </div>
 
+    <!-- 1. 기록 조회 카드 -->
     <div class="card">
       <h1>⏱️ 스포츠스태킹 자율 기록실</h1>
       <p style="text-align:center; color:#15803d; font-size:14px; margin-top:0;">본인의 정보를 입력하고 최고 기록을 조회하세요.</p>
@@ -357,11 +352,10 @@
       <div id="loadingMsg">기록을 불러오는 중입니다... 🚀</div>
     </div>
 
-    <!-- 조회 완료 시 나타나는 영역 (내 최고기록 + 새 기록 입력칸) -->
+    <!-- 2. 조회 완료 시 나타나는 개인 기록판 및 입력창 -->
     <div class="card" id="recordBoard">
       <h2 style="font-size: 18px; text-align: center; margin-top: 0; color:#14532d;">🏆 <span id="displayInfo"></span>의 최고 기록</h2>
       
-      <!-- 최고 기록 표시 영역 -->
       <div class="record-grid">
         <div class="record-item" id="card-3-3-3"><div class="record-title">3-3-3</div><div class="record-score" id="score-3-3-3">기록 없음</div></div>
         <div class="record-item" id="card-3-6-3"><div class="record-title">3-6-3</div><div class="record-score" id="score-3-6-3">기록 없음</div></div>
@@ -386,17 +380,263 @@
           <input type="number" step="0.001" id="newScore" class="score-input" placeholder="0.000 (초)" onkeypress="if(event.key==='Enter') submitRecord()">
           <button class="btn-submit" onclick="submitRecord()">기록 갱신!</button>
         </div>
-        <div id="syncStatus">☁️ 구글 시트와 동기화 중...</div>
+        <div id="syncStatus">☁️ 구글 시트로 안전하게 전송 중...</div>
       </div>
     </div>
 
-    <!-- ★ 하단 상시 노출: 실시간 종목별 TOP 5 인기차트 ★ -->
-    <div class="card" id="liveChartCard">
+    <!-- 3. 실시간 가요 인기차트 스타일 TOP 5 랭킹보드 -->
+    <div class="card">
       <div class="chart-header">
-        <h2 class="chart-title">🏆 실시간 종목별 TOP 5</h2>
-        <span class="live-badge">LIVE 차트</span>
+        <div class="chart-title">
+          <span>🔥 실시간 TOP 5 랭킹차트</span>
+          <span class="live-badge">LIVE</span>
+        </div>
+        <span style="font-size:12px; color:#64748b;" id="chartUpdateNotice">실시간 연동 중</span>
       </div>
+
+      <!-- 종목 선택 칩 -->
+      <div class="chart-tabs">
+        <button class="tab-chip active" onclick="switchChartTab('3-3-3', this)">3-3-3</button>
+        <button class="tab-chip" onclick="switchChartTab('3-6-3', this)">3-6-3</button>
+        <button class="tab-chip" onclick="switchChartTab('사이클', this)">사이클</button>
+        <button class="tab-chip" onclick="switchChartTab('더블', this)">더블</button>
+        <button class="tab-chip" onclick="switchChartTab('3-6-3릴레이', this)">3-6-3릴레이</button>
+        <button class="tab-chip" onclick="switchChartTab('사이클릴레이', this)">사이클릴레이</button>
+      </div>
+
+      <!-- TOP 5 리스트 -->
+      <ul class="chart-list" id="chartList">
+        <li class="chart-empty">순위 데이터를 불러오는 중입니다... 🎵</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <script>
+    const CORRECT_CODE = 'pr5811';
+    // 구글 Apps Script 웹 앱 URL
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2ABEw49MhLsZ750gZwc98vOH7lVyFmVyQ8EslfgZjs4a_II4fuAoGjHqsz4CKHGY/exec'; 
+    
+    let currentEvent = '3-3-3';
+    let currentChartEvent = '3-3-3';
+    let allBestRecords = []; // 실시간 차트 계산용 전체 학생 최고기록
+
+    // 보안 검증 및 초기 데이터 로드
+    document.addEventListener('DOMContentLoaded', () => {
+      if (sessionStorage.getItem('school_verified') === 'true') {
+        document.getElementById('mainApp').style.display = 'block';
+        loadChartData(); // 페이지 접속 시 차트 데이터 즉시 호출
+      } else {
+        document.getElementById('lockScreen').style.display = 'block';
+      }
+    });
+
+    function unlockDirectly() {
+      const code = document.getElementById('directCodeInput').value.trim();
+      if (code === CORRECT_CODE) {
+        sessionStorage.setItem('school_verified', 'true');
+        document.getElementById('lockScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        loadChartData();
+      } else {
+        alert('❌ 잘못된 학교 코드입니다. 메인 페이지로 이동합니다.');
+        window.location.href = 'index.html';
+      }
+    }
+    
+    function adminLogin() {
+      const pw = prompt("관리자 비밀번호를 입력하세요.");
+      if (pw === 'kimko1234') {
+        sessionStorage.setItem('admin_verified', 'true');
+        window.location.href = 'admin-dashboard.html';
+      } else if (pw !== null) {
+        alert("비밀번호가 일치하지 않습니다.");
+      }
+    }
+
+    function formatScore(scoreValue) {
+      if (!scoreValue || scoreValue === '-' || scoreValue === '') {
+        return '<span class="record-empty">기록 없음</span>';
+      }
+      return parseFloat(scoreValue).toFixed(3) + '초';
+    }
+
+    // 1. 실시간 차트 데이터 로드
+    function loadChartData() {
+      fetch(SCRIPT_URL + '?action=getAdminData')
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.best && data.best.length > 1) {
+            const headers = data.best[0];
+            allBestRecords = data.best.slice(1).map(row => {
+              let obj = {};
+              headers.forEach((h, i) => obj[h] = row[i]);
+              return obj;
+            });
+            renderTop5Chart(currentChartEvent);
+          } else {
+            document.getElementById('chartList').innerHTML = `<li class="chart-empty">아직 등록된 기록이 없습니다. 첫 1위에 도전해보세요! 🚀</li>`;
+          }
+        })
+        .catch(err => {
+          console.error('Chart Data Error:', err);
+          document.getElementById('chartList').innerHTML = `<li class="chart-empty">차트를 불러오지 못했습니다.</li>`;
+        });
+    }
+
+    // 2. 탭 전환
+    function switchChartTab(eventName, element) {
+      currentChartEvent = eventName;
+      document.querySelectorAll('.tab-chip').forEach(btn => btn.classList.remove('active'));
+      element.classList.add('active');
+      renderTop5Chart(eventName);
+    }
+
+    // 3. 종목별 TOP 5 렌더링
+    function renderTop5Chart(eventName) {
+      const chartList = document.getElementById('chartList');
+      if (allBestRecords.length === 0) return;
+
+      // 유효한 기록 필터링 및 오름차순(기록 빠른 순) 정렬
+      let ranked = allBestRecords.filter(r => r[eventName] && r[eventName] !== '-' && !isNaN(parseFloat(r[eventName])));
+      ranked.sort((a, b) => parseFloat(a[eventName]) - parseFloat(b[eventName]));
+
+      const top5 = ranked.slice(0, 5);
+
+      if (top5.length === 0) {
+        chartList.innerHTML = `<li class="chart-empty">✨ 아직 ${eventName} 종목의 기록이 없습니다. 최초 1위에 도전해보세요!</li>`;
+        return;
+      }
+
+      chartList.innerHTML = top5.map((r, idx) => {
+        let rankBadge = '';
+        if (idx === 0) rankBadge = '<span class="rank-1-badge">🥇 1</span>';
+        else if (idx === 1) rankBadge = '<span class="rank-2-badge">🥈 2</span>';
+        else if (idx === 2) rankBadge = '<span class="rank-3-badge">🥉 3</span>';
+        else rankBadge = `<span class="rank-etc-badge">${idx + 1}</span>`;
+
+        return `
+          <li class="chart-item">
+            <div class="chart-rank">${rankBadge}</div>
+            <div class="chart-info">
+              <span class="chart-student-name">${r['이름']}</span>
+              <span class="chart-student-class">${r['학년']}학년 ${r['반']}반</span>
+            </div>
+            <div class="chart-record">${parseFloat(r[eventName]).toFixed(3)}s</div>
+          </li>
+        `;
+      }).join('');
+    }
+
+    // 학생 개인 기록 조회
+    function searchRecord() {
+      const grade = document.getElementById('grade').value.trim();
+      const cls = document.getElementById('cls').value.trim();
+      const name = document.getElementById('name').value.trim();
+
+      if(!grade || !cls || !name) { alert('학년, 반, 이름을 모두 입력해주세요!'); return; }
+
+      document.getElementById('loadingMsg').style.display = 'block';
+      document.getElementById('recordBoard').style.display = 'none';
       
-      <div class="chart-tabs" id="chartTabs">
-        <div class="chart-tab active" onclick="switchChartTab('3-3-3', this)">3-3-3</div>
-        <div class="chart-
+      const query = `?grade=${encodeURIComponent(grade)}&class=${encodeURIComponent(cls)}&name=${encodeURIComponent(name)}`;
+      
+      fetch(SCRIPT_URL + query, {
+        method: 'GET',
+        redirect: 'follow'
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('서버 응답 오류');
+        return res.json();
+      })
+      .then(data => {
+        document.getElementById('loadingMsg').style.display = 'none';
+        document.getElementById('displayInfo').innerText = `${grade}학년 ${cls}반 ${name}`;
+        document.getElementById('recordBoard').style.display = 'block';
+        
+        if (data && typeof data === 'object') {
+          document.getElementById('score-3-3-3').innerHTML = formatScore(data['3-3-3']);
+          document.getElementById('score-3-6-3').innerHTML = formatScore(data['3-6-3']);
+          document.getElementById('score-사이클').innerHTML = formatScore(data['사이클']);
+          document.getElementById('score-더블').innerHTML = formatScore(data['더블']);
+          document.getElementById('score-3-6-3릴레이').innerHTML = formatScore(data['3-6-3릴레이']);
+          document.getElementById('score-사이클릴레이').innerHTML = formatScore(data['사이클릴레이']);
+        } else {
+          ['3-3-3', '3-6-3', '사이클', '더블', '3-6-3릴레이', '사이클릴레이'].forEach(ev => {
+            document.getElementById(`score-${ev}`).innerHTML = '<span class="record-empty">기록 없음</span>';
+          });
+          alert('환영합니다! 아직 등록된 기록이 없습니다. 새로운 최고 기록을 달성하고 하단에 등록해보세요.');
+        }
+
+        // 개인 기록판으로 부드럽게 스크롤 이동
+        document.getElementById('recordBoard').scrollIntoView({ behavior: 'smooth' });
+      })
+      .catch(err => {
+        console.error('Fetch Error:', err);
+        document.getElementById('loadingMsg').style.display = 'none';
+        alert('데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+      });
+    }
+
+    function selectEvent(eventName, element) {
+      currentEvent = eventName;
+      document.querySelectorAll('.event-btn').forEach(btn => btn.classList.remove('selected'));
+      element.classList.add('selected');
+    }
+
+    // 낙관적 업데이트(Optimistic Update) 제출
+    function submitRecord() {
+      const grade = document.getElementById('grade').value.trim();
+      const cls = document.getElementById('cls').value.trim();
+      const name = document.getElementById('name').value.trim();
+      const scoreInput = document.getElementById('newScore');
+      const score = scoreInput.value.trim();
+
+      if(!score) { alert('측정된 기록을 입력해주세요!'); return; }
+
+      const numScore = parseFloat(score);
+      const scoreElement = document.getElementById(`score-${currentEvent}`);
+      const cardElement = document.getElementById(`card-${currentEvent}`);
+      const syncStatus = document.getElementById('syncStatus');
+
+      // 기존 값 백업
+      const previousHTML = scoreElement.innerHTML;
+
+      // 0초 즉시 반영
+      scoreElement.innerHTML = `${numScore.toFixed(3)}초`;
+      cardElement.classList.add('record-highlight');
+      setTimeout(() => cardElement.classList.remove('record-highlight'), 1000);
+
+      scoreInput.value = '';
+      syncStatus.style.display = 'block';
+      syncStatus.innerText = '☁️ 구글 시트로 안전하게 전송 중...';
+
+      const payload = { grade: grade, cls: cls, name: name, event: currentEvent, score: score };
+
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+        redirect: 'follow'
+      })
+      .then(res => res.json())
+      .then(res => {
+        if(res.status === '승인완료') {
+          syncStatus.innerText = '✅ 구글 시트 저장 완료!';
+          setTimeout(() => { syncStatus.style.display = 'none'; }, 2000);
+          loadChartData(); // 신기록 등록 즉시 하단 TOP 5 차트도 다시 갱신
+        } else {
+          syncStatus.style.display = 'none';
+          alert('🚨 입력하신 기록이 너무 빨라 [승인 대기] 상태로 접수되었습니다. 선생님 확인 후 최종 반영됩니다.');
+        }
+      })
+      .catch(err => {
+        console.error('Submit Error:', err);
+        scoreElement.innerHTML = previousHTML;
+        syncStatus.style.display = 'none';
+        alert('❌ 인터넷 연결 불안정으로 기록 전송에 실패했습니다. 다시 시도해주세요.');
+      });
+    }
+  </script>
+</body>
+</html>
