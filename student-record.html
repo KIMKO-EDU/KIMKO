@@ -87,10 +87,102 @@
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: background 0.15s, opacity 0.15s;
     }
     .btn-search:hover { background: #15803d; }
+    .btn-search:disabled {
+      background: #86efac;
+      cursor: not-allowed;
+    }
     
+    /* =========================================
+       [추가 1] 개인 기록 조회용: 스태킹 컵 바운스 로더
+       ========================================= */
+    #loadingMsg {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-top: 18px;
+      padding: 16px;
+      background: #f0fdf4;
+      border-radius: 12px;
+      border: 1px dashed #bbf7d0;
+    }
+    .cup-loader {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: flex-end;
+      height: 32px;
+    }
+    .cup-icon {
+      width: 22px;
+      height: 26px;
+      /* 스태킹 컵 모양 (윗부분이 살짝 좁은 사다리꼴) */
+      clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
+      border-radius: 2px;
+      animation: cupBounce 0.6s infinite ease-in-out alternate;
+    }
+    .cup-icon:nth-child(1) { background: #16a34a; animation-delay: 0s; }
+    .cup-icon:nth-child(2) { background: #22c55e; animation-delay: 0.15s; }
+    .cup-icon:nth-child(3) { background: #15803d; animation-delay: 0.3s; }
+
+    @keyframes cupBounce {
+      0% { transform: translateY(0) scaleY(0.95); }
+      100% { transform: translateY(-10px) scaleY(1.05); }
+    }
+
+    .loading-text {
+      color: #166534;
+      font-weight: 700;
+      font-size: 14px;
+      text-align: center;
+    }
+    /* 점 3개 순차 애니메이션 */
+    .dots::after {
+      content: '';
+      display: inline-block;
+      width: 18px;
+      text-align: left;
+      animation: dotSteps 1.5s infinite steps(4, end);
+    }
+    @keyframes dotSteps {
+      0% { content: ''; }
+      25% { content: '.'; }
+      50% { content: '..'; }
+      75%, 100% { content: '...'; }
+    }
+
+    /* =========================================
+       [추가 2] 실시간 차트용: 스켈레톤 UI (Shimmer)
+       ========================================= */
+    .skeleton-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      height: 58px;
+    }
+    .sk-box {
+      background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite linear;
+      border-radius: 6px;
+    }
+    .sk-rank { width: 24px; height: 24px; margin-right: 14px; border-radius: 50%; }
+    .sk-info { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .sk-name { width: 70px; height: 15px; }
+    .sk-class { width: 50px; height: 11px; }
+    .sk-record { width: 55px; height: 20px; }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
     /* 기록판 및 입력 영역 */
     #recordBoard { display: none; }
     
@@ -171,8 +263,6 @@
       transition: background 0.15s;
     }
     .btn-submit:hover { background: #ca8a04; }
-    
-    #loadingMsg { text-align: center; color: #166534; font-weight: bold; display: none; margin-top: 10px; }
 
     /* 백그라운드 동기화 상태 배지 */
     #syncStatus {
@@ -348,8 +438,19 @@
         <input type="number" id="cls" placeholder="반">
         <input type="text" id="name" placeholder="이름 (예:홍길동)" onkeypress="if(event.key==='Enter') searchRecord()">
       </div>
-      <button class="btn-search" onclick="searchRecord()">🔍 내 기록 조회하기</button>
-      <div id="loadingMsg">기록을 불러오는 중입니다... 🚀</div>
+      <button class="btn-search" id="searchBtn" onclick="searchRecord()">🔍 내 기록 조회하기</button>
+      
+      <!-- 스태킹 컵 3개 바운스 로더 -->
+      <div id="loadingMsg">
+        <div class="cup-loader">
+          <div class="cup-icon"></div>
+          <div class="cup-icon"></div>
+          <div class="cup-icon"></div>
+        </div>
+        <div class="loading-text">
+          <span id="loadingTextContent">내 최고 기록을 열심히 찾고 있어요</span><span class="dots"></span>
+        </div>
+      </div>
     </div>
 
     <!-- 2. 조회 완료 시 나타나는 개인 기록판 및 입력창 -->
@@ -406,7 +507,7 @@
 
       <!-- TOP 5 리스트 -->
       <ul class="chart-list" id="chartList">
-        <li class="chart-empty">순위 데이터를 불러오는 중입니다... 🎵</li>
+        <!-- 자바스크립트에서 스켈레톤 UI로 초기화됨 -->
       </ul>
     </div>
 
@@ -420,6 +521,7 @@
     let currentEvent = '3-3-3';
     let currentChartEvent = '3-3-3';
     let allBestRecords = []; // 실시간 차트 계산용 전체 학생 최고기록
+    let searchDelayTimer = null; // 5초 지연 안내용 타이머
 
     // 보안 검증 및 초기 데이터 로드
     document.addEventListener('DOMContentLoaded', () => {
@@ -461,11 +563,39 @@
       return parseFloat(scoreValue).toFixed(3) + '초';
     }
 
+    // 스켈레톤 UI HTML 생성 함수 (TOP 5 모양)
+    function showChartSkeleton() {
+      const chartList = document.getElementById('chartList');
+      const notice = document.getElementById('chartUpdateNotice');
+      notice.innerHTML = '데이터 불러오는 중<span class="dots"></span>';
+
+      let skeletonHTML = '';
+      for (let i = 0; i < 5; i++) {
+        skeletonHTML += `
+          <li class="skeleton-item">
+            <div class="sk-box sk-rank"></div>
+            <div class="sk-info">
+              <div class="sk-box sk-name"></div>
+              <div class="sk-box sk-class"></div>
+            </div>
+            <div class="sk-box sk-record"></div>
+          </li>
+        `;
+      }
+      chartList.innerHTML = skeletonHTML;
+    }
+
     // 1. 실시간 차트 데이터 로드
     function loadChartData() {
+      // 데이터가 아직 없을 때(초기 입장 시)만 스켈레톤 표시
+      if (allBestRecords.length === 0) {
+        showChartSkeleton();
+      }
+
       fetch(SCRIPT_URL + '?action=getAdminData')
         .then(res => res.json())
         .then(data => {
+          document.getElementById('chartUpdateNotice').innerText = '실시간 연동 완료';
           if (data && data.best && data.best.length > 1) {
             const headers = data.best[0];
             allBestRecords = data.best.slice(1).map(row => {
@@ -480,7 +610,8 @@
         })
         .catch(err => {
           console.error('Chart Data Error:', err);
-          document.getElementById('chartList').innerHTML = `<li class="chart-empty">차트를 불러오지 못했습니다.</li>`;
+          document.getElementById('chartUpdateNotice').innerText = '연동 오류';
+          document.getElementById('chartList').innerHTML = `<li class="chart-empty">차트를 불러오지 못했습니다. 새로고침 해주세요.</li>`;
         });
     }
 
@@ -533,11 +664,24 @@
       const grade = document.getElementById('grade').value.trim();
       const cls = document.getElementById('cls').value.trim();
       const name = document.getElementById('name').value.trim();
+      const searchBtn = document.getElementById('searchBtn');
+      const loadingMsg = document.getElementById('loadingMsg');
+      const loadingTextContent = document.getElementById('loadingTextContent');
 
       if(!grade || !cls || !name) { alert('학년, 반, 이름을 모두 입력해주세요!'); return; }
 
-      document.getElementById('loadingMsg').style.display = 'block';
+      // 중복 클릭 방지 및 컵 바운스 로더 활성화
+      searchBtn.disabled = true;
+      searchBtn.innerText = '⏳ 조회 중...';
+      loadingTextContent.innerText = `${name} 학생의 기록을 열심히 찾고 있어요`;
+      loadingMsg.style.display = 'flex';
       document.getElementById('recordBoard').style.display = 'none';
+
+      // 5초 이상 지연될 경우 안심 문구로 변경
+      clearTimeout(searchDelayTimer);
+      searchDelayTimer = setTimeout(() => {
+        loadingTextContent.innerText = '데이터가 조금 많네요! 거의 다 찾았으니 잠시만 기다려주세요 🙏';
+      }, 5000);
       
       const query = `?grade=${encodeURIComponent(grade)}&class=${encodeURIComponent(cls)}&name=${encodeURIComponent(name)}`;
       
@@ -550,7 +694,11 @@
         return res.json();
       })
       .then(data => {
-        document.getElementById('loadingMsg').style.display = 'none';
+        clearTimeout(searchDelayTimer);
+        loadingMsg.style.display = 'none';
+        searchBtn.disabled = false;
+        searchBtn.innerText = '🔍 내 기록 조회하기';
+
         document.getElementById('displayInfo').innerText = `${grade}학년 ${cls}반 ${name}`;
         document.getElementById('recordBoard').style.display = 'block';
         
@@ -572,8 +720,11 @@
         document.getElementById('recordBoard').scrollIntoView({ behavior: 'smooth' });
       })
       .catch(err => {
+        clearTimeout(searchDelayTimer);
         console.error('Fetch Error:', err);
-        document.getElementById('loadingMsg').style.display = 'none';
+        loadingMsg.style.display = 'none';
+        searchBtn.disabled = false;
+        searchBtn.innerText = '🔍 내 기록 조회하기';
         alert('데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
       });
     }
