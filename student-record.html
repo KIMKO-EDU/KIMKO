@@ -2,6 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <!-- [적용 1] 모바일 뷰포트 메타 태그 추가 (화면 강제 축소 방지 및 글자 크기 정상화) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>스포츠스태킹 자율 기록실</title>
   <style>
     * { box-sizing: border-box; }
@@ -12,6 +14,7 @@
       padding: 20px;
       max-width: 600px;
       margin: 0 auto;
+      -webkit-text-size-adjust: 100%; /* 모바일 가로/세로 전환 시 글자 크기 자동조절 방지 */
     }
     
     /* 상단 네비게이션 */
@@ -26,6 +29,7 @@
       color: #15803d;
       font-size: 14px;
       font-weight: 600;
+      padding: 6px 0;
     }
     .admin-btn {
       background: none;
@@ -34,6 +38,7 @@
       font-size: 13px;
       cursor: pointer;
       font-weight: 600;
+      padding: 6px 4px;
     }
 
     .card {
@@ -50,6 +55,7 @@
       font-size: 24px;
       margin-top: 0;
       margin-bottom: 16px;
+      word-break: keep-all;
     }
     
     /* 학생 정보 입력칸 */
@@ -60,16 +66,17 @@
       width: 100%;
     }
     .input-group input {
-      padding: 12px;
+      padding: 12px 8px;
       border: 1px solid #bbf7d0;
       border-radius: 8px;
-      font-size: 16px;
+      font-size: 16px; /* 16px 이상 유지하여 모바일 터치 시 화면 자동 줌인 방지 */
       text-align: center;
       min-width: 0;
+      min-height: 48px;
     }
     #grade { flex: 1; }
     #cls { flex: 1; }
-    #name { flex: 2.5; }
+    #name { flex: 2.2; }
     
     .input-group input:focus {
       outline: none;
@@ -81,12 +88,13 @@
       width: 100%;
       background: #16a34a;
       color: white;
-      padding: 14px;
+      padding: 15px;
       border: none;
       border-radius: 8px;
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
+      min-height: 50px;
       transition: background 0.15s, opacity 0.15s;
     }
     .btn-search:hover { background: #15803d; }
@@ -95,9 +103,7 @@
       cursor: not-allowed;
     }
     
-    /* =========================================
-       [추가 1] 개인 기록 조회용: 스태킹 컵 바운스 로더
-       ========================================= */
+    /* 개인 기록 조회용: 스태킹 컵 바운스 로더 */
     #loadingMsg {
       display: none;
       flex-direction: column;
@@ -119,7 +125,6 @@
     .cup-icon {
       width: 22px;
       height: 26px;
-      /* 스태킹 컵 모양 (윗부분이 살짝 좁은 사다리꼴) */
       clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
       border-radius: 2px;
       animation: cupBounce 0.6s infinite ease-in-out alternate;
@@ -138,8 +143,8 @@
       font-weight: 700;
       font-size: 14px;
       text-align: center;
+      word-break: keep-all;
     }
-    /* 점 3개 순차 애니메이션 */
     .dots::after {
       content: '';
       display: inline-block;
@@ -154,9 +159,7 @@
       75%, 100% { content: '...'; }
     }
 
-    /* =========================================
-       [추가 2] 실시간 차트용: 스켈레톤 UI (Shimmer)
-       ========================================= */
+    /* 실시간 차트용: 스켈레톤 UI (Shimmer) */
     .skeleton-item {
       display: flex;
       align-items: center;
@@ -195,16 +198,15 @@
     .record-item {
       background: #f0fdf4;
       border: 1px solid #bbf7d0;
-      padding: 12px;
+      padding: 12px 8px;
       border-radius: 8px;
       text-align: center;
       transition: all 0.3s ease;
     }
-    .record-title { font-size: 13px; color: #166534; font-weight: 600; margin-bottom: 4px; }
+    .record-title { font-size: 13px; color: #166534; font-weight: 600; margin-bottom: 4px; word-break: keep-all; }
     .record-score { font-size: 17px; font-weight: 800; color: #15803d; word-break: keep-all; }
     .record-empty { font-size: 14px; font-weight: 600; color: #94a3b8; }
 
-    /* 즉시 갱신 시 시각적 하이라이트 애니메이션 */
     .record-highlight {
       background: #dcfce7 !important;
       border-color: #16a34a !important;
@@ -218,11 +220,11 @@
       padding: 20px;
       border-radius: 12px;
     }
-    .submit-area h3 { margin: 0 0 12px 0; color: #854d0e; text-align: center; font-size: 16px; }
+    .submit-area h3 { margin: 0 0 12px 0; color: #854d0e; text-align: center; font-size: 16px; word-break: keep-all; }
     
     .event-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
     .event-btn {
-      padding: 10px;
+      padding: 12px 6px;
       background: white;
       border: 1px solid #fde047;
       border-radius: 6px;
@@ -230,6 +232,10 @@
       font-size: 14px;
       text-align: center;
       transition: all 0.15s;
+      word-break: keep-all;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .event-btn.selected {
       background: #eab308;
@@ -240,19 +246,21 @@
 
     .score-input-group { display: flex; gap: 8px; }
     .score-input {
-      flex: 2;
+      flex: 1.8;
       padding: 12px;
       border: 1px solid #fde047;
       border-radius: 8px;
       font-size: 18px;
       text-align: center;
+      min-width: 0;
+      min-height: 48px;
     }
     .score-input:focus {
       outline: none;
       border-color: #ca8a04;
     }
     .btn-submit {
-      flex: 1;
+      flex: 1.2;
       background: #eab308;
       color: white;
       border: none;
@@ -260,11 +268,11 @@
       font-weight: bold;
       font-size: 16px;
       cursor: pointer;
+      min-height: 48px;
       transition: background 0.15s;
     }
     .btn-submit:hover { background: #ca8a04; }
 
-    /* 백그라운드 동기화 상태 배지 */
     #syncStatus {
       display: none;
       text-align: center;
@@ -279,6 +287,8 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 6px;
     }
     .chart-title {
       font-size: 18px;
@@ -303,7 +313,6 @@
       50% { opacity: 0.5; }
     }
 
-    /* 차트 종목 탭 */
     .chart-tabs {
       display: flex;
       gap: 6px;
@@ -311,15 +320,16 @@
       padding-bottom: 8px;
       margin-bottom: 12px;
       scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
     }
     .chart-tabs::-webkit-scrollbar { display: none; }
     .tab-chip {
       flex: 0 0 auto;
-      padding: 6px 12px;
+      padding: 8px 14px;
       background: #f1f5f9;
       border: 1px solid #e2e8f0;
       border-radius: 20px;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
       color: #64748b;
       cursor: pointer;
@@ -331,7 +341,6 @@
       border-color: #16a34a;
     }
 
-    /* 차트 리스트 */
     .chart-list {
       list-style: none;
       padding: 0;
@@ -343,7 +352,7 @@
     .chart-item {
       display: flex;
       align-items: center;
-      padding: 10px 14px;
+      padding: 12px 14px;
       border-radius: 10px;
       background: #f8fafc;
       border: 1px solid #e2e8f0;
@@ -354,7 +363,7 @@
       background: #f1f5f9;
     }
     .chart-rank {
-      width: 32px;
+      width: 36px;
       font-size: 16px;
       font-weight: 900;
       text-align: center;
@@ -363,7 +372,7 @@
     .rank-1-badge { color: #d97706; font-size: 18px; }
     .rank-2-badge { color: #64748b; font-size: 18px; }
     .rank-3-badge { color: #b45309; font-size: 18px; }
-    .rank-etc-badge { color: #94a3b8; font-size: 14px; }
+    .rank-etc-badge { color: #94a3b8; font-size: 15px; }
 
     .chart-info {
       flex: 1;
@@ -371,25 +380,26 @@
       flex-direction: column;
     }
     .chart-student-name {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 700;
       color: #1e293b;
     }
     .chart-student-class {
-      font-size: 12px;
+      font-size: 13px;
       color: #64748b;
     }
     .chart-record {
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 800;
       color: #15803d;
       letter-spacing: -0.3px;
     }
     .chart-empty {
       text-align: center;
-      padding: 24px;
+      padding: 24px 12px;
       color: #94a3b8;
       font-size: 14px;
+      word-break: keep-all;
     }
 
     /* 직접 접속 차단용 잠금 화면 */
@@ -406,6 +416,50 @@
       text-align: center;
       margin-bottom: 12px;
       width: 200px;
+    }
+
+    /* ========================================================
+       [적용 2 & 3] 안드로이드/모바일 스마트폰 최적화 반응형 스타일
+       ======================================================== */
+    @media (max-width: 480px) {
+      body {
+        padding: 10px; /* 좌우 바깥 여백 축소로 화면 꽉 차게 */
+      }
+      .card {
+        padding: 18px 14px; /* 카드 내부 여백 최적화 */
+        border-radius: 14px;
+        margin-bottom: 14px;
+      }
+      h1 {
+        font-size: 21px;
+        margin-bottom: 12px;
+      }
+      /* 6개 종목 그리드를 3열 -> 2열로 전환하여 글자 잘림 방지 및 가독성 확대 */
+      .record-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+      .record-item {
+        padding: 12px 10px;
+      }
+      .record-title {
+        font-size: 14px;
+      }
+      .record-score {
+        font-size: 18px;
+      }
+      /* 종목 선택 버튼도 2열로 큼직하게 배치 */
+      .event-selector {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+      .event-btn {
+        font-size: 15px;
+        padding: 12px 8px;
+      }
+      .submit-area {
+        padding: 16px 12px;
+      }
     }
   </style>
 </head>
@@ -433,9 +487,10 @@
       <h1>⏱️ 스포츠스태킹 자율 기록실</h1>
       <p style="text-align:center; color:#15803d; font-size:14px; margin-top:0;">본인의 정보를 입력하고 최고 기록을 조회하세요.</p>
       
+      <!-- [적용 4] 모바일 숫자 키패드 자동 호출(inputmode="numeric") -->
       <div class="input-group">
-        <input type="number" id="grade" placeholder="학년">
-        <input type="number" id="cls" placeholder="반">
+        <input type="number" inputmode="numeric" id="grade" placeholder="학년">
+        <input type="number" inputmode="numeric" id="cls" placeholder="반">
         <input type="text" id="name" placeholder="이름 (예:홍길동)" onkeypress="if(event.key==='Enter') searchRecord()">
       </div>
       <button class="btn-search" id="searchBtn" onclick="searchRecord()">🔍 내 기록 조회하기</button>
@@ -478,7 +533,8 @@
           <div class="event-btn" onclick="selectEvent('사이클릴레이', this)">사이클릴레이</div>
         </div>
         <div class="score-input-group">
-          <input type="number" step="0.001" id="newScore" class="score-input" placeholder="0.000 (초)" onkeypress="if(event.key==='Enter') submitRecord()">
+          <!-- [적용 4] 모바일 소수점 키패드 자동 호출(inputmode="decimal") -->
+          <input type="number" step="0.001" inputmode="decimal" id="newScore" class="score-input" placeholder="0.000 (초)" onkeypress="if(event.key==='Enter') submitRecord()">
           <button class="btn-submit" onclick="submitRecord()">기록 갱신!</button>
         </div>
         <div id="syncStatus">☁️ 구글 시트로 안전하게 전송 중...</div>
@@ -587,7 +643,6 @@
 
     // 1. 실시간 차트 데이터 로드
     function loadChartData() {
-      // 데이터가 아직 없을 때(초기 입장 시)만 스켈레톤 표시
       if (allBestRecords.length === 0) {
         showChartSkeleton();
       }
@@ -628,7 +683,6 @@
       const chartList = document.getElementById('chartList');
       if (allBestRecords.length === 0) return;
 
-      // 유효한 기록 필터링 및 오름차순(기록 빠른 순) 정렬
       let ranked = allBestRecords.filter(r => r[eventName] && r[eventName] !== '-' && !isNaN(parseFloat(r[eventName])));
       ranked.sort((a, b) => parseFloat(a[eventName]) - parseFloat(b[eventName]));
 
@@ -670,14 +724,12 @@
 
       if(!grade || !cls || !name) { alert('학년, 반, 이름을 모두 입력해주세요!'); return; }
 
-      // 중복 클릭 방지 및 컵 바운스 로더 활성화
       searchBtn.disabled = true;
       searchBtn.innerText = '⏳ 조회 중...';
       loadingTextContent.innerText = `${name} 학생의 기록을 열심히 찾고 있어요`;
       loadingMsg.style.display = 'flex';
       document.getElementById('recordBoard').style.display = 'none';
 
-      // 5초 이상 지연될 경우 안심 문구로 변경
       clearTimeout(searchDelayTimer);
       searchDelayTimer = setTimeout(() => {
         loadingTextContent.innerText = '데이터가 조금 많네요! 거의 다 찾았으니 잠시만 기다려주세요 🙏';
@@ -716,7 +768,6 @@
           alert('환영합니다! 아직 등록된 기록이 없습니다. 새로운 최고 기록을 달성하고 하단에 등록해보세요.');
         }
 
-        // 개인 기록판으로 부드럽게 스크롤 이동
         document.getElementById('recordBoard').scrollIntoView({ behavior: 'smooth' });
       })
       .catch(err => {
@@ -750,10 +801,8 @@
       const cardElement = document.getElementById(`card-${currentEvent}`);
       const syncStatus = document.getElementById('syncStatus');
 
-      // 기존 값 백업
       const previousHTML = scoreElement.innerHTML;
 
-      // 0초 즉시 반영
       scoreElement.innerHTML = `${numScore.toFixed(3)}초`;
       cardElement.classList.add('record-highlight');
       setTimeout(() => cardElement.classList.remove('record-highlight'), 1000);
@@ -775,7 +824,7 @@
         if(res.status === '승인완료') {
           syncStatus.innerText = '✅ 구글 시트 저장 완료!';
           setTimeout(() => { syncStatus.style.display = 'none'; }, 2000);
-          loadChartData(); // 신기록 등록 즉시 하단 TOP 5 차트도 다시 갱신
+          loadChartData();
         } else {
           syncStatus.style.display = 'none';
           alert('🚨 입력하신 기록이 너무 빨라 [승인 대기] 상태로 접수되었습니다. 선생님 확인 후 최종 반영됩니다.');
