@@ -2,57 +2,284 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <!-- [적용 1] 모바일 뷰포트 메타 태그 추가 (화면 강제 축소 방지 및 글자 크기 정상화) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>스포츠스태킹 관리자 대시보드</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * { box-sizing: border-box; }
-    body { font-family: 'Pretendard', sans-serif; background: #f1f5f9; color: #1e293b; margin: 0; padding: 20px; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #e2e8f0; }
-    h1 { margin: 0; font-size: 24px; color: #0f172a; }
-    .logout-btn { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    body { 
+      font-family: 'Pretendard', sans-serif, -apple-system; 
+      background: #f1f5f9; 
+      color: #1e293b; 
+      margin: 0; 
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      -webkit-text-size-adjust: 100%;
+    }
     
-    .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
-    @media (max-width: 800px) { .dashboard-grid { grid-template-columns: 1fr; } }
+    /* 상단 헤더 */
+    .header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 24px; 
+      padding-bottom: 16px; 
+      border-bottom: 2px solid #e2e8f0; 
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    h1 { 
+      margin: 0; 
+      font-size: 24px; 
+      color: #0f172a; 
+      word-break: keep-all;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .back-link {
+      text-decoration: none;
+      color: #3b82f6;
+      font-weight: bold;
+      font-size: 15px;
+      padding: 8px 4px;
+    }
+    .logout-btn { 
+      background: #ef4444; 
+      color: white; 
+      border: none; 
+      padding: 10px 16px; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      font-weight: bold; 
+      font-size: 14px;
+      min-height: 40px;
+    }
     
-    .panel { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-    h2 { margin-top: 0; font-size: 18px; color: #334155; border-left: 4px solid #3b82f6; padding-left: 8px; display: flex; justify-content: space-between; align-items: center; }
-    .count-badge { font-size: 13px; font-weight: 600; color: #3b82f6; background: #eff6ff; padding: 4px 10px; border-radius: 20px; }
+    /* 대시보드 그리드 */
+    .dashboard-grid { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr; 
+      gap: 20px; 
+      align-items: start; 
+    }
+    @media (max-width: 860px) { 
+      .dashboard-grid { grid-template-columns: 1fr; } 
+    }
+    
+    .panel { 
+      background: white; 
+      border-radius: 14px; 
+      padding: 20px; 
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
+      border: 1px solid #e2e8f0;
+    }
+    h2 { 
+      margin-top: 0; 
+      font-size: 18px; 
+      color: #334155; 
+      border-left: 4px solid #3b82f6; 
+      padding-left: 10px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      gap: 8px;
+      word-break: keep-all;
+    }
+    .count-badge { 
+      font-size: 13px; 
+      font-weight: 700; 
+      color: #3b82f6; 
+      background: #eff6ff; 
+      padding: 4px 10px; 
+      border-radius: 20px; 
+      white-space: nowrap;
+    }
     
     /* 랭킹 테이블 */
-    table { width: 100%; border-collapse: collapse; text-align: center; margin-top: 12px; }
-    th, td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
-    th { background: #f8fafc; font-weight: 600; color: #475569; }
-    .rank-1 { color: #d97706; font-weight: bold; }
-    .rank-2 { color: #64748b; font-weight: bold; }
-    .rank-3 { color: #854d0e; font-weight: bold; }
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      text-align: center; 
+      margin-top: 12px; 
+    }
+    th, td { 
+      padding: 12px 8px; 
+      border-bottom: 1px solid #e2e8f0; 
+      font-size: 15px; 
+      word-break: keep-all;
+    }
+    th { 
+      background: #f8fafc; 
+      font-weight: 700; 
+      color: #475569; 
+      font-size: 14px;
+    }
+    .rank-1 { color: #d97706; font-weight: 800; }
+    .rank-2 { color: #64748b; font-weight: 800; }
+    .rank-3 { color: #854d0e; font-weight: 800; }
     
-    /* 검색 및 필터 */
-    .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; }
-    select, input { padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; flex: 1; }
-    .btn-action { padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    /* 검색 및 필터 (모바일 터치 최적화) */
+    .filter-bar { 
+      display: flex; 
+      gap: 8px; 
+      margin-bottom: 16px; 
+      width: 100%;
+    }
+    select, input { 
+      padding: 10px 12px; 
+      border: 1px solid #cbd5e1; 
+      border-radius: 8px; 
+      flex: 1; 
+      font-size: 16px; /* 모바일 터치 시 자동 확대 방지 및 가독성 확보 */
+      min-height: 46px;
+      min-width: 0;
+      background-color: #fff;
+    }
+    select:focus, input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+    }
+    .btn-action { 
+      padding: 10px 18px; 
+      background: #3b82f6; 
+      color: white; 
+      border: none; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      font-weight: bold; 
+      font-size: 16px;
+      min-height: 46px;
+      white-space: nowrap;
+    }
     .btn-action:hover { background: #2563eb; }
     
     /* 대기 알림 */
-    .alert-box { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px; border-radius: 8px; margin-bottom: 20px; display: none; }
+    .alert-box { 
+      background: #fef2f2; 
+      border: 1px solid #fecaca; 
+      color: #991b1b; 
+      padding: 14px; 
+      border-radius: 10px; 
+      margin-bottom: 20px; 
+      display: none; 
+      font-size: 14px;
+      line-height: 1.5;
+      word-break: keep-all;
+    }
     
-    #loading { text-align: center; font-size: 18px; font-weight: bold; padding: 40px; color: #3b82f6; }
+    #loading { 
+      text-align: center; 
+      font-size: 17px; 
+      font-weight: bold; 
+      padding: 40px 16px; 
+      color: #3b82f6; 
+      word-break: keep-all;
+    }
 
     /* 기록 로그 리스트 스타일 */
-    .log-list { list-style: none; padding: 0; margin: 0; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
-    .log-item { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 14px; background: #fff; }
+    .log-list { 
+      list-style: none; 
+      padding: 0; 
+      margin: 0; 
+      border: 1px solid #e2e8f0; 
+      border-radius: 8px; 
+      overflow: hidden; 
+    }
+    .log-item { 
+      padding: 14px 16px; 
+      border-bottom: 1px solid #e2e8f0; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      font-size: 15px; 
+      background: #fff; 
+    }
     .log-item:last-child { border-bottom: none; }
-    .log-date { color: #64748b; font-size: 13px; }
-    .log-score { font-weight: bold; color: #1d4ed8; font-size: 15px; }
-    .btn-expand { width: 100%; margin-top: 12px; padding: 12px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; color: #475569; font-weight: bold; transition: 0.2s; }
+    .log-date { color: #64748b; font-size: 14px; }
+    .log-score { font-weight: 800; color: #1d4ed8; font-size: 16px; }
+    .btn-expand { 
+      width: 100%; 
+      margin-top: 12px; 
+      padding: 14px; 
+      background: #f8fafc; 
+      border: 1px solid #cbd5e1; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      color: #475569; 
+      font-weight: bold; 
+      font-size: 15px;
+      transition: 0.2s; 
+    }
     .btn-expand:hover { background: #f1f5f9; }
+
+    /* ========================================================
+       [적용 2 & 3] 안드로이드/모바일 스마트폰 최적화 반응형 스타일
+       ======================================================== */
+    @media (max-width: 600px) {
+      body {
+        padding: 10px; /* 모바일 좌우 여백 최소화 */
+      }
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+      }
+      h1 {
+        font-size: 19px;
+        line-height: 1.35;
+      }
+      .header-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .dashboard-grid {
+        gap: 14px;
+      }
+      .panel {
+        padding: 16px 12px; /* 패널 내부 여백 축소로 표/차트 영역 확보 */
+        border-radius: 12px;
+      }
+      h2 {
+        font-size: 16px;
+      }
+      /* 학생 성장 검색바 모바일 비율 조정 */
+      .growth-filter-bar {
+        flex-wrap: wrap;
+      }
+      .growth-filter-bar input {
+        flex: 1 1 55%;
+      }
+      .growth-filter-bar select {
+        flex: 1 1 40%;
+      }
+      .growth-filter-bar .btn-action {
+        flex: 1 1 100%; /* 모바일에서 조회 버튼을 큼직하게 아래 한 줄로 배치 */
+      }
+      th, td {
+        padding: 10px 6px;
+        font-size: 14px;
+      }
+    }
   </style>
 </head>
 <body>
 
   <div class="header">
     <h1>👨‍🏫 광주푸른초등학교 스포츠스태킹 통합 관리 시스템</h1>
-    <div>
-      <a href="student-record.html" style="margin-right:12px; text-decoration:none; color:#3b82f6; font-weight:bold;">← 기록실로 가기</a>
+    <div class="header-actions">
+      <a href="student-record.html" class="back-link">← 기록실로 가기</a>
       <button class="logout-btn" onclick="logout()">로그아웃</button>
     </div>
   </div>
@@ -83,18 +310,20 @@
             <option value="사이클릴레이">사이클릴레이</option>
           </select>
         </div>
-        <table>
-          <thead><tr><th>순위</th><th>소속</th><th>이름</th><th>최고기록</th></tr></thead>
-          <tbody id="rankingBody"></tbody>
-        </table>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>순위</th><th>소속</th><th>이름</th><th>최고기록</th></tr></thead>
+            <tbody id="rankingBody"></tbody>
+          </table>
+        </div>
       </div>
 
       <!-- 패널 2: 개인별 성장 궤적 및 로그 -->
       <div class="panel">
         <h2>📈 학생별 성장 궤적 및 기록 로그</h2>
-        <div class="filter-bar">
+        <div class="filter-bar growth-filter-bar">
           <input type="text" id="searchName" placeholder="학생 이름 입력" onkeyup="if(event.key==='Enter') renderGrowth()">
-          <select id="growthEventFilter" style="flex: 0.5;">
+          <select id="growthEventFilter">
             <option value="3-3-3">3-3-3</option>
             <option value="3-6-3">3-6-3</option>
             <option value="사이클">사이클</option>
@@ -105,8 +334,8 @@
           <button class="btn-action" onclick="renderGrowth()">조회</button>
         </div>
         
-        <canvas id="growthChart" height="200"></canvas>
-        <p id="chartMsg" style="text-align:center; color:#64748b; font-size:13px; margin-bottom: 20px;"></p>
+        <canvas id="growthChart" height="220"></canvas>
+        <p id="chartMsg" style="text-align:center; color:#64748b; font-size:14px; margin-bottom: 20px; word-break: keep-all;"></p>
 
         <!-- 최근 기록 리스트 영역 -->
         <div id="logContainer" style="display:none;">
@@ -160,7 +389,7 @@
     }
 
     function parseSheetData(raw2DArray) {
-      if(raw2DArray.length <= 1) return [];
+      if(!raw2DArray || raw2DArray.length <= 1) return [];
       const headers = raw2DArray[0];
       return raw2DArray.slice(1).map(row => {
         let obj = {};
@@ -215,7 +444,7 @@
       }
 
       // 해당 학생 & 선택 종목 로그만 필터링 (승인 완료된 기록만)
-      let studentLogs = logData.filter(log => log['이름'] === name && log['종목'] === eventName && log['승인상태'].includes('승인완료'));
+      let studentLogs = logData.filter(log => log['이름'] === name && log['종목'] === eventName && log['승인상태'] && log['승인상태'].includes('승인완료'));
       
       if(studentLogs.length === 0) {
         chartMsg.innerText = `${name} 학생의 ${eventName} 측정 데이터가 없습니다.`;
@@ -255,7 +484,8 @@
             borderWidth: 3,
             tension: 0.3,
             fill: true,
-            pointBackgroundColor: '#1d4ed8'
+            pointBackgroundColor: '#1d4ed8',
+            pointRadius: 4
           }]
         },
         options: {
