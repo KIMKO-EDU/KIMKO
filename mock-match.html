@@ -160,6 +160,8 @@
       justify-content: space-between;
       align-items: center;
       margin: 4px 0;
+      flex-wrap: wrap;
+      gap: 4px;
     }
     .dot-group {
       display: flex;
@@ -262,7 +264,7 @@
       color: #dc2626;
       font-size: 11px;
       font-weight: 800;
-      padding: 3px 8px;
+      padding: 4px 8px;
       border-radius: 6px;
       border: 1px solid #fca5a5;
       z-index: 5;
@@ -527,7 +529,7 @@
 
   <!-- 상단 네비게이션 및 설정 바 -->
   <div class="top-bar">
-    <a href="student-record.html" class="back-btn">← 자율기록실로</a>
+    <a href="index.html" class="back-btn">← 메인 플랫폼으로</a>
     <div class="top-controls">
       <select id="aiLevelSelect" class="level-select" onchange="changeAILevel()">
         <option value="beginner">🌱 초급 AI</option>
@@ -797,13 +799,14 @@
       aiGameWins: 0,
       gameHistory: [],
 
-      // 4세트 전용 상태 (핑퐁 턴 & 1~3차 기회 공방전)
+      // 4세트 전용 상태 (상대 기록 돌파 전까지 연속 도전 + 3차 소진 시 조기 종료)
       set4: {
+        firstTeam: 'us',   // 선공 팀 ('us' 또는 'ai')
         turn: 'us',        // 현재 측정할 차례인 팀 ('us' 또는 'ai')
-        usAttempts: 3,     // 우리 팀 남은 기회 (3, 2, 1, 0)
-        aiAttempts: 3,     // AI 팀 남은 기회 (3, 2, 1, 0)
-        usRecords: [],     // 우리 팀 기록 배열 ([1차, 2차, 3차])
-        aiRecords: []      // AI 팀 기록 배열 ([1차, 2차, 3차])
+        usAttempts: 3,     // 우리 팀 남은 기회 (3 -> 2 -> 1 -> 0)
+        aiAttempts: 3,     // AI 팀 남은 기회 (3 -> 2 -> 1 -> 0)
+        usRecords: [],     // 우리 팀 측정 기록 배열
+        aiRecords: []      // AI 팀 측정 기록 배열
       },
 
       isRunning: false,
@@ -848,28 +851,49 @@
       const startBtn = document.getElementById('startMatchBtn');
       const judgeGuide = document.getElementById('judgeGuideText');
 
-      // 4세트 특수 UI (핑퐁 공방전 현황판)
+      // 4세트 특수 UI (실시간 타겟 기록 및 연속 도전 현황)
       if (state.currentSet === 4) {
         subGameRow.style.display = 'none';
         targetBadge.style.display = 'block';
 
-        const bestUs = state.set4.usRecords.length > 0 ? Math.min(...state.set4.usRecords).toFixed(3) + 's' : '기록 없음';
-        const bestAi = state.set4.aiRecords.length > 0 ? Math.min(...state.set4.aiRecords).toFixed(3) + 's' : '기록 없음';
-        targetBadge.innerText = `🟦 우리 최고: ${bestUs} | 🤖 AI 최고: ${bestAi}`;
+        const hasUs = state.set4.usRecords.length > 0;
+        const hasAi = state.set4.aiRecords.length > 0;
+        const bestUs = hasUs ? Math.min(...state.set4.usRecords) : null;
+        const bestAi = hasAi ? Math.min(...state.set4.aiRecords) : null;
 
-        const turnTeamName = state.set4.turn === 'us' ? '🟦 우리 팀' : '🤖 AI 팀';
-        const usAtts = '❤️'.repeat(state.set4.usAttempts);
-        const aiAtts = '❤️'.repeat(state.set4.aiAttempts);
+        const bestUsStr = bestUs !== null ? bestUs.toFixed(3) + 's' : '측정 전';
+        const bestAiStr = bestAi !== null ? bestAi.toFixed(3) + 's' : '측정 전';
 
-        roundTitleText.innerText = `4세트 핑퐁 턴: [${turnTeamName} 차례]`;
-        roundDots.innerHTML = `<span style="font-size:11px; font-weight:700;">우리 기회:${usAtts}(${state.set4.usAttempts}회) | AI 기회:${aiAtts}(${state.set4.aiAttempts}회)</span>`;
+        // 현재 깨야 할 최고 기록(Target) 표시
+        let currentLeaderText = '기준 기록 측정 대기';
+        if (bestUs !== null && bestAi === null) {
+          currentLeaderText = `🎯 돌파 목표(우리 팀 1위): ${bestUs.toFixed(3)}s 미만`;
+        } else if (bestAi !== null && bestUs === null) {
+          currentLeaderText = `🎯 돌파 목표(AI 팀 1위): ${bestAi.toFixed(3)}s 미만`;
+        } else if (bestUs !== null && bestAi !== null) {
+          if (bestUs < bestAi) currentLeaderText = `🎯 돌파 목표(우리 팀 리드): ${bestUs.toFixed(3)}s 미만`;
+          else currentLeaderText = `🎯 돌파 목표(AI 팀 리드): ${bestAi.toFixed(3)}s 미만`;
+        }
+        targetBadge.innerText = `${currentLeaderText} | (우리:${bestUsStr} / AI:${bestAiStr})`;
 
-        if (state.set4.turn === 'us') {
-          startBtn.innerText = `🚀 우리 팀 ${4 - state.set4.usAttempts}차 측정 출발 신호!`;
-          judgeGuide.innerText = `우리 팀의 차례입니다! 스태킹 측정 후 기록(초)을 입력해주세요. (남은 기회 ${state.set4.usAttempts}회)`;
+        const isUsTurn = state.set4.turn === 'us';
+        const turnOrderNum = isUsTurn ? (4 - state.set4.usAttempts) : (4 - state.set4.aiAttempts);
+        const turnTeamName = isUsTurn ? `🟦 우리 팀 [${turnOrderNum}차 시기]` : `🤖 AI 팀 [${turnOrderNum}차 시기]`;
+
+        const usAttHearts = '❤️'.repeat(state.set4.usAttempts) + '🖤'.repeat(3 - state.set4.usAttempts);
+        const aiAttHearts = '❤️'.repeat(state.set4.aiAttempts) + '🖤'.repeat(3 - state.set4.aiAttempts);
+
+        roundTitleText.innerText = `현재 차례: ${turnTeamName}`;
+        roundDots.innerHTML = `<span style="font-size:11px; font-weight:700;">우리 기회:${usAttHearts} | AI 기회:${aiAttHearts}</span>`;
+
+        if (isUsTurn) {
+          const targetHint = bestAi !== null ? ` (AI 최고 ${bestAi.toFixed(3)}s 돌파 필요!)` : ' (선공 1차 기준 기록 수립)';
+          startBtn.innerText = `🚀 우리 팀 ${turnOrderNum}차 시기 출발 신호!`;
+          judgeGuide.innerText = `우리 팀 ${turnOrderNum}차 시기입니다!${targetHint} 측정 후 기록(초)을 입력해주세요.`;
         } else {
-          startBtn.innerText = `🤖 AI 팀 ${4 - state.set4.aiAttempts}차 측정 시작!`;
-          judgeGuide.innerText = `AI 팀의 차례입니다! 상단의 시작 버튼을 눌러 AI의 기록을 측정하세요. (AI 남은 기회 ${state.set4.aiAttempts}회)`;
+          const targetHint = bestUs !== null ? ` (우리 최고 ${bestUs.toFixed(3)}s에 도전!)` : ' (AI 선공 1차 기준 기록 측정)';
+          startBtn.innerText = `🤖 AI 팀 ${turnOrderNum}차 시기 측정 시작!`;
+          judgeGuide.innerText = `AI 팀 ${turnOrderNum}차 시기 차례입니다!${targetHint} 상단 시작 버튼을 눌러주세요.`;
         }
         return;
       }
@@ -956,7 +980,8 @@
         state.isRunning = false;
         startBtn.disabled = false;
         judgeBtn.disabled = false;
-        document.getElementById('comicBubble').innerText = '⏱️ 우리 팀 측정 완료 후 아래에 기록(초)을 입력해주세요!';
+        const turnOrderNum = 4 - state.set4.usAttempts;
+        document.getElementById('comicBubble').innerText = `⏱️ 우리 팀 [${turnOrderNum}차 시기] 측정 완료 후 아래에 기록(초)을 입력해주세요!`;
         document.getElementById('usRecordInput').focus();
       }, 1500);
     }
@@ -1146,7 +1171,7 @@
       bubble.innerText = `🏁 AI 측정 완료: ${aiResult.totalTime.toFixed(3)}초!${fumbleNote}`;
       document.getElementById('sfxText').innerText = 'TOUCH!!';
 
-      // 4세트 AI 측정 완료 시 자동 처리
+      // 4세트 AI 측정 완료 시 즉시 4세트 규칙 판정 함수 호출
       if (state.currentSet === 4 && state.set4.turn === 'ai') {
         processSet4Record('ai', aiResult.totalTime);
         return;
@@ -1158,7 +1183,7 @@
     }
 
     /* =====================================================================
-       6. 우리 팀 기록 입력 및 승패 판정 로직 (4세트 핑퐁 공방전 완벽 적용)
+       6. 우리 팀 기록 입력 및 승패 판정 로직
        ===================================================================== */
     function submitUsRecord() {
       const inputEl = document.getElementById('usRecordInput');
@@ -1177,7 +1202,7 @@
         return;
       }
 
-      // 일반 세트 비교 판정
+      // 1, 2, 3, 5세트 일반 비교 판정
       const aiScore = state.aiCurrentRecord;
       if (!aiScore) {
         alert('먼저 [라운드 동시 시작!] 버튼을 눌러 AI 기록을 측정해주세요.');
@@ -1232,12 +1257,16 @@
     }
 
     /* =====================================================================
-       7. 4세트 (시간 릴레이) 핑퐁 턴 공방전 및 조기 종료 로직
+       7. [핵심] 4세트 (3-6-3 시간 릴레이) 연속 도전 & 조기 종료 완벽 구현
+       - 상대 최고 기록을 깨야만 턴 교체!
+       - 못 깨면 남은 기회로 본인이 연속 도전!
+       - 한쪽이 3차까지 모두 실패하거나, 상대가 3차를 다 쓴 뒤 역전당하면 즉시 종료!
        ===================================================================== */
     function initSet4Rule() {
-      // 세트 스코어 상 지고 있는 팀이 선공, 동점이면 우리 팀 선공
+      // 세트 스코어 상 지고 있는 팀이 선공 (동점일 경우 우리 팀 선공)
       const trailing = (state.usSetWins <= state.aiSetWins) ? 'us' : 'ai';
       state.set4 = {
+        firstTeam: trailing,
         turn: trailing,
         usAttempts: 3,
         aiAttempts: 3,
@@ -1245,65 +1274,89 @@
         aiRecords: []
       };
 
-      const nameStr = trailing === 'us' ? '🟦 우리 팀' : '🤖 AI 팀';
-      document.getElementById('comicBubble').innerText = `📢 4세트 시간 릴레이 돌입! 스코어 열세로 [${nameStr}]이 선공을 잡습니다.`;
-      addLog(`📢 [4세트 시간 릴레이] 세트 스코어 열세에 따라 [${nameStr}]이 1차 선공 측정에 나섭니다.`);
+      const nameStr = trailing === 'us' ? '🟦 우리 팀(선공)' : '🤖 AI 팀(선공)';
+      document.getElementById('comicBubble').innerText = `📢 4세트 시간 릴레이 돌입! 세트 열세인 [${nameStr}]부터 1차 측정을 시작합니다.`;
+      addLog(`📢 [4세트 시간 릴레이] 세트 스코어 열세에 따라 [${nameStr}]이 먼저 1차 기준 기록을 측정합니다.`);
     }
 
     function processSet4Record(team, score) {
       const startBtn = document.getElementById('startMatchBtn');
+      const bubble = document.getElementById('comicBubble');
       startBtn.disabled = false;
 
-      // 1) 기록 저장 및 기회 차감
-      if (team === 'us') {
+      const isUs = (team === 'us');
+      const oppTeam = isUs ? 'ai' : 'us';
+      const teamLabel = isUs ? '🟦 우리 팀' : '🤖 AI 팀';
+      const oppLabel = isUs ? '🤖 AI 팀' : '🟦 우리 팀';
+
+      // 1) 측정 기록 저장 및 잔여 기회 1회 차감
+      if (isUs) {
         state.set4.usRecords.push(score);
         state.set4.usAttempts--;
-        addLog(`🟦 [4세트 우리 팀 ${3 - state.set4.usAttempts}차] 기록: ${score.toFixed(3)}초 (남은 기회 ${state.set4.usAttempts}회)`, 'win');
       } else {
         state.set4.aiRecords.push(score);
         state.set4.aiAttempts--;
-        addLog(`🤖 [4세트 AI 팀 ${3 - state.set4.aiAttempts}차] 기록: ${score.toFixed(3)}s (AI 남은 기회 ${state.set4.aiAttempts}회)`, 'lose');
       }
 
-      // 2) 조기 종료 및 핑퐁 턴 전환 판정
-      const checkResult = evaluateSet4Status();
-      if (checkResult.isOver) {
-        sfxResultFanfare(checkResult.winner === 'us');
-        const winName = checkResult.winner === 'us' ? '🟦 우리 학교 대표팀' : '🤖 AI 챌린저팀';
-        document.getElementById('comicBubble').innerText = `🏆 4세트 최종 승리 팀: [${winName}]!! (최고 기록 비교 완료)`;
-        addLog(`🏆 [4세트 최종 종료] 승리: ${winName} (우리 최고: ${checkResult.bestUs}s vs AI 최고: ${checkResult.bestAi}s)`, checkResult.winner === 'us' ? 'win' : 'lose');
-        completeCurrentSet(checkResult.winner);
+      const trialNum = isUs ? state.set4.usRecords.length : state.set4.aiRecords.length;
+      const myRemaining = isUs ? state.set4.usAttempts : state.set4.aiAttempts;
+      const oppRemaining = isUs ? state.set4.aiAttempts : state.set4.usAttempts;
+      const oppRecords = isUs ? state.set4.aiRecords : state.set4.usRecords;
+
+      // 2) 분기 A: 상대방이 아직 한 번도 측정하지 않은 경우 (= 선공 팀의 1차 기준 기록 수립)
+      if (oppRecords.length === 0) {
+        addLog(`🎯 [4세트 선공 1차] ${teamLabel}이 기준 기록 [${score.toFixed(3)}초]를 세웠습니다! 이제 ${oppLabel}의 1차 도전으로 넘어갑니다.`, isUs ? 'win' : 'lose');
+        bubble.innerText = `🎯 선공 1차 기준 기록 [${score.toFixed(3)}s] 등록! 이제 ${oppLabel}이 도전합니다.`;
+        state.set4.turn = oppTeam; // 후공 팀으로 턴 교체
+        updateUI();
         return;
       }
 
-      // 3) 아직 끝나지 않았다면 핑퐁 턴 교체
-      // (방금 기록을 낸 팀이 상대방의 현재 최고 기록보다 좋으면 리드를 잡았으므로 상대에게 턴 넘김)
-      state.set4.turn = (state.set4.turn === 'us') ? 'ai' : 'us';
-      updateUI();
-    }
+      // 상대방의 현재 최고(최소 시간) 기록 확인
+      const oppBest = Math.min(...oppRecords);
 
-    function evaluateSet4Status() {
-      const usRecs = state.set4.usRecords;
-      const aiRecs = state.set4.aiRecords;
+      // 3) 분기 B: 이번 기록으로 상대방의 최고 기록을 넘어선 경우 (돌파 성공! score < oppBest)
+      if (score < oppBest) {
+        const diff = (oppBest - score).toFixed(3);
+        sfxResultFanfare(isUs);
 
-      const bestUs = usRecs.length > 0 ? Math.min(...usRecs) : 999;
-      const bestAi = aiRecs.length > 0 ? Math.min(...aiRecs) : 999;
+        // 만약 상대방이 이미 3차 시기까지 모두 소진한 상태라면 -> 상대는 반격 기회가 없으므로 즉시 내 팀 승리 종료! (시나리오 E, 3, 5)
+        if (oppRemaining === 0) {
+          bubble.innerText = `🏆 극적인 역전승!! ${teamLabel}(${score.toFixed(3)}s)이 상대 최고 기록(${oppBest.toFixed(3)}s)을 돌파! (${oppLabel} 남은 기회 없음)`;
+          addLog(`🏆 [4세트 최종 승리] ${teamLabel}이 ${trialNum}차 시기 [${score.toFixed(3)}s]로 ${oppLabel}의 기록(${oppBest.toFixed(3)}s)을 돌파! ${oppLabel}은 기회를 모두 소진하여 ${teamLabel} 세트 승리!`, isUs ? 'win' : 'lose');
+          completeCurrentSet(team);
+          return;
+        }
 
-      // 기회를 모두 소진한 경우 강제 종료
-      if (state.set4.usAttempts === 0 && state.set4.aiAttempts === 0) {
-        const winner = bestUs <= bestAi ? 'us' : 'ai';
-        return { isOver: true, winner, bestUs: bestUs.toFixed(3), bestAi: bestAi.toFixed(3) };
+        // 상대방에게 아직 기회가 남아있다면 -> 턴을 상대방에게 넘김!
+        const nextOppTrial = 4 - oppRemaining;
+        bubble.innerText = `🔥 기록 돌파 성공!! ${teamLabel}(${score.toFixed(3)}s)이 ${diff}초 앞섰습니다! 이제 ${oppLabel}의 ${nextOppTrial}차 시기로 넘어갑니다.`;
+        addLog(`⚡ [4세트 역전 성공!] ${teamLabel} ${trialNum}차 [${score.toFixed(3)}s] (상대 최고 ${oppBest.toFixed(3)}s 돌파!). 턴이 ${oppLabel}(${nextOppTrial}차 시기)에게 넘어갑니다.`, isUs ? 'win' : 'lose');
+        state.set4.turn = oppTeam;
+        updateUI();
+        return;
       }
 
-      // 조기 종료 룰: 한 팀이 기회를 다 썼고, 다른 팀이 앞서고 있으며, 상대방이 남은 기회를 다 써도 역전 불가능할 때
-      if (state.set4.usAttempts === 0 && bestUs < bestAi) {
-        return { isOver: true, winner: 'us', bestUs: bestUs.toFixed(3), bestAi: bestAi.toFixed(3) };
-      }
-      if (state.set4.aiAttempts === 0 && bestAi < bestUs) {
-        return { isOver: true, winner: 'ai', bestUs: bestUs.toFixed(3), bestAi: bestAi.toFixed(3) };
-      }
+      // 4) 분기 C: 상대방의 최고 기록을 넘어서지 못한 경우 (돌파 실패! score >= oppBest)
+      sfxResultFanfare(!isUs);
 
-      return { isOver: false };
+      // 아직 내 팀에게 남은 기회가 있다면 -> 턴이 넘어가지 않고 내 팀이 연속 도전! (시나리오 A, B, C, D, E 공통)
+      if (myRemaining > 0) {
+        const nextMyTrial = 4 - myRemaining;
+        bubble.innerText = `⚠️ 돌파 실패! (${score.toFixed(3)}s / 목표: ${oppBest.toFixed(3)}s 미만) ➔ ${teamLabel}이 곧바로 [${nextMyTrial}차 시기] 연속 도전합니다!`;
+        addLog(`⚠️ [4세트 연속 도전] ${teamLabel} ${trialNum}차 [${score.toFixed(3)}s]로 상대 기록(${oppBest.toFixed(3)}s) 돌파 실패! ${teamLabel}이 연속으로 ${nextMyTrial}차 시기를 실시합니다. (남은 기회 ${myRemaining}회)`, isUs ? 'lose' : 'win');
+        // state.set4.turn 유지 (바꾸지 않음)
+        updateUI();
+        return;
+      } else {
+        // 3차(마지막) 기회마저 실패하여 기회를 모두 소진한 경우 -> 상대 팀은 남은 기회를 쓸 필요도 없이 즉시 상대 팀 승리로 세트 조기 종료!
+        const bestUsFinal = Math.min(...state.set4.usRecords).toFixed(3);
+        const bestAiFinal = Math.min(...state.set4.aiRecords).toFixed(3);
+        bubble.innerText = `🏁 3차 시기 모두 소진! ${teamLabel}(${score.toFixed(3)}s)이 끝내 ${oppLabel}(${oppBest.toFixed(3)}s)을 넘지 못해 [${oppLabel}] 세트 승리!`;
+        addLog(`🏆 [4세트 종료] ${teamLabel} 3차 시기(${score.toFixed(3)}s)마저 돌파 실패! 기회 모두 소진으로 [${oppLabel}]이(가) 남은 기회 사용 없이 4세트 승리! (우리 최고:${bestUsFinal}s / AI 최고:${bestAiFinal}s)`, oppTeam === 'us' ? 'win' : 'lose');
+        completeCurrentSet(oppTeam);
+        return;
+      }
     }
 
     /* =====================================================================
@@ -1314,7 +1367,7 @@
       if (winner === 'us') state.usSetWins++; else state.aiSetWins++;
 
       const winTeamStr = winner === 'us' ? '🟦 우리 학교 대표팀' : '🤖 AI 챌린저팀';
-      addLog(`🏆 [${state.currentSet}세트 최종 종료] ${winTeamStr} 세트 승리! (현재 세트 스코어 ${state.usSetWins}:${state.aiSetWins})`, winner === 'us' ? 'win' : 'lose');
+      addLog(`🎊 [${state.currentSet}세트 최종 결과] ${winTeamStr} 세트 획득! (현재 세트 스코어 ${state.usSetWins}:${state.aiSetWins})`, winner === 'us' ? 'win' : 'lose');
 
       const practiceMode = document.getElementById('practiceModeChk').checked;
       const matchDecided = (state.usSetWins >= 3 || state.aiSetWins >= 3);
