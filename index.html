@@ -2,6 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <!-- 모바일 뷰포트 설정 (안드로이드/스마트폰 화면 비율 및 글자 크기 정상화) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>KIMKO-EDU 체육 & 교실 플랫폼</title>
   <style>
     * { box-sizing: border-box; }
@@ -15,27 +17,118 @@
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
+      -webkit-text-size-adjust: 100%;
     }
     .header {
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 32px;
     }
     h1 {
       font-size: 32px;
       margin: 0 0 10px 0;
       color: #1e293b;
       font-weight: 800;
+      word-break: keep-all;
     }
     .subtitle {
       font-size: 16px;
       color: #64748b;
       margin: 0;
+      word-break: keep-all;
+    }
+
+    /* =======================================================
+       [추가] 스포츠스태킹 5세트 모의 경기장 상단 하이라이트 배너
+       ======================================================= */
+    .banner-wrapper {
+      width: 100%;
+      max-width: 980px;
+      margin-bottom: 24px;
+    }
+    .mock-match-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, #0f172a 0%, #15803d 100%);
+      color: #ffffff;
+      padding: 24px 28px;
+      border-radius: 18px;
+      text-decoration: none;
+      box-shadow: 0 10px 20px -5px rgba(21, 128, 61, 0.3);
+      transition: all 0.25s ease;
+      cursor: pointer;
+      border: 2px solid #4ade80;
+    }
+    .mock-match-banner:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 28px -5px rgba(21, 128, 61, 0.45);
+    }
+    .banner-left {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .banner-badge-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .banner-badge {
+      background: #facc15;
+      color: #0f172a;
+      font-size: 12px;
+      font-weight: 900;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.3px;
+    }
+    .banner-sub-tag {
+      font-size: 12px;
+      color: #86efac;
+      font-weight: 700;
+    }
+    .banner-title {
+      font-size: 22px;
+      font-weight: 800;
+      margin: 0;
+      color: #ffffff;
+      word-break: keep-all;
+    }
+    .banner-desc {
+      font-size: 14px;
+      color: #e2e8f0;
+      margin: 0;
+      line-height: 1.5;
+      word-break: keep-all;
+    }
+    .banner-action {
+      margin-top: 4px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #facc15;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .banner-right {
+      font-size: 36px;
+      background: rgba(255, 255, 255, 0.12);
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-left: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     /* 허브 카드 그리드 */
     .card-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 24px;
       width: 100%;
       max-width: 980px;
@@ -60,8 +153,8 @@
       border-color: #cbd5e1;
     }
     .card-icon { font-size: 44px; margin-bottom: 14px; }
-    .card-title { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
-    .card-desc { font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 20px; }
+    .card-title { font-size: 22px; font-weight: 700; margin-bottom: 10px; word-break: keep-all; }
+    .card-desc { font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 20px; word-break: keep-all; }
     .card-tag {
       display: inline-block;
       font-size: 12px;
@@ -117,7 +210,7 @@
     }
     .modal-icon { font-size: 40px; margin-bottom: 12px; }
     .modal-card h3 { margin: 0 0 8px 0; font-size: 20px; color: #1e293b; }
-    .modal-card p { font-size: 14px; color: #64748b; margin: 0 0 20px 0; }
+    .modal-card p { font-size: 14px; color: #64748b; margin: 0 0 20px 0; line-height: 1.5; }
     .code-input {
       width: 100%;
       padding: 12px;
@@ -160,6 +253,56 @@
       cursor: pointer;
     }
     .btn-cancel-code:hover { background: #cbd5e1; }
+
+    /* 안드로이드/모바일 스마트폰 최적화 */
+    @media (max-width: 600px) {
+      body {
+        padding: 28px 14px 50px;
+      }
+      .header {
+        margin-bottom: 22px;
+      }
+      h1 {
+        font-size: 25px;
+      }
+      .subtitle {
+        font-size: 14px;
+      }
+      .banner-wrapper {
+        margin-bottom: 16px;
+      }
+      .mock-match-banner {
+        padding: 18px 16px;
+        border-radius: 16px;
+      }
+      .banner-title {
+        font-size: 18px;
+      }
+      .banner-desc {
+        font-size: 13px;
+      }
+      .banner-right {
+        width: 52px;
+        height: 52px;
+        font-size: 28px;
+        margin-left: 12px;
+      }
+      .card-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .hub-card {
+        padding: 22px 18px;
+        border-radius: 16px;
+      }
+      .card-icon {
+        font-size: 36px;
+        margin-bottom: 10px;
+      }
+      .card-title {
+        font-size: 19px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -167,6 +310,24 @@
   <div class="header">
     <h1>🏫 KIMKO-EDU 플랫폼</h1>
     <p class="subtitle">체육 수업 및 교실 활동을 지원하는 교육 웹 도구 모음</p>
+  </div>
+
+  <!-- [추가] 스포츠스태킹 5세트 모의 경기장 하이라이트 배너 -->
+  <div class="banner-wrapper">
+    <a href="mock-match.html" class="mock-match-banner">
+      <div class="banner-left">
+        <div class="banner-badge-row">
+          <span class="banner-badge">🔥 NEW 실전 훈련</span>
+          <span class="banner-sub-tag">학교스포츠클럽 대회 완벽 대비</span>
+        </div>
+        <h2 class="banner-title">🤖 AI와 대결! 스포츠스태킹 5세트 모의 경기장</h2>
+        <p class="banner-desc">
+          3-6-3 릴레이, 개인·더블 사이클, 시간 릴레이까지! 초·중·고급 AI 팀과 만화 중계 및 효과음으로 0.001초 승부를 펼쳐보세요.
+        </p>
+        <div class="banner-action">모의 경기장 바로 입장하기 →</div>
+      </div>
+      <div class="banner-right">🏆</div>
+    </a>
   </div>
 
   <div class="card-grid">
