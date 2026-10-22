@@ -675,30 +675,30 @@
        1. AI 난이도별 기록 범위 설정 (CONFIG)
        ===================================================================== */
     const AI_CONFIG = {
-      fumbleChance: 0.18,
-      fumblePenalty: [2.000, 3.000],
+      fumbleChance: 0.20,
+      fumblePenalty: [2.000, 4.000],
       relayTurnaroundSec: 2.0,
       ranges: {
         beginner: {
           label: '🌱 초급 AI팀',
-          relay363: [22.000, 30.000],
-          indivCycle: [12.000, 18.000],
+          relay363: [20.000, 28.000],
+          indivCycle: [9.500, 14.500],
           doubleCycle: [15.000, 22.000],
           cycleRelay: [52.000, 60.000]
         },
         intermediate: {
           label: '🔥 중급 AI팀',
           relay363: [18.000, 26.000],
-          indivCycle: [9.000, 13.000],
+          indivCycle: [8.000, 12.000],
           doubleCycle: [11.000, 16.000],
-          cycleRelay: [46.000, 55.000]
+          cycleRelay: [46.000, 52.000]
         },
         advanced: {
           label: '⚡ 고급 AI팀',
           relay363: [16.000, 24.000],
-          indivCycle: [6.700, 9.999],
-          doubleCycle: [8.000, 12.000],
-          cycleRelay: [39.000, 49.000]
+          indivCycle: [6.500, 10.500],
+          doubleCycle: [8.500, 12.000],
+          cycleRelay: [39.000, 45.000]
         }
       }
     };
