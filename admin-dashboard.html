@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <!-- [적용 1] 모바일 뷰포트 메타 태그 추가 (화면 강제 축소 방지 및 글자 크기 정상화) -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>스포츠스태킹 관리자 대시보드</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -347,10 +347,16 @@
     </div>
   </div>
 
+  <script src="config.js"></script>
   <script>
-    // ★★★ 구글 Apps Script 웹 앱 URL ★★★
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2ABEw49MhLsZ750gZwc98vOH7lVyFmVyQ8EslfgZjs4a_II4fuAoGjHqsz4CKHGY/exec'; 
     
+    // 화면에 글자를 넣을 때 HTML로 해석되지 않도록 변환
+    function esc(v) {
+      return String(v == null ? '' : v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
     let bestData = [];
     let logData = [];
     let growthChartInstance = null;
@@ -359,7 +365,7 @@
 
     // 보안 검증
     document.addEventListener('DOMContentLoaded', () => {
-      if (sessionStorage.getItem('admin_verified') !== 'true') {
+      if (!sessionStorage.getItem('admin_token')) {
         alert('잘못된 접근입니다. 관리자 비밀번호를 입력해주세요.');
         window.location.href = 'student-record.html';
       } else {
@@ -368,14 +374,35 @@
     });
 
     function logout() {
-      sessionStorage.removeItem('admin_verified');
+      const token = sessionStorage.getItem('admin_token');
+      sessionStorage.removeItem('admin_token');
+      // 서버에서도 입장권을 폐기 (응답은 기다리지 않음)
+      if (token) {
+        fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'adminLogout', token: token }),
+          keepalive: true
+        }).catch(() => {});
+      }
       window.location.href = 'student-record.html';
     }
 
     function fetchAdminData() {
-      fetch(SCRIPT_URL + '?action=getAdminData')
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'getAdminData', token: sessionStorage.getItem('admin_token') }),
+        redirect: 'follow'
+      })
         .then(res => res.json())
         .then(data => {
+          if (!data || data.success === false) {
+            sessionStorage.removeItem('admin_token');
+            alert('관리자 로그인이 만료되었습니다. 다시 로그인해주세요.');
+            window.location.href = 'student-record.html';
+            return;
+          }
           document.getElementById('loading').style.display = 'none';
           document.getElementById('dashboard').style.display = 'block';
           
@@ -423,8 +450,8 @@
         let rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
         return `<tr>
           <td class="${rankClass}">${rank}위</td>
-          <td>${r['학년']}학년 ${r['반']}반</td>
-          <td>${r['이름']}</td>
+          <td>${esc(r['학년'])}학년 ${esc(r['반'])}반</td>
+          <td>${esc(r['이름'])}</td>
           <td style="font-weight:bold;">${parseFloat(r[event]).toFixed(3)}s</td>
         </tr>`;
       }).join('');

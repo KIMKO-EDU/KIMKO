@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <!-- 모바일 뷰포트 설정 (안드로이드/스마트폰 화면 비율 및 글자 크기 정상화) -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KIMKO-EDU 체육 & 교실 플랫폼</title>
   <style>
     * { box-sizing: border-box; }
@@ -385,12 +385,12 @@
     </div>
   </div>
 
+  <script src="config.js"></script>
   <script>
-    const CORRECT_CODE = 'pr5811';
 
     function openCodeModal() {
       // 이미 이번 세션에서 인증한 경우 바로 이동
-      if (sessionStorage.getItem('school_verified') === 'true') {
+      if (sessionStorage.getItem('school_code')) {
         window.location.href = 'student-record.html';
         return;
       }
@@ -407,16 +407,44 @@
       if (e.key === 'Enter') verifySchoolCode();
     }
 
+    let isVerifying = false;
+
     function verifySchoolCode() {
-      const inputCode = document.getElementById('schoolCodeInput').value.trim();
-      if (inputCode === CORRECT_CODE) {
-        sessionStorage.setItem('school_verified', 'true');
-        window.location.href = 'student-record.html';
-      } else {
-        alert('❌ 잘못된 학교 코드입니다. 지도 선생님께 문의하세요.');
-        document.getElementById('schoolCodeInput').value = '';
-        document.getElementById('schoolCodeInput').focus();
-      }
+      if (isVerifying) return;
+      const input = document.getElementById('schoolCodeInput');
+      const submitBtn = document.querySelector('.btn-submit-code');
+      const inputCode = input.value.trim();
+      if (!inputCode) return;
+
+      isVerifying = true;
+      submitBtn.disabled = true;
+      submitBtn.innerText = '확인 중...';
+
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'verifySchoolCode', schoolCode: inputCode }),
+        redirect: 'follow'
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res && res.success) {
+          sessionStorage.setItem('school_code', inputCode);
+          window.location.href = 'student-record.html';
+        } else {
+          alert('❌ 잘못된 학교 코드입니다. 지도 선생님께 문의하세요.');
+          input.value = '';
+          input.focus();
+        }
+      })
+      .catch(() => {
+        alert('서버에 연결하지 못했습니다. 잠시 후 다시 시도해주세요.');
+      })
+      .finally(() => {
+        isVerifying = false;
+        submitBtn.disabled = false;
+        submitBtn.innerText = '입장하기';
+      });
     }
   </script>
 </body>

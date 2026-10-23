@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>스포츠스태킹 5세트 모의 경기장</title>
   <style>
     * { box-sizing: border-box; }
@@ -659,9 +659,9 @@
       <div style="border-top:1px solid #e2e8f0; padding-top:10px; margin-top:10px; font-size:13px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
           <strong>💥 AI 실수(Fumble) 발생 확률 (%)</strong>
-          <input type="number" id="cfgFumbleRate" style="width:70px; padding:6px; text-align:center;" value="18">
+          <input type="number" id="cfgFumbleRate" style="width:70px; padding:6px; text-align:center;" value="20" min="0" max="100">
         </div>
-        <div style="font-size:11px; color:#64748b;">* 실수 발생 시 설정된 기록에 <strong>+2.000 ~ +3.000초</strong>가 추가됩니다.</div>
+        <div style="font-size:11px; color:#64748b;">* 실수 발생 시 설정된 기록에 <strong id="cfgPenaltyHint">+2.000 ~ +4.000초</strong>가 추가됩니다.</div>
       </div>
 
       <div style="display:flex; gap:8px; margin-top:16px;">
@@ -1465,12 +1465,31 @@
         </div>
       `;
       document.getElementById('cfgFumbleRate').value = Math.round(AI_CONFIG.fumbleChance * 100);
+      document.getElementById('cfgPenaltyHint').textContent =
+        `+${AI_CONFIG.fumblePenalty[0].toFixed(3)} ~ +${AI_CONFIG.fumblePenalty[1].toFixed(3)}초`;
       document.getElementById('configModal').style.display = 'flex';
     }
 
     function saveConfigModal() {
       const lv = state.level;
       const r = AI_CONFIG.ranges[lv];
+
+      // 입력값 검사: 빈 칸·0 이하·(최소 > 최대)·확률 범위 오류 방지
+      const ids = ['cfg_r363', 'cfg_ic', 'cfg_dc', 'cfg_cr'];
+      for (const id of ids) {
+        const mn = parseFloat(document.getElementById(id + '_min').value);
+        const mx = parseFloat(document.getElementById(id + '_max').value);
+        if (!isFinite(mn) || !isFinite(mx) || mn <= 0 || mn > mx) {
+          alert('기록 범위를 확인해주세요. (빈 칸 없이, 최소 ≤ 최대, 0보다 큰 값)');
+          return;
+        }
+      }
+      const rate = parseFloat(document.getElementById('cfgFumbleRate').value);
+      if (!isFinite(rate) || rate < 0 || rate > 100) {
+        alert('실수 확률은 0~100 사이로 입력해주세요.');
+        return;
+      }
+
       r.relay363 = [parseFloat(document.getElementById('cfg_r363_min').value), parseFloat(document.getElementById('cfg_r363_max').value)];
       r.indivCycle = [parseFloat(document.getElementById('cfg_ic_min').value), parseFloat(document.getElementById('cfg_ic_max').value)];
       r.doubleCycle = [parseFloat(document.getElementById('cfg_dc_min').value), parseFloat(document.getElementById('cfg_dc_max').value)];

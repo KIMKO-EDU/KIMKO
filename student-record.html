@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <!-- [적용 1] 모바일 뷰포트 메타 태그 추가 (화면 강제 축소 방지 및 글자 크기 정상화) -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>스포츠스태킹 자율 기록실</title>
   <style>
     * { box-sizing: border-box; }
@@ -569,11 +569,40 @@
 
   </div>
 
+  <script src="config.js"></script>
   <script>
-    const CORRECT_CODE = 'pr5811';
-    // 구글 Apps Script 웹 앱 URL
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2ABEw49MhLsZ750gZwc98vOH7lVyFmVyQ8EslfgZjs4a_II4fuAoGjHqsz4CKHGY/exec'; 
     
+    // 서버 호출 공통 함수 (모든 요청은 POST, 검증은 서버가 담당)
+    function callServer(payload) {
+      return fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+        redirect: 'follow'
+      }).then(res => {
+        if (!res.ok) throw new Error('서버 응답 오류');
+        return res.json();
+      });
+    }
+
+    function getSchoolCode() {
+      return sessionStorage.getItem('school_code') || '';
+    }
+
+    // 학교 코드가 서버에서 거부되었을 때(변경/만료) 처리
+    function handleInvalidCode() {
+      sessionStorage.removeItem('school_code');
+      alert('학교 코드 확인이 필요합니다. 메인 페이지에서 다시 입장해주세요.');
+      window.location.href = 'index.html';
+    }
+
+    // 화면에 글자를 넣을 때 HTML로 해석되지 않도록 변환
+    function esc(v) {
+      return String(v == null ? '' : v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
     let currentEvent = '3-3-3';
     let currentChartEvent = '3-3-3';
     let allBestRecords = []; // 실시간 차트 계산용 전체 학생 최고기록
@@ -581,7 +610,7 @@
 
     // 보안 검증 및 초기 데이터 로드
     document.addEventListener('DOMContentLoaded', () => {
-      if (sessionStorage.getItem('school_verified') === 'true') {
+      if (getSchoolCode()) {
         document.getElementById('mainApp').style.display = 'block';
         loadChartData(); // 페이지 접속 시 차트 데이터 즉시 호출
       } else {
@@ -591,25 +620,36 @@
 
     function unlockDirectly() {
       const code = document.getElementById('directCodeInput').value.trim();
-      if (code === CORRECT_CODE) {
-        sessionStorage.setItem('school_verified', 'true');
-        document.getElementById('lockScreen').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'block';
-        loadChartData();
-      } else {
-        alert('❌ 잘못된 학교 코드입니다. 메인 페이지로 이동합니다.');
-        window.location.href = 'index.html';
-      }
+      if (!code) return;
+      callServer({ action: 'verifySchoolCode', schoolCode: code })
+        .then(res => {
+          if (res && res.success) {
+            sessionStorage.setItem('school_code', code);
+            document.getElementById('lockScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            loadChartData();
+          } else {
+            alert('❌ 잘못된 학교 코드입니다. 메인 페이지로 이동합니다.');
+            window.location.href = 'index.html';
+          }
+        })
+        .catch(() => alert('서버에 연결하지 못했습니다. 잠시 후 다시 시도해주세요.'));
     }
     
     function adminLogin() {
       const pw = prompt("관리자 비밀번호를 입력하세요.");
-      if (pw === 'kimko1234') {
-        sessionStorage.setItem('admin_verified', 'true');
-        window.location.href = 'admin-dashboard.html';
-      } else if (pw !== null) {
-        alert("비밀번호가 일치하지 않습니다.");
-      }
+      if (pw === null) return;
+      callServer({ action: 'verifyAdmin', password: pw })
+        .then(res => {
+          if (res && res.success && res.token) {
+            // 비밀번호 대신 서버가 발급한 임시 입장권만 보관합니다.
+            sessionStorage.setItem('admin_token', res.token);
+            window.location.href = 'admin-dashboard.html';
+          } else {
+            alert("비밀번호가 일치하지 않습니다.");
+          }
+        })
+        .catch(() => alert('서버에 연결하지 못했습니다. 잠시 후 다시 시도해주세요.'));
     }
 
     function formatScore(scoreValue) {
@@ -647,9 +687,9 @@
         showChartSkeleton();
       }
 
-      fetch(SCRIPT_URL + '?action=getAdminData')
-        .then(res => res.json())
+      callServer({ action: 'getChartData', schoolCode: getSchoolCode() })
         .then(data => {
+          if (data && data.error === 'invalid_school_code') { handleInvalidCode(); return; }
           document.getElementById('chartUpdateNotice').innerText = '실시간 연동 완료';
           if (data && data.best && data.best.length > 1) {
             const headers = data.best[0];
@@ -704,8 +744,8 @@
           <li class="chart-item">
             <div class="chart-rank">${rankBadge}</div>
             <div class="chart-info">
-              <span class="chart-student-name">${r['이름']}</span>
-              <span class="chart-student-class">${r['학년']}학년 ${r['반']}반</span>
+              <span class="chart-student-name">${esc(r['이름'])}</span>
+              <span class="chart-student-class">${esc(r['학년'])}학년 ${esc(r['반'])}반</span>
             </div>
             <div class="chart-record">${parseFloat(r[eventName]).toFixed(3)}s</div>
           </li>
@@ -735,15 +775,13 @@
         loadingTextContent.innerText = '데이터가 조금 많네요! 거의 다 찾았으니 잠시만 기다려주세요 🙏';
       }, 5000);
       
-      const query = `?grade=${encodeURIComponent(grade)}&class=${encodeURIComponent(cls)}&name=${encodeURIComponent(name)}`;
-      
-      fetch(SCRIPT_URL + query, {
-        method: 'GET',
-        redirect: 'follow'
-      })
-      .then(res => {
-        if (!res.ok) throw new Error('서버 응답 오류');
-        return res.json();
+      callServer({ action: 'getRecord', schoolCode: getSchoolCode(), grade: grade, cls: cls, name: name })
+      .then(resp => {
+        if (resp && resp.error === 'invalid_school_code') {
+          handleInvalidCode();
+          throw new Error('invalid_school_code');
+        }
+        return resp.record;
       })
       .then(data => {
         clearTimeout(searchDelayTimer);
@@ -772,6 +810,7 @@
       })
       .catch(err => {
         clearTimeout(searchDelayTimer);
+        if (err && err.message === 'invalid_school_code') return;
         console.error('Fetch Error:', err);
         loadingMsg.style.display = 'none';
         searchBtn.disabled = false;
@@ -811,16 +850,20 @@
       syncStatus.style.display = 'block';
       syncStatus.innerText = '☁️ 구글 시트로 안전하게 전송 중...';
 
-      const payload = { grade: grade, cls: cls, name: name, event: currentEvent, score: score };
+      const payload = { action: 'submit', schoolCode: getSchoolCode(), grade: grade, cls: cls, name: name, event: currentEvent, score: score };
 
-      fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload),
-        redirect: 'follow'
-      })
-      .then(res => res.json())
+      callServer(payload)
       .then(res => {
+        if (res.success === false) {
+          scoreElement.innerHTML = previousHTML;
+          syncStatus.style.display = 'none';
+          if (res.error === 'invalid_school_code') {
+            handleInvalidCode();
+          } else {
+            alert('❌ ' + (res.error || '기록 전송에 실패했습니다.'));
+          }
+          return;
+        }
         if(res.status === '승인완료') {
           syncStatus.innerText = '✅ 구글 시트 저장 완료!';
           setTimeout(() => { syncStatus.style.display = 'none'; }, 2000);
