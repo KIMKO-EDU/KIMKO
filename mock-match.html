@@ -745,7 +745,8 @@
     }
 
     function sfxCountdown(isStartSignal = false) {
-      if (isStartSignal) playTone(880, 'square', 0.35, 0.2);
+      // Ready·Set: 짧고 작은 '삐' / Go: 더 높고 크고 긴 '삐~' (출발 신호)
+      if (isStartSignal) playTone(880, 'square', 0.45, 0.28);
       else playTone(440, 'sine', 0.18, 0.15);
     }
     function sfxCupClack(pitchOffset = 0) { playTone(320 + pitchOffset, 'triangle', 0.045, 0.12); }
@@ -967,13 +968,18 @@
       startBtn.disabled = true;
 
       overlay.style.display = 'flex';
-      overlay.innerText = '준비 (Ready)...';
+      overlay.innerText = '레디 (Ready)...';
       sfxCountdown(false);
 
       setTimeout(() => {
-        overlay.innerText = '스택! (STACK!!)';
+        overlay.innerText = '셋 (Set)...';
+        sfxCountdown(false);
+      }, 800);
+
+      setTimeout(() => {
+        overlay.innerText = '고! (GO!!)';
         sfxCountdown(true);
-      }, 900);
+      }, 1600);
 
       setTimeout(() => {
         overlay.style.display = 'none';
@@ -983,7 +989,7 @@
         const turnOrderNum = 4 - state.set4.usAttempts;
         document.getElementById('comicBubble').innerText = `⏱️ 우리 팀 [${turnOrderNum}차 시기] 측정 완료 후 아래에 기록(초)을 입력해주세요!`;
         document.getElementById('usRecordInput').focus();
-      }, 1500);
+      }, 2200);
     }
 
     function startAISimulation() {
@@ -1007,19 +1013,24 @@
       timerEl.innerText = '00.000s';
 
       overlay.style.display = 'flex';
-      overlay.innerText = '준비 (Ready)...';
+      overlay.innerText = '레디 (Ready)...';
       sfxCountdown(false);
 
       setTimeout(() => {
-        overlay.innerText = '스택! (STACK!!)';
+        overlay.innerText = '셋 (Set)...';
+        sfxCountdown(false);
+      }, 800);
+
+      setTimeout(() => {
+        overlay.innerText = '고! (GO!!)';
         sfxCountdown(true);
-      }, 850);
+      }, 1600);
 
       setTimeout(() => {
         overlay.style.display = 'none';
         stage.classList.add('action-lines');
         runStackingTimeline(meta, aiResult);
-      }, 1350);
+      }, 2100);
     }
 
     function runStackingTimeline(meta, aiResult) {
