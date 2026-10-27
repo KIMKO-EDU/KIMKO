@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>결합 게임</title>
+<style>
+  /* 레이아웃: 가로형 — 왼쪽 큰 3×3 나무 바둑판, 오른쪽 진행판(차례·버튼·조별 점수·찾은 합). 좁으면 위아래로 쌓임. 프로젝터용 단일 어두운 테마 */
+  :root {
+    --bg: #1c1712;
+    --panel: #2a221a;
+    --panel-2: #362c21;
+    --line: #4a3d2e;
+    --wood: #c99a5b;
+    --wood-dark: #8a6436;
+    --text: #f6efe4;
+    --text-dim: #b9a88f;
+    --gold: #f5c542;
+    --good: #3ecf8e;
+    --bad: #f0605d;
+    --tile-white: #fbfaf7;
+    --tile-gray: #8f939a;
+    --tile-black: #15161a;
+    --shape-red: #e5383b;
+    --shape-yellow: #ffcc1f;
+    --shape-blue: #2f80ed;
+    --font-display: 'Black Han Sans', 'Noto Sans KR', sans-serif;
+    --font-body: 'Noto Sans KR', system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; background: var(--bg); }
+  body {
+    margin: 0; color: var(--text); font-family: var(--font-body);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 12px;
+  }
+  button { font-family: inherit; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .wrap { max-width: 1500px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; gap: 12px; }
+
+  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .brand { font-family: var(--font-display); font-size: 26px; color: var(--gold); letter-spacing: .02em; }
+  .brand small { font-family: var(--font-body); font-size: 14px; color: var(--text-dim); margin-left: 10px; font-weight: 500; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    background: var(--panel-2); color: var(--text-dim); border: 1px solid var(--line);
+    border-radius: 999px; padding: 6px 14px; font-size: 14px; font-weight: 700; cursor: pointer; min-height: 34px;
+  }
+  .chip:hover:not(:disabled) { color: var(--text); border-color: var(--text-dim); }
+  .chip:disabled { opacity: .4; cursor: not-allowed; }
+  .chip.on { background: var(--gold); color: #2a1d00; border-color: var(--gold); }
+
+  /* ---------- 게임 화면 ---------- */
+  .game { flex: 1; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(320px, 1fr); gap: 16px; align-items: start; }
+
+  .board-wrap {
+    background: linear-gradient(135deg, var(--wood) 0%, #b5844a 100%);
+    border: 6px solid var(--wood-dark); border-radius: 18px; padding: clamp(10px, 1.8vw, 22px);
+    box-shadow: 0 10px 30px rgba(0,0,0,.45);
+    width: 100%; max-width: min(100%, calc(100vh - 110px)); margin: 0 auto;
+  }
+  .board-meta { display: flex; justify-content: space-between; color: #3b2711; font-weight: 800; font-size: clamp(14px, 1.5vw, 18px); margin-bottom: 8px; }
+  .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(8px, 1.4vw, 16px); }
+  .tile {
+    position: relative; aspect-ratio: 1; max-width: 100%; border-radius: 12px; border: 3px solid #3b2711;
+    display: flex; align-items: center; justify-content: center; padding: 0; cursor: default;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .tile.bg0 { background: var(--tile-white); }
+  .tile.bg1 { background: var(--tile-gray); }
+  .tile.bg2 { background: var(--tile-black); }
+  .tile svg { width: 66%; height: 66%; overflow: visible; }
+  .tile .no {
+    position: absolute; top: 6px; left: 9px; font-weight: 900; font-size: clamp(14px, 1.8vw, 22px);
+    font-family: var(--font-display);
+  }
+  .tile.bg0 .no, .tile.bg1 .no { color: #15161a; }
+  .tile.bg2 .no { color: #fbfaf7; }
+  .board.selecting .tile { cursor: pointer; }
+  .board.selecting .tile:hover { transform: translateY(-3px); }
+  .tile.sel { box-shadow: 0 0 0 6px var(--gold), 0 0 24px 4px rgba(245,197,66,.7); transform: translateY(-4px); }
+  .tile.flash-good { box-shadow: 0 0 0 6px var(--good), 0 0 26px 6px rgba(62,207,142,.7); }
+  .tile.flash-bad { box-shadow: 0 0 0 6px var(--bad), 0 0 26px 6px rgba(240,96,93,.7); }
+  .tile.reveal { outline: 4px dashed var(--gold); outline-offset: -10px; }
+
+  .side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+
+  .turn-card { text-align: center; }
+  .turn-label { color: var(--text-dim); font-size: 15px; font-weight: 700; }
+  .turn-name { font-family: var(--font-display); font-size: clamp(34px, 4.2vw, 58px); line-height: 1.05; margin: 4px 0; color: var(--gold); overflow-wrap: anywhere; }
+  .msg { min-height: 1.5em; font-weight: 800; font-size: clamp(16px, 1.7vw, 22px); text-wrap: balance; }
+  .msg.good { color: var(--good); }
+  .msg.bad { color: var(--bad); }
+  .msg.info { color: var(--text-dim); }
+
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn {
+    border: none; border-radius: 14px; cursor: pointer; font-weight: 900; min-height: 64px;
+    font-size: clamp(20px, 2.2vw, 30px); padding: 10px; transition: transform .08s;
+  }
+  .btn:active:not(:disabled) { transform: translateY(2px); }
+  .btn:disabled { opacity: .35; cursor: not-allowed; }
+  .btn-hap { background: var(--gold); color: #2a1d00; font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 3.4vw, 46px); }
+  .btn-gyeol { background: #e8ddcc; color: #2a1d00; font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 3.4vw, 46px); }
+  .btn-ok { background: var(--good); color: #032417; }
+  .btn-cancel { background: var(--panel-2); color: var(--text); border: 2px solid var(--line); }
+  .btn-pass { grid-column: 1 / -1; background: transparent; color: var(--text-dim); border: 1px solid var(--line); min-height: 44px; font-size: 17px; }
+  .sel-hint { grid-column: 1 / -1; text-align: center; color: var(--text-dim); font-weight: 700; }
+
+  .scores { display: grid; gap: 6px; }
+  .score-row {
+    display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
+    padding: 8px 12px; border-radius: 10px; background: var(--panel-2); border: 2px solid transparent;
+  }
+  .score-row.turn { border-color: var(--gold); }
+  .score-row .rk { color: var(--text-dim); font-weight: 800; width: 1.6em; }
+  .score-row .nm { font-weight: 800; font-size: clamp(16px, 1.6vw, 21px); overflow-wrap: anywhere; min-width: 0; }
+  .score-row .pt { font-family: var(--font-display); font-size: clamp(24px, 2.4vw, 34px); }
+  .score-row .pt.neg { color: var(--bad); }
+  .card-title { font-weight: 800; color: var(--text-dim); font-size: 14px; margin-bottom: 8px; letter-spacing: .04em; }
+
+  .found { display: flex; flex-wrap: wrap; gap: 6px; min-height: 30px; }
+  .found .tag { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; font-weight: 800; font-size: 16px; }
+  .found .tag small { color: var(--text-dim); font-weight: 600; margin-left: 4px; }
+  .found .empty { color: var(--text-dim); font-size: 14px; }
+
+  .answer-box { margin-top: 8px; color: var(--gold); font-weight: 700; font-size: 14px; }
+
+  /* ---------- 설정 화면 ---------- */
+  .setup { max-width: 640px; margin: 4vh auto 0; width: 100%; }
+  .setup h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(40px, 6vw, 64px); color: var(--gold); margin: 0; }
+  .setup p.lead { color: var(--text-dim); margin: 6px 0 18px; line-height: 1.6; }
+  .field { margin-bottom: 16px; }
+  .field > label { display: block; font-weight: 800; margin-bottom: 6px; }
+  .field select, .field input[type=text] {
+    width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--bg); color: var(--text); font-size: 17px; font-family: inherit;
+  }
+  .team-inputs { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+  .rules { color: var(--text-dim); font-size: 15px; line-height: 1.7; margin: 0; padding-left: 1.2em; }
+  .rules b { color: var(--text); }
+
+  /* ---------- 결과 화면 ---------- */
+  .result { max-width: 720px; margin: 4vh auto 0; width: 100%; text-align: center; }
+  .result h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(40px, 6vw, 70px); color: var(--gold); margin: 0 0 6px; }
+  .result .sub { color: var(--text-dim); margin-bottom: 18px; }
+  .podium .score-row { text-align: left; padding: 12px 16px; }
+  .podium .score-row.first { border-color: var(--gold); background: #4a3a1c; }
+  .podium .score-row.first .nm { font-size: clamp(22px, 2.6vw, 32px); }
+
+  /* 모달 */
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.72); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+  .modal-card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; max-width: 420px; width: 100%; }
+  .modal-card h3 { margin: 0 0 8px; font-size: 20px; }
+  .modal-card p { margin: 0; color: var(--text-dim); }
+  .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+  .modal-actions .btn { flex: 1; min-height: 50px; font-size: 18px; }
+
+  @media (max-width: 860px) {
+    .game { grid-template-columns: 1fr; }
+    .board-wrap { max-width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet">
+
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<div class="modal" id="confirmModal" hidden>
+  <div class="modal-card">
+    <h3 id="confirmTitle">확인</h3>
+    <p id="confirmText"></p>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeConfirm()">취소</button>
+      <button class="btn btn-ok" id="confirmOk">확인</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== 1. 기본 설정 ===================== */
+const SHAPES = ['동그라미', '세모', '네모'];
+const COLORS = ['빨강', '노랑', '파랑'];
+const BGS = ['흰색', '회색', '검은색'];
+const COLOR_VAR = ['var(--shape-red)', 'var(--shape-yellow)', 'var(--shape-blue)'];
+const TEAM_LETTERS = 'ABCDEFGH';
+const MIN_SETS = 0, MAX_SETS = 6;
+const STORAGE_KEY = 'hapgyeol_game_v1';
+
+/* ===================== 2. 판 만들기 / 합 판정 ===================== */
+// 세 타일의 각 속성(모양·색·배경) 값의 합이 3의 배수이면 "모두 같음" 또는 "모두 다름"
+function isHap(a, b, c) {
+  return (a.shape + b.shape + c.shape) % 3 === 0 &&
+         (a.color + b.color + c.color) % 3 === 0 &&
+         (a.bg + b.bg + c.bg) % 3 === 0;
+}
+function findAllHaps(tiles) {
+  const out = [];
+  for (let i = 0; i < 9; i++)
+    for (let j = i + 1; j < 9; j++)
+      for (let k = j + 1; k < 9; k++)
+        if (isHap(tiles[i], tiles[j], tiles[k])) out.push([i, j, k]);
+  return out;
+}
+function randomTiles() {
+  const deck = [];
+  for (let s = 0; s < 3; s++) for (let c = 0; c < 3; c++) for (let b = 0; b < 3; b++) deck.push({ shape: s, color: c, bg: b });
+  for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+  return deck.slice(0, 9);
+}
+// 합 개수를 0~6개 중 무작위로 정한 뒤 그 개수가 나올 때까지 판을 다시 뽑음
+function makeBoard() {
+  const target = MIN_SETS + Math.floor(Math.random() * (MAX_SETS - MIN_SETS + 1));
+  let best = null;
+  for (let t = 0; t < 200000; t++) {
+    const tiles = randomTiles();
+    const haps = findAllHaps(tiles);
+    if (haps.length === target) return { tiles, haps };
+    if (haps.length >= MIN_SETS && haps.length <= MAX_SETS && !best) best = { tiles, haps };
+  }
+  return best || (() => { const tiles = randomTiles(); return { tiles, haps: findAllHaps(tiles) }; })();
+}
+
+/* ===================== 2-1. 효과음 (Web Audio로 직접 합성, 파일 불필요) ===================== */
+const SOUND_KEY = 'hapgyeol_sound_v1';
+const VOL_LEVELS = [{ name: '작게', mul: 0.45 }, { name: '보통', mul: 1 }, { name: '크게', mul: 1.8 }];
+let sound = { on: true, level: 1 };
+try { const r = localStorage.getItem(SOUND_KEY); if (r) sound = Object.assign(sound, JSON.parse(r)); } catch (e) {}
+function saveSound() { try { localStorage.setItem(SOUND_KEY, JSON.stringify(sound)); } catch (e) {} }
+
+let audioCtx = null;
+function initAudio() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } catch (e) {}
+}
+// 브라우저 규칙상 화면을 한 번 눌러야 소리가 남 → 아무 버튼이나 누르면 소리 준비
+document.addEventListener('pointerdown', initAudio);
+document.addEventListener('keydown', initAudio);
+
+function tone(freq, type, dur, vol, delay = 0, slideTo = null) {
+  if (!sound.on || !audioCtx) return;
+  const v = Math.min(0.9, vol * VOL_LEVELS[sound.level].mul);
+  const t0 = audioCtx.currentTime + delay;
+  const osc = audioCtx.createOscillator(), g = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t0);
+  if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(v, t0 + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  osc.connect(g); g.connect(audioCtx.destination);
+  osc.start(t0); osc.stop(t0 + dur + 0.02);
+}
+
+const SFX = {
+  // 합 정답: 밝게 올라가는 "딩-동!"
+  good: d => { tone(784, 'triangle', 0.16, 0.22, d); tone(1175, 'triangle', 0.32, 0.24, d + 0.13); },
+  // 합 오답: 낮게 내려가는 "뿌-웅"
+  bad: d => { tone(240, 'sawtooth', 0.45, 0.16, d, 140); },
+  // 이미 찾은 합: 짧은 "삐빅" 두 번
+  dup: d => { tone(420, 'square', 0.09, 0.12, d); tone(420, 'square', 0.09, 0.12, d + 0.14); },
+  // 결 정답: "빠바밤!" 팡파르
+  gyeolGood: d => {
+    [[523, 0], [659, 0.11], [784, 0.22]].forEach(([f, t]) => tone(f, 'triangle', 0.14, 0.24, d + t));
+    tone(1047, 'triangle', 0.5, 0.3, d + 0.34); tone(1319, 'sine', 0.5, 0.14, d + 0.34);
+  },
+  // 결 오답: 길고 무거운 버저
+  gyeolBad: d => { tone(196, 'sawtooth', 0.35, 0.18, d); tone(147, 'sawtooth', 0.6, 0.2, d + 0.3, 98); },
+  // 새 판 등장: 빠르게 올라가는 "촤락"
+  newBoard: d => { [600, 760, 920, 1100, 1320].forEach((f, i) => tone(f, 'sine', 0.07, 0.1, d + i * 0.035)); },
+  // 차례 넘어감: 작은 "똑"
+  turn: d => { tone(880, 'sine', 0.07, 0.07, d); },
+  // 타일 선택 / 해제: 작은 "틱"
+  pick: d => { tone(1400, 'triangle', 0.035, 0.09, d); },
+  unpick: d => { tone(760, 'triangle', 0.035, 0.08, d); },
+  // 최종 우승
+  victory: d => {
+    const seq = [[523, 0, .18], [523, .2, .12], [523, .34, .12], [659, .48, .3], [523, .8, .18], [659, .98, .18], [784, 1.16, .7]];
+    seq.forEach(([f, t, l]) => tone(f, 'triangle', l, 0.26, d + t));
+    tone(392, 'sine', 1.3, 0.12, d + 0.48);
+  }
+};
+function playSfx(name, delay = 0) { initAudio(); if (SFX[name]) SFX[name](delay); }
+
+function keepSetupDraft() {
+  if (S || !document.getElementById('totalBoards')) return;
+  setupDraft.names = readSetupNames();
+  setupDraft.totalBoards = parseInt(document.getElementById('totalBoards').value, 10);
+}
+function toggleSound() { keepSetupDraft(); sound.on = !sound.on; saveSound(); render(); if (sound.on) playSfx('pick'); }
+function cycleVolume() { keepSetupDraft(); sound.level = (sound.level + 1) % VOL_LEVELS.length; saveSound(); render(); playSfx('good'); }
+
+/* ===================== 3. 상태 ===================== */
+let S = null;          // 게임 상태
+let history = [];      // 되돌리기용
+let flash = null;      // 방금 제출한 타일 강조 { idx:[...], type:'good'|'bad' }
+let flashTimer = null;
+let setupDraft = { teamCount: 4, names: [], totalBoards: 10 };
+
+function newGameState(teamNames, totalBoards) {
+  const b = makeBoard();
+  return {
+    phase: 'play',
+    teams: teamNames.map(n => ({ name: n, score: 0 })),
+    turn: 0,
+    boardNo: 1,
+    totalBoards,             // 0이면 제한 없음
+    tiles: b.tiles,
+    haps: b.haps,
+    found: [],               // [{idx:[i,j,k], team}]
+    mode: 'idle',            // idle | selecting
+    selected: [],
+    showAnswer: false,
+    msg: '첫 번째 판입니다. 차례인 조는 합! 또는 결!을 선택하세요.',
+    msgType: 'info'
+  };
+}
+
+function load() {
+  try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) S = JSON.parse(raw); } catch (e) {}
+}
+function save() { try { if (S) localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); else localStorage.removeItem(STORAGE_KEY); } catch (e) {} }
+function snapshot() { history.push(JSON.stringify(S)); if (history.length > 80) history.shift(); }
+function undo() {
+  if (!history.length) return;
+  S = JSON.parse(history.pop());
+  flash = null;
+  save(); render();
+}
+function commit() { save(); render(); }
+
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+const keyOf = arr => arr.slice().sort((a, b) => a - b).join('-');
+const label = arr => arr.slice().sort((a, b) => a - b).map(i => i + 1).join('·');
+
+/* ===================== 4. 게임 동작 ===================== */
+function nextTurn() { S.turn = (S.turn + 1) % S.teams.length; }
+function curTeam() { return S.teams[S.turn]; }
+
+function pressHap() {
+  if (S.mode !== 'idle') return;
+  S.mode = 'selecting'; S.selected = [];
+  S.msg = `${curTeam().name} 합! — 타일 3장을 고른 뒤 [확인]을 누르세요.`; S.msgType = 'info';
+  render();
+}
+function cancelHap() {
+  S.mode = 'idle'; S.selected = [];
+  S.msg = `${curTeam().name} 선택을 취소했습니다. 다시 합! 또는 결!을 선택하세요.`; S.msgType = 'info';
+  render();
+}
+function clickTile(i) {
+  if (S.mode !== 'selecting') return;
+  const pos = S.selected.indexOf(i);
+  if (pos >= 0) { S.selected.splice(pos, 1); playSfx('unpick'); }
+  else if (S.selected.length < 3) { S.selected.push(i); playSfx('pick'); }
+  render();
+}
+function confirmHap() {
+  if (S.mode !== 'selecting' || S.selected.length !== 3) return;
+  snapshot();
+  const team = curTeam();
+  const sel = S.selected.slice();
+  const [a, b, c] = sel.map(i => S.tiles[i]);
+  const k = keyOf(sel);
+  if (isHap(a, b, c)) {
+    if (S.found.some(f => keyOf(f.idx) === k)) {
+      team.score -= 1;
+      S.msg = `${team.name}: ${label(sel)}번은 이미 찾은 합입니다. -1점`; S.msgType = 'bad'; playSfx('dup');
+      setFlash(sel, 'bad');
+    } else {
+      team.score += 1;
+      S.found.push({ idx: sel, team: team.name });
+      S.msg = `${team.name}: ${label(sel)}번 합! 정답입니다. +1점`; S.msgType = 'good'; playSfx('good');
+      setFlash(sel, 'good');
+    }
+  } else {
+    team.score -= 1;
+    S.msg = `${team.name}: ${label(sel)}번은 합이 아닙니다. -1점`; S.msgType = 'bad'; playSfx('bad');
+    setFlash(sel, 'bad');
+  }
+  S.mode = 'idle'; S.selected = [];
+  nextTurn();
+  S.msg += ` → 다음: ${curTeam().name}`;
+  playSfx('turn', 0.75);
+  commit();
+}
+function pressGyeol() {
+  if (S.mode !== 'idle') return;
+  snapshot();
+  const team = curTeam();
+  const remaining = S.haps.length - S.found.length;
+  if (remaining === 0) {
+    team.score += 2;
+    const isLast = S.totalBoards > 0 && S.boardNo >= S.totalBoards;
+    nextTurn();
+    if (isLast) {
+      S.msg = `${team.name}: 결! 정답입니다. +2점 — 마지막 판이 끝났습니다.`; S.msgType = 'good';
+      S.phase = 'over';
+      playSfx('gyeolGood'); playSfx('victory', 1.1);
+      commit();
+      return;
+    }
+    const b = makeBoard();
+    S.tiles = b.tiles; S.haps = b.haps; S.found = []; S.boardNo++; S.showAnswer = false;
+    S.msg = `${team.name}: 결! 정답입니다. +2점 → ${S.boardNo}번째 판, 다음: ${curTeam().name}`; S.msgType = 'good';
+    flash = null;
+    playSfx('gyeolGood'); playSfx('newBoard', 0.95);
+  } else {
+    team.score -= 2;
+    nextTurn();
+    S.msg = `${team.name}: 결! 아직 합이 남아 있습니다. -2점 → 다음: ${curTeam().name}`; S.msgType = 'bad';
+    playSfx('gyeolBad'); playSfx('turn', 1.05);
+  }
+  commit();
+}
+function pressPass() {
+  if (S.mode !== 'idle') return;
+  snapshot();
+  const t = curTeam().name;
+  nextTurn();
+  S.msg = `${t} 패스 → 다음: ${curTeam().name}`; S.msgType = 'info';
+  commit();
+}
+function toggleAnswer() { S.showAnswer = !S.showAnswer; save(); render(); }
+
+function setFlash(idx, type) {
+  flash = { idx, type };
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => { flash = null; render(); }, 1600);
+}
+
+/* ===================== 5. 확인 창 ===================== */
+let confirmAction = null;
+function askConfirm(title, text, action) {
+  document.getElementById('confirmTitle').innerText = title;
+  document.getElementById('confirmText').innerText = text;
+  confirmAction = action;
+  document.getElementById('confirmModal').hidden = false;
+}
+function closeConfirm() { document.getElementById('confirmModal').hidden = true; confirmAction = null; }
+document.getElementById('confirmOk').onclick = () => { const a = confirmAction; closeConfirm(); if (a) a(); };
+
+function endGame() { askConfirm('게임을 끝낼까요?', '지금 점수로 최종 순위를 발표합니다.', () => { snapshot(); S.phase = 'over'; S.mode = 'idle'; S.selected = []; playSfx('victory'); commit(); }); }
+function newGame() {
+  askConfirm('새 게임을 시작할까요?', '현재 점수와 판이 모두 지워지고 설정 화면으로 돌아갑니다.', () => {
+    if (S) { setupDraft.teamCount = S.teams.length; setupDraft.names = S.teams.map(t => t.name); setupDraft.totalBoards = S.totalBoards; }
+    S = null; history = []; flash = null; save(); render();
+  });
+}
+
+/* ===================== 6. 화면 그리기 ===================== */
+function shapeSVG(t) {
+  const fill = COLOR_VAR[t.color];
+  const stroke = t.bg === 2 ? '#fbfaf7' : '#15161a';
+  const common = `fill="${fill}" stroke="${stroke}" stroke-width="5" stroke-linejoin="round"`;
+  let inner;
+  if (t.shape === 0) inner = `<circle cx="50" cy="50" r="44" ${common}/>`;
+  else if (t.shape === 1) inner = `<polygon points="50,6 95,90 5,90" ${common}/>`;
+  else inner = `<rect x="9" y="9" width="82" height="82" rx="4" ${common}/>`;
+  return `<svg viewBox="0 0 100 100" aria-hidden="true">${inner}</svg>`;
+}
+
+function render() {
+  const app = document.getElementById('app');
+  if (!S) { app.innerHTML = renderSetup(); bindSetup(); return; }
+  if (S.phase === 'over') { app.innerHTML = renderTopbar() + renderResult(); return; }
+  app.innerHTML = renderTopbar() + renderGame();
+}
+
+function renderTopbar() {
+  return `<div class="topbar">
+    <div class="brand">결합 게임<small>${S.phase === 'over' ? '최종 결과' : `${S.boardNo}번째 판${S.totalBoards ? ` / ${S.totalBoards}판` : ''}`}</small></div>
+    <div class="chips">
+      <a class="chip" href="play.html" style="text-decoration:none; display:inline-flex; align-items:center;">← 놀이 목록</a>
+      <button class="chip ${sound.on ? '' : 'off'}" onclick="toggleSound()">${sound.on ? '🔊 효과음 켬' : '🔇 효과음 끔'}</button>
+      <button class="chip" onclick="cycleVolume()" ${sound.on ? '' : 'disabled'}>음량: ${VOL_LEVELS[sound.level].name}</button>
+      <button class="chip" onclick="undo()" ${history.length ? '' : 'disabled'}>↩️ 되돌리기</button>
+      ${S.phase === 'play' ? `<button class="chip ${S.showAnswer ? 'on' : ''}" onclick="toggleAnswer()">🔑 정답 보기(진행자)</button>
+      <button class="chip" onclick="endGame()">🏁 게임 끝내기</button>` : ''}
+      <button class="chip" onclick="newGame()">🔄 새 게임</button>
+    </div>
+  </div>`;
+}
+
+function renderGame() {
+  const tiles = S.tiles.map((t, i) => {
+    let cls = `tile bg${t.bg}`;
+    if (S.selected.includes(i)) cls += ' sel';
+    if (flash && flash.idx.includes(i)) cls += flash.type === 'good' ? ' flash-good' : ' flash-bad';
+    const name = `${i + 1}번: ${BGS[t.bg]} 바탕 ${COLORS[t.color]} ${SHAPES[t.shape]}`;
+    return `<button class="${cls}" onclick="clickTile(${i})" aria-label="${name}" ${S.mode === 'selecting' ? '' : 'tabindex="-1"'}>
+      <span class="no">${i + 1}</span>${shapeSVG(t)}</button>`;
+  }).join('');
+
+  const team = curTeam();
+  let actions;
+  if (S.mode === 'selecting') {
+    actions = `<div class="sel-hint">선택 ${S.selected.length} / 3 ${S.selected.length ? `(${label(S.selected)}번)` : ''}</div>
+      <button class="btn btn-ok" onclick="confirmHap()" ${S.selected.length === 3 ? '' : 'disabled'}>확인</button>
+      <button class="btn btn-cancel" onclick="cancelHap()">취소</button>`;
+  } else {
+    actions = `<button class="btn btn-hap" onclick="pressHap()">합!</button>
+      <button class="btn btn-gyeol" onclick="pressGyeol()">결!</button>
+      <button class="btn btn-pass" onclick="pressPass()">패스 (점수 변화 없음)</button>`;
+  }
+
+  const order = S.teams.map((t, i) => ({ ...t, i })).sort((a, b) => b.score - a.score);
+  const rankOf = sc => order.findIndex(o => o.score === sc) + 1;
+  const scores = S.teams.map((t, i) => `<div class="score-row ${i === S.turn ? 'turn' : ''}">
+      <span class="rk">${rankOf(t.score)}위</span><span class="nm">${esc(t.name)}${i === S.turn ? ' ◀' : ''}</span>
+      <span class="pt num ${t.score < 0 ? 'neg' : ''}">${t.score}</span></div>`).join('');
+
+  const found = S.found.length
+    ? S.found.map(f => `<span class="tag">${label(f.idx)}<small>${esc(f.team)}</small></span>`).join('')
+    : '<span class="empty">아직 찾은 합이 없습니다.</span>';
+
+  const answerInfo = S.showAnswer
+    ? `<div class="answer-box">🔑 이 판의 합 ${S.haps.length}개 · 남은 합 ${S.haps.length - S.found.length}개<br>${S.haps.filter(h => !S.found.some(f => keyOf(f.idx) === keyOf(h))).map(label).join(' / ') || '남은 합 없음 → 결! 정답'}</div>`
+    : '';
+
+  return `<div class="game">
+    <div class="board-wrap">
+      <div class="board-meta"><span>${S.boardNo}번째 판</span><span>찾은 합 ${S.found.length}개</span></div>
+      <div class="board ${S.mode === 'selecting' ? 'selecting' : ''}">${tiles}</div>
+    </div>
+    <div class="side">
+      <div class="card turn-card">
+        <div class="turn-label">지금 차례</div>
+        <div class="turn-name">${esc(team.name)}</div>
+        <div class="msg ${S.msgType}">${esc(S.msg)}</div>
+      </div>
+      <div class="actions">${actions}</div>
+      <div class="card">
+        <div class="card-title">조별 점수</div>
+        <div class="scores">${scores}</div>
+      </div>
+      <div class="card">
+        <div class="card-title">이번 판에서 찾은 합</div>
+        <div class="found">${found}</div>
+        ${answerInfo}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderResult() {
+  const order = S.teams.slice().sort((a, b) => b.score - a.score);
+  const top = order[0].score;
+  const winners = order.filter(t => t.score === top).map(t => t.name);
+  let rank = 0, prev = null;
+  const rows = order.map((t, idx) => {
+    if (t.score !== prev) { rank = idx + 1; prev = t.score; }
+    return `<div class="score-row ${rank === 1 ? 'first' : ''}"><span class="rk">${rank}위</span>
+      <span class="nm">${rank === 1 ? '🏆 ' : ''}${esc(t.name)}</span><span class="pt num ${t.score < 0 ? 'neg' : ''}">${t.score}</span></div>`;
+  }).join('');
+  return `<div class="result">
+    <h1>${esc(winners.join(', '))} 우승!</h1>
+    <div class="sub">${S.boardNo}판 진행 · ${esc(S.msg)}</div>
+    <div class="scores podium">${rows}</div>
+  </div>`;
+}
+
+function renderSetup() {
+  const n = setupDraft.teamCount;
+  const inputs = Array.from({ length: n }, (_, i) =>
+    `<input type="text" id="teamName${i}" maxlength="12" value="${esc(setupDraft.names[i] || `${TEAM_LETTERS[i]}조`)}" aria-label="${i + 1}번째 조 이름">`).join('');
+  const countOpts = [2,3,4,5,6,7,8].map(k => `<option value="${k}" ${k === n ? 'selected' : ''}>${k}개 조</option>`).join('');
+  const boardOpts = [[5,'5판'],[10,'10판'],[15,'15판'],[20,'20판'],[0,'제한 없음 (게임 끝내기 버튼으로 종료)']]
+    .map(([v,l]) => `<option value="${v}" ${v === setupDraft.totalBoards ? 'selected' : ''}>${l}</option>`).join('');
+  return `<div class="setup">
+    <a href="play.html" style="color:var(--text-dim); font-weight:700; text-decoration:none;">← 교실 놀이 수업실로</a>
+    <h1>결합 게임</h1>
+    <p class="lead">3×3 판에서 <b>모양·색·바탕색</b>이 각각 모두 같거나 모두 다른 타일 3장을 찾는 조별 게임입니다.</p>
+    <div class="card">
+      <div class="field"><label for="teamCount">조 개수</label><select id="teamCount">${countOpts}</select></div>
+      <div class="field"><label>조 이름 (차례 순서)</label><div class="team-inputs">${inputs}</div></div>
+      <div class="field"><label for="totalBoards">판 수</label><select id="totalBoards">${boardOpts}</select></div>
+      <div class="field"><label>점수 규칙</label>
+        <ul class="rules">
+          <li>차례는 조 순서대로 돌아갑니다. 한 번 답하면 다음 조로 넘어갑니다.</li>
+          <li><b>합!</b> 정답 +1 / 틀리거나 이미 찾은 합 -1</li>
+          <li><b>결!</b> 남은 합이 없을 때 +2 (다음 판으로) / 합이 남아 있으면 -2</li>
+          <li>판마다 합은 0~6개이며, 남은 개수는 공개하지 않습니다.</li>
+        </ul>
+      </div>
+      <div class="field"><label>효과음</label>
+        <div class="chips">
+          <button class="chip" onclick="toggleSound()">${sound.on ? '🔊 효과음 켬' : '🔇 효과음 끔'}</button>
+          <button class="chip" onclick="cycleVolume()" ${sound.on ? '' : 'disabled'}>음량: ${VOL_LEVELS[sound.level].name} (눌러서 바꾸기)</button>
+        </div>
+      </div>
+      <button class="btn btn-hap" style="width:100%;" onclick="startGame()">게임 시작</button>
+    </div>
+  </div>`;
+}
+function readSetupNames() {
+  const names = [];
+  for (let i = 0; i < setupDraft.teamCount; i++) {
+    const el = document.getElementById('teamName' + i);
+    names.push(el ? el.value : (setupDraft.names[i] || ''));
+  }
+  return names;
+}
+function bindSetup() {
+  document.getElementById('teamCount').onchange = e => {
+    setupDraft.names = readSetupNames();
+    setupDraft.teamCount = parseInt(e.target.value, 10);
+    setupDraft.totalBoards = parseInt(document.getElementById('totalBoards').value, 10);
+    render();
+  };
+}
+function startGame() {
+  const names = readSetupNames().map((v, i) => v.trim() || `${TEAM_LETTERS[i]}조`);
+  const total = parseInt(document.getElementById('totalBoards').value, 10);
+  setupDraft.names = names; setupDraft.totalBoards = total;
+  history = []; flash = null;
+  S = newGameState(names, total);
+  playSfx('newBoard');
+  commit();
+}
+
+/* ===================== 7. 키보드 (진행자 편의) ===================== */
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('confirmModal').hidden) { if (e.key === 'Escape') closeConfirm(); return; }
+  if (!S || S.phase !== 'play' || e.target.tagName === 'INPUT') return;
+  if (S.mode === 'selecting') {
+    if (/^[1-9]$/.test(e.key)) clickTile(parseInt(e.key, 10) - 1);
+    else if (e.key === 'Enter') confirmHap();
+    else if (e.key === 'Escape') cancelHap();
+  }
+});
+
+/* ===================== 8. 시작 ===================== */
+function boot() { load(); render(); }
+if (window.claude?.hot) {
+  window.claude.hot.snapshot(() => ({ S, history }));
+  if (window.claude.hot.ready) window.claude.hot.ready(d => { if (d && 'S' in d) { S = d.S; history = d.history || []; render(); } else boot(); });
+  else boot();
+} else boot();
+</script>
+</body>
+</html>
