@@ -1,536 +1,858 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>무제한 초코 경매 - 진행자 전용</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: 'Pretendard', sans-serif, -apple-system;
-      margin: 20px auto;
-      max-width: 1200px;
-      background: #fdf8f6;
-      color: #332724;
-      padding: 0 15px 40px;
-    }
-    .header-nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-    .back-btn {
-      text-decoration: none;
-      color: #78350f;
-      font-size: 14px;
-      font-weight: 600;
-      transition: color 0.15s;
-    }
-    .back-btn:hover { color: #451a03; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>무제한 명화 경매</title>
+<style>
+  /* 레이아웃: 경매장 — 위 진행 바 / 가운데 조명 받은 액자(작품) + 오른쪽 진행 버튼 / 아래 모둠 카드 줄. 프로젝터용 단일 어두운 테마 */
+  :root {
+    --bg: #1a0f12;
+    --wall: #2b1519;
+    --panel: #331b20;
+    --panel-2: #42242a;
+    --line: #5a3138;
+    --text: #f7ece4;
+    --text-dim: #c4a99f;
+    --gold: #e8b64c;
+    --gold-light: #f6d98b;
+    --win: #f2c14e;
+    --void: #b98cf0;
+    --lose: #6fb3ff;
+    --good: #48d597;
+    --bad: #ff6b6b;
+    --font-display: 'Gowun Batang', 'Noto Serif KR', serif;
+    --font-body: 'Noto Sans KR', system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; background: var(--bg); }
+  body {
+    margin: 0; color: var(--text); font-family: var(--font-body);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 12px 20px;
+    background: radial-gradient(ellipse at 40% 0%, #3a1c22 0%, var(--bg) 60%);
+  }
+  button { font-family: inherit; }
+  button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+  .num { font-variant-numeric: tabular-nums; }
+  .wrap { max-width: 1500px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
 
-    h1 { text-align: center; margin: 4px 0 6px 0; color: #451a03; }
-    .subtitle { text-align: center; color: #78350f; font-size: 14px; margin-bottom: 20px; font-weight: 600; }
+  /* 상단 바 */
+  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .brand { font-family: var(--font-display); font-weight: 700; font-size: 26px; color: var(--gold-light); }
+  .brand small { font-family: var(--font-body); font-size: 15px; color: var(--text-dim); margin-left: 10px; font-weight: 700; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .chip {
+    background: var(--panel-2); color: var(--text-dim); border: 1px solid var(--line);
+    border-radius: 999px; padding: 6px 14px; font-size: 14px; font-weight: 700; cursor: pointer;
+    min-height: 34px; text-decoration: none; display: inline-flex; align-items: center; user-select: none;
+  }
+  .chip:hover:not(:disabled) { color: var(--text); border-color: var(--text-dim); }
+  .chip:disabled { opacity: .4; cursor: not-allowed; }
+  .chip.hold:active { background: var(--gold); color: #2a1a00; }
 
-    /* 대시보드 / 스코어보드 */
-    .scoreboard-container {
-      background: #ffffff;
-      border: 2px solid #edded9;
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-    }
-    .score-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-      margin-top: 12px;
-    }
-    .score-card {
-      background: #fcf4f1;
-      border: 1px solid #ebd3cb;
-      border-radius: 8px;
-      padding: 12px;
-      text-align: center;
-      position: relative;
-    }
-    .score-card.winner {
-      background: #ffedd5;
-      border-color: #f97316;
-      box-shadow: 0 0 0 2px #f97316;
-    }
-    .score-card.bankrupt {
-      background: #fee2e2;
-      border-color: #ef4444;
-      opacity: 0.85;
-    }
-    .bankrupt-tag {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      background: #ef4444;
-      color: #fff;
-      font-size: 11px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: bold;
-    }
-    .team-title { font-size: 17px; font-weight: bold; margin-bottom: 4px; color: #2d1810; }
-    .team-points { font-size: 26px; font-weight: 800; color: #b45309; }
-    .team-spent { font-size: 13px; color: #475569; margin-top: 4px; font-weight: 600; }
-    .team-rank { font-size: 12px; color: #78350f; margin-top: 4px; }
+  /* 메인 */
+  .main { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr); gap: 16px; align-items: stretch; }
+  .stage {
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 0%, rgba(255,230,170,.16) 0%, transparent 55%), var(--wall);
+    border: 1px solid var(--line); border-radius: 18px; padding: 18px 18px 14px;
+    display: flex; flex-direction: column; align-items: center; gap: 10px; position: relative; min-width: 0;
+  }
+  .art-frame { position: relative; width: 100%; max-width: min(100%, calc((100vh - 500px) * 4 / 3)); min-width: 240px; transition: transform .5s; }
+  .art-frame canvas { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; }
+  /* 등급별 액자 */
+  .art-frame.t1 { padding: 0; transform: rotate(-1.5deg); box-shadow: 0 6px 16px rgba(0,0,0,.5); }
+  .art-frame.t2 { padding: 10px; background: #7a5532; box-shadow: inset 0 0 0 2px #5a3c22, 0 8px 18px rgba(0,0,0,.5); }
+  .art-frame.t3 { padding: 16px; background: #111; box-shadow: inset 0 0 0 6px #f4f1ea, 0 8px 20px rgba(0,0,0,.55); }
+  .art-frame.t4 { padding: 18px; background: linear-gradient(135deg, #a8792a, #f2cf7a 40%, #9a6a1e 70%, #e8c06a); box-shadow: inset 0 0 0 3px #6d4a12, 0 10px 26px rgba(0,0,0,.6); }
+  .art-frame.t5 { padding: 26px; background: linear-gradient(135deg, #8a5d12, #ffe39a 25%, #b8841f 50%, #fff0b8 70%, #8a5d12);
+    box-shadow: inset 0 0 0 4px #5e3d07, inset 0 0 0 10px rgba(255,240,190,.35), 0 0 60px 10px rgba(246,217,139,.35), 0 12px 30px rgba(0,0,0,.6); }
+  .art-frame.t5::after { content: ''; position: absolute; inset: -14px; border-radius: 8px; border: 2px dashed rgba(246,217,139,.5); pointer-events: none; }
+  .art-frame.enter { animation: artIn .7s ease-out; }
+  @keyframes artIn { from { opacity: 0; transform: translateY(-16px) scale(.96); } to { opacity: 1; } }
 
-    /* 3·6·9 라운드 공지 바 */
-    .notice-box {
-      background: #eff6ff;
-      border: 2px dashed #3b82f6;
-      border-radius: 10px;
-      padding: 12px 18px;
-      margin-bottom: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 600;
-      color: #1e3a8a;
-    }
-    .notice-btn {
-      background: #2563eb;
-      color: #ffffff;
-      border: none;
-      padding: 7px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 13px;
-    }
-    .notice-btn:hover { background: #1d4ed8; }
+  .art-caption { text-align: center; }
+  .art-tier { color: var(--text-dim); font-weight: 700; font-size: clamp(14px, 1.4vw, 17px); }
+  .art-title { font-family: var(--font-display); font-weight: 700; font-size: clamp(22px, 2.4vw, 36px); line-height: 1.15; color: var(--text); display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+  .art-points { display: inline-block; background: var(--gold); color: #2a1a00; border-radius: 999px; padding: 4px 16px; font-weight: 900; font-size: clamp(18px, 2vw, 26px); }
+  .art-stars { color: var(--gold); letter-spacing: 3px; font-size: clamp(16px, 1.6vw, 22px); }
 
-    /* 입력 테이블 스타일 */
-    .table-container {
-      background: #ffffff;
-      border-radius: 12px;
-      border: 1px solid #edded9;
-      padding: 16px;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-      overflow-x: auto;
-      margin-bottom: 24px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: center;
-    }
-    th, td {
-      padding: 8px 6px;
-      border-bottom: 1px solid #f0e6e4;
-      vertical-align: middle;
-      font-size: 14px;
-    }
-    th {
-      background: #fbf0ec;
-      font-weight: 600;
-      color: #5c3d2e;
-    }
-    .round-col { width: 60px; font-weight: bold; }
-    .point-col { width: 85px; }
-    .status-col { width: 240px; font-size: 12px; text-align: left; padding-left: 10px; }
+  .sold-banner {
+    position: absolute; top: 18%; left: 50%; transform: translateX(-50%) rotate(-6deg);
+    background: #b3202b; color: #fff; font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(26px, 3.4vw, 46px); padding: 8px 28px; border: 4px solid #fff; border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.5); white-space: nowrap; animation: stamp .35s ease-out;
+  }
+  .sold-banner.unsold { background: #4b4b55; }
+  @keyframes stamp { from { transform: translateX(-50%) rotate(-6deg) scale(2.2); opacity: 0; } to { transform: translateX(-50%) rotate(-6deg) scale(1); opacity: 1; } }
 
-    input {
-      padding: 6px 4px;
-      border: 1px solid #d4c2bc;
-      border-radius: 6px;
-      text-align: center;
-      font-size: 14px;
-    }
-    input.point-input { width: 60px; }
-    input.bid-input { width: 80px; }
-    input:focus {
-      outline: none;
-      border-color: #92400e;
-      box-shadow: 0 0 0 2px rgba(146,64,14,0.15);
-    }
+  .side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+  .round-big { font-family: var(--font-display); font-weight: 700; font-size: clamp(30px, 3.6vw, 50px); color: var(--gold-light); line-height: 1; }
+  .round-sub { color: var(--text-dim); font-weight: 700; margin-top: 4px; }
+  .msg { font-weight: 700; font-size: clamp(15px, 1.5vw, 19px); line-height: 1.5; text-wrap: balance; }
+  .btn {
+    border: none; border-radius: 14px; cursor: pointer; font-weight: 900; min-height: 60px; width: 100%;
+    font-size: clamp(18px, 1.9vw, 24px); padding: 10px 14px; transition: transform .08s;
+  }
+  .btn:active:not(:disabled) { transform: translateY(2px); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-gold { background: var(--gold); color: #2a1a00; }
+  .btn-red { background: #c22d38; color: #fff; }
+  .btn-blue { background: #3b6fd8; color: #fff; }
+  .btn-ghost { background: transparent; color: var(--text); border: 2px solid var(--line); }
+  .btn-row { display: flex; flex-direction: column; gap: 10px; }
+  .milestone-note { color: var(--gold-light); font-weight: 700; font-size: 15px; text-align: center; }
 
-    button.check-btn {
-      background: #78350f;
-      color: #ffffff;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 12px;
-    }
-    button.check-btn:hover { background: #5c280b; }
-    button.check-btn.checked { background: #a8a29e; }
+  /* 모둠 카드 */
+  .teams { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .tcard { background: var(--panel); border: 2px solid var(--line); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .tcard.lead { border-color: var(--gold); }
+  .t-head { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+  .t-name { font-weight: 900; font-size: clamp(16px, 1.6vw, 21px); overflow-wrap: anywhere; min-width: 0; }
+  .t-rank { color: var(--text-dim); font-weight: 700; font-size: 13px; white-space: nowrap; }
+  .t-points { font-family: var(--font-display); font-weight: 700; font-size: clamp(28px, 2.6vw, 40px); line-height: 1; }
+  .t-points.neg { color: var(--bad); }
+  .t-points small { font-size: .45em; color: var(--text-dim); font-family: var(--font-body); }
+  .flip { perspective: 800px; height: 64px; }
+  .flip-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .7s cubic-bezier(.2,.8,.2,1); }
+  .flip.flipped .flip-inner { transform: rotateY(180deg); }
+  .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 6px; text-align: center; }
+  .face.front { background: var(--panel-2); color: var(--text-dim); font-weight: 800; font-size: 16px; }
+  .face.front.done { background: #23402f; color: var(--good); }
+  .face.back { transform: rotateY(180deg); background: #24161a; border: 1px solid var(--line); }
+  .tag { border-radius: 8px; padding: 3px 10px; font-weight: 900; font-size: clamp(13px, 1.25vw, 16px); white-space: nowrap; }
+  .tag.win { background: var(--win); color: #2a1a00; }
+  .tag.void { background: var(--void); color: #1f0b3a; }
+  .tag.lose { background: var(--lose); color: #06203f; }
+  .tag.none { color: var(--text-dim); font-weight: 700; }
 
-    .tag-win { color: #dc2626; font-weight: bold; }
-    .tag-loss { color: #2563eb; }
-    .tag-spent { color: #15803d; font-weight: bold; }
-    .tag-draw { color: #9333ea; font-size: 11px; }
+  .credit { text-align: center; color: var(--text-dim); font-size: 12.5px; line-height: 1.6; }
+  .credit a { color: var(--text-dim); }
 
-    /* 하단 버튼 바 */
-    .bottom-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .btn-reset {
-      background: #ef4444;
-      color: #ffffff;
-      border: none;
-      padding: 9px 18px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .btn-reset:hover { background: #dc2626; }
-    .home-btn {
-      text-decoration: none;
-      background: #78350f;
-      color: #ffffff;
-      padding: 9px 20px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 13px;
-    }
-    .home-btn:hover { background: #5c280b; }
+  /* 모달 공통 */
+  .modal { position: fixed; inset: 0; background: rgba(10,4,6,.86); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+  .modal-card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 20px; width: 100%; max-width: 860px; max-height: 92vh; overflow: auto; }
+  .modal-card h3 { margin: 0 0 6px; font-size: 22px; }
+  .modal-card .hint { color: var(--text-dim); margin: 0 0 14px; font-size: 14px; line-height: 1.5; }
 
-    /* 모달 */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-    .modal-content {
-      background: #ffffff;
-      padding: 24px 30px;
-      border-radius: 12px;
-      max-width: 460px;
-      text-align: center;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    }
-    .modal-content .big-text { font-size: 32px; font-weight: 800; color: #dc2626; margin: 16px 0; }
-    .modal-close-btn {
-      background: #334155;
-      color: #fff;
-      border: none;
-      padding: 8px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-  </style>
+  /* 가림 입력 */
+  .bid-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; }
+  .bid-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; align-content: start; }
+  .bid-field { background: var(--panel-2); border: 2px solid var(--line); border-radius: 12px; padding: 10px; cursor: pointer; text-align: left; color: var(--text); }
+  .bid-field.active { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(232,182,76,.3); }
+  .bid-field .bn { font-weight: 800; font-size: 15px; overflow-wrap: anywhere; }
+  .bid-field .bv { font-size: 24px; font-weight: 900; letter-spacing: 4px; margin-top: 4px; min-height: 32px; }
+  .bid-field .bv.empty { color: var(--text-dim); font-size: 14px; letter-spacing: 0; font-weight: 700; }
+  .bid-field .bv.shown { color: var(--gold-light); letter-spacing: 0; }
+  .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .key { background: var(--panel-2); border: 1px solid var(--line); color: var(--text); border-radius: 12px; min-height: 56px; font-size: 24px; font-weight: 900; cursor: pointer; }
+  .key:active { background: var(--gold); color: #2a1a00; }
+  .key.small { font-size: 16px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .modal-actions .btn { flex: 1 1 160px; min-height: 54px; }
+  .peek-btn { user-select: none; -webkit-user-select: none; touch-action: none; }
+  .error { color: var(--bad); font-weight: 800; min-height: 1.4em; margin-top: 8px; }
+
+  /* 총액 공개 */
+  .reveal-amount { font-family: var(--font-display); font-weight: 700; font-size: clamp(48px, 8vw, 96px); color: var(--gold-light); text-align: center; margin: 10px 0; }
+
+  /* 표 */
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border-bottom: 1px solid var(--line); padding: 7px 8px; text-align: center; white-space: nowrap; }
+  th { color: var(--text-dim); font-weight: 800; position: sticky; top: 0; background: var(--panel); }
+  td.art { text-align: left; }
+  td.c-win { background: rgba(242,193,78,.22); color: var(--gold-light); font-weight: 900; }
+  td.c-void { color: var(--void); text-decoration: line-through; }
+  td.c-lose { color: var(--lose); }
+  tfoot td { font-weight: 900; border-top: 2px solid var(--line); }
+  .legend { display: flex; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--text-dim); margin: 8px 0; }
+
+  /* 설정 화면 */
+  .setup { max-width: 720px; margin: 3vh auto 0; width: 100%; }
+  .setup h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(36px, 5.4vw, 60px); color: var(--gold-light); margin: 0; }
+  .setup .lead { color: var(--text-dim); line-height: 1.6; margin: 6px 0 16px; }
+  .field { margin-bottom: 16px; }
+  .field > label, .field > .lbl { display: block; font-weight: 800; margin-bottom: 6px; }
+  .field select, .field input[type=text] { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 17px; font-family: inherit; }
+  .team-inputs { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+  .check { display: flex; gap: 8px; align-items: center; font-weight: 700; cursor: pointer; }
+  .check input { width: 20px; height: 20px; accent-color: var(--gold); }
+  .rules { color: var(--text-dim); font-size: 15px; line-height: 1.7; margin: 0; padding-left: 1.2em; }
+  .rules b { color: var(--text); }
+
+  /* 결과 화면 */
+  .result { display: flex; flex-direction: column; gap: 14px; }
+  .result h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(34px, 5vw, 60px); color: var(--gold-light); margin: 0; text-align: center; }
+  .rank-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+  .rank-card { background: var(--panel); border: 2px solid var(--line); border-radius: 14px; padding: 12px; text-align: center; }
+  .rank-card.first { border-color: var(--gold); background: #4a3418; }
+  .rank-card.bankrupt { border-color: var(--bad); background: #4a1b20; }
+  .rank-card .rk { font-weight: 900; color: var(--text-dim); }
+  .rank-card .nm { font-weight: 900; font-size: 20px; margin: 2px 0; overflow-wrap: anywhere; }
+  .rank-card .pt { font-family: var(--font-display); font-weight: 700; font-size: 34px; }
+  .rank-card .sp { color: var(--text-dim); font-weight: 700; }
+  .rank-card .bk { display: inline-block; background: var(--bad); color: #fff; border-radius: 6px; padding: 2px 8px; font-weight: 900; font-size: 13px; margin-top: 4px; }
+
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; }
+    .art-frame { max-width: 100%; }
+    .bid-layout { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet">
+
 </head>
 <body>
+<div class="wrap" id="app"></div>
 
-  <div class="header-nav">
-    <a href="play.html" class="back-btn">← 놀이 목록으로 돌아가기</a>
-    <span style="font-size:13px; color:#8c6a5e; font-weight:600;">진행자 단독 화면</span>
-  </div>
-
-  <h1>🍫 무제한 초코 경매(블레스유 선생님 자료)</h1>
-  <div class="subtitle">※ 낙찰자만 금액 차감 | 동점 입찰 무효(단독 차순위 낙찰) | 최고 누적 지출 조 파산 패배 | 출처: https://indischool.com/boards/libRecreation/37327221</div>
-
-  <!-- 대시보드 -->
-  <div class="scoreboard-container">
-    <h2 style="margin:0 0 10px 0; font-size:17px; text-align:center; color:#451a03;">🏆 조별 누적 현황</h2>
-    <div class="score-grid" id="scoreGrid"></div>
-  </div>
-
-  <!-- 마일스톤 안내 배너 -->
-  <div class="notice-box" id="noticeBox">
-    <span id="noticeText">📌 3R, 6R, 9R가 완료되면 아이들에게 공개할 낙찰 총액 안내 버튼이 나타납니다.</span>
-    <button class="notice-btn" id="noticeBtn" style="display:none;" onclick="openNoticeModal()">아이들에게 총합 공개</button>
-  </div>
-
-  <!-- 입력 테이블 -->
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th class="round-col">라운드</th>
-          <th class="point-col">초코점수</th>
-          <th>1조 (만원)</th>
-          <th>2조 (만원)</th>
-          <th>3조 (만원)</th>
-          <th>4조 (만원)</th>
-          <th>확인</th>
-          <th class="status-col">결과 및 지출</th>
-        </tr>
-      </thead>
-      <tbody id="auctionTableBody"></tbody>
-    </table>
-  </div>
-
-  <!-- 하단 제어 바 -->
-  <div class="bottom-bar">
-    <button class="btn-reset" onclick="resetGame()">🔄 게임 초기화 (새 게임)</button>
-    <a href="play.html" class="home-btn">놀이 목록(메뉴)으로 나가기</a>
-  </div>
-
-  <!-- 3·6·9 라운드 공개 모달 -->
-  <div class="modal-overlay" id="noticeModal">
-    <div class="modal-content">
-      <h3 style="margin-top:0; color:#1e3a8a;" id="modalTitle">📢 학생 공개용 공지</h3>
-      <p style="color:#475569; margin-bottom:4px;">지금까지 낙찰자들이 실제 사용한 총합 금액입니다.</p>
-      <div class="big-text" id="modalAmount">0 만원</div>
-      <button class="modal-close-btn" onclick="closeNoticeModal()">닫기</button>
+<!-- 가림 입력 창 -->
+<div class="modal" id="bidModal" hidden>
+  <div class="modal-card">
+    <h3 id="bidTitle">입찰 금액 입력 (진행자)</h3>
+    <p class="hint">모둠을 누르고 금액(만원)을 입력하세요. 숫자는 몇 자리든 ●●● 로 가려집니다. 키보드 숫자·Backspace·Tab(다음 모둠)도 쓸 수 있습니다.</p>
+    <div class="bid-layout">
+      <div class="bid-list" id="bidList"></div>
+      <div>
+        <div class="keypad" id="keypad"></div>
+        <button class="btn btn-ghost peek-btn" id="peekBtn" style="margin-top:10px; min-height:48px; font-size:16px;">👁 누르고 있는 동안만 보기</button>
+      </div>
+    </div>
+    <div class="error" id="bidError"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeBidModal()">취소</button>
+      <button class="btn btn-gold" onclick="submitBids()">입력</button>
     </div>
   </div>
+</div>
 
-  <script>
-    const TOTAL_ROUNDS = 12;
-    const STORAGE_KEY_AUCTION = 'choco_auction_data_v1';
+<!-- 3라운드 총액 공개 -->
+<div class="modal" id="totalModal" hidden>
+  <div class="modal-card" style="max-width:560px; text-align:center;">
+    <h3 id="totalTitle">낙찰 총액 공개</h3>
+    <p class="hint">지금까지 낙찰받은 모둠들이 실제로 쓴 금액의 합계입니다.</p>
+    <div class="reveal-amount num" id="totalAmount">0만원</div>
+    <div class="modal-actions"><button class="btn btn-gold" onclick="closeModal('totalModal')">닫기</button></div>
+  </div>
+</div>
 
-    let roundsData = loadRoundsData();
+<!-- 진행자 기록 (누르고 있는 동안만) -->
+<div class="modal" id="hostModal" hidden style="pointer-events:none;">
+  <div class="modal-card">
+    <h3>🔒 진행자 기록 (손을 떼면 사라집니다)</h3>
+    <div id="hostBody"></div>
+  </div>
+</div>
 
-    function defaultRoundsData() {
-      return Array.from({ length: TOTAL_ROUNDS }, (_, i) => ({
-        round: i + 1,
-        chocoPoint: 1,
-        bids: ['', '', '', ''],
-        isEvaluated: false,
-        winner: null,
-        winningBid: 0,
-        losers: [],
-        spentAmounts: [0, 0, 0, 0],
-        summaryHtml: '-'
-      }));
+<!-- 확인 창 -->
+<div class="modal" id="confirmModal" hidden>
+  <div class="modal-card" style="max-width:440px;">
+    <h3 id="confirmTitle">확인</h3>
+    <p class="hint" id="confirmText"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('confirmModal')">취소</button>
+      <button class="btn btn-gold" id="confirmOk">확인</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== 0. 설정값 ===================== */
+const BACK_LINK = 'play.html';   // GitHub 버전에서는 'play.html'
+const STORAGE_KEY = 'art_auction_v1';
+const ROUND_OPTIONS = [9, 12, 15, 18, 21, 24, 27, 30];
+const TIER_WEIGHTS = [27, 27, 26, 13, 7];   // 1~5점 확률(%)
+const TIERS = {
+  1: { name: '낙서 스케치', titles: ['공책 구석의 낙서', '연필 낙서', '지우개 자국 스케치', '심심할 때 그린 그림'] },
+  2: { name: '동네 화가의 풍경화', titles: ['언덕 위의 집', '시골 마을의 오후', '강가의 풍경', '해 질 녘 들판'] },
+  3: { name: '유명 화가의 판화', titles: ['색면 구성 No.7', '도형의 리듬', '푸른 구성', '겹쳐진 시간'] },
+  4: { name: '왕실 초상화', titles: ['왕의 초상', '왕비의 초상', '어린 왕자의 초상', '대공의 초상'] },
+  5: { name: '전설의 명화', titles: ['황금빛 소용돌이', '빛의 정원', '영원의 하늘', '불꽃의 춤'] }
+};
+
+/* ===================== 1. 효과음 ===================== */
+const SOUND_KEY = 'art_auction_sound_v1';
+const VOL_LEVELS = [{ name: '작게', mul: 0.45 }, { name: '보통', mul: 1 }, { name: '크게', mul: 1.8 }];
+let sound = { on: true, level: 1 };
+try { const r = localStorage.getItem(SOUND_KEY); if (r) sound = Object.assign(sound, JSON.parse(r)); } catch (e) {}
+function saveSound() { try { localStorage.setItem(SOUND_KEY, JSON.stringify(sound)); } catch (e) {} }
+let audioCtx = null, noiseBuf = null;
+function initAudio() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (!noiseBuf) {
+      noiseBuf = audioCtx.createBuffer(1, audioCtx.sampleRate, audioCtx.sampleRate);
+      const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
     }
-
-    function loadRoundsData() {
-      const saved = localStorage.getItem(STORAGE_KEY_AUCTION);
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length === TOTAL_ROUNDS) return parsed;
-        } catch (e) { console.error(e); }
-      }
-      return defaultRoundsData();
+  } catch (e) {}
+}
+document.addEventListener('pointerdown', initAudio);
+document.addEventListener('keydown', initAudio);
+const vol = v => Math.min(0.9, v * VOL_LEVELS[sound.level].mul);
+function tone(freq, type, dur, v, delay = 0, slideTo = null) {
+  if (!sound.on || !audioCtx) return;
+  const t0 = audioCtx.currentTime + delay;
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = type; o.frequency.setValueAtTime(freq, t0);
+  if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur);
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol(v), t0 + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g); g.connect(audioCtx.destination); o.start(t0); o.stop(t0 + dur + 0.02);
+}
+function noise(dur, v, delay = 0, freq = 1200, type = 'bandpass') {
+  if (!sound.on || !audioCtx || !noiseBuf) return;
+  const t0 = audioCtx.currentTime + delay;
+  const s = audioCtx.createBufferSource(), f = audioCtx.createBiquadFilter(), g = audioCtx.createGain();
+  s.buffer = noiseBuf; f.type = type; f.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol(v), t0 + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  s.connect(f); f.connect(g); g.connect(audioCtx.destination); s.start(t0); s.stop(t0 + dur + 0.02);
+}
+const SFX = {
+  art: (d, tier) => {
+    if (tier <= 2) { tone(660, 'triangle', 0.12, 0.14, d); tone(880, 'triangle', 0.18, 0.14, d + 0.1); }
+    else if (tier <= 4) { [523, 659, 784].forEach((f, i) => tone(f, 'triangle', 0.18, 0.18, d + i * 0.09)); tone(1047, 'sine', 0.35, 0.12, d + 0.27); }
+    else {
+      [523, 659, 784, 1047].forEach((f, i) => tone(f, 'triangle', 0.16, 0.22, d + i * 0.1));
+      tone(1319, 'triangle', 0.7, 0.26, d + 0.42); tone(1047, 'sine', 0.9, 0.14, d + 0.42); tone(1568, 'sine', 0.6, 0.08, d + 0.5);
+      for (let i = 0; i < 6; i++) tone(2000 + Math.random() * 1500, 'sine', 0.08, 0.05, d + 0.5 + i * 0.07);
     }
+  },
+  bidDone: d => { noise(0.08, 0.25, d, 2500); tone(520, 'triangle', 0.1, 0.12, d); },
+  drumroll: (d, len = 1.3) => { const n = Math.floor(len / 0.045); for (let i = 0; i < n; i++) noise(0.05, 0.12 + 0.18 * (i / n), d + i * 0.045, 180, 'lowpass'); noise(0.3, 0.4, d + len, 120, 'lowpass'); tone(90, 'sine', 0.3, 0.3, d + len); },
+  flip: d => { noise(0.25, 0.18, d, 3000, 'highpass'); },
+  gavel: d => { [0, 0.32].forEach(t => { tone(160, 'square', 0.12, 0.22, d + t, 70); noise(0.06, 0.4, d + t, 900); }); },
+  voidS: d => { tone(420, 'square', 0.09, 0.12, d); tone(420, 'square', 0.09, 0.12, d + 0.14); },
+  lose: d => { tone(240, 'sawtooth', 0.45, 0.15, d, 140); },
+  dudung: d => { tone(98, 'sine', 0.35, 0.35, d); noise(0.15, 0.3, d, 150, 'lowpass'); tone(73, 'sine', 0.6, 0.38, d + 0.32); noise(0.2, 0.32, d + 0.32, 120, 'lowpass'); },
+  bankrupt: d => { tone(196, 'sawtooth', 0.4, 0.18, d); tone(155, 'sawtooth', 0.4, 0.18, d + 0.35); tone(110, 'sawtooth', 0.9, 0.2, d + 0.7, 70); },
+  victory: d => { [[523, 0, .18], [523, .2, .12], [523, .34, .12], [659, .48, .3], [523, .8, .18], [659, .98, .18], [784, 1.16, .8]].forEach(([f, t, l]) => tone(f, 'triangle', l, 0.26, d + t)); tone(392, 'sine', 1.4, 0.12, d + 0.48); },
+  click: d => { tone(1200, 'triangle', 0.03, 0.06, d); }
+};
+function sfx(name, delay = 0, arg) { initAudio(); if (SFX[name]) SFX[name](delay, arg); }
+function toggleSound() { keepSetupDraft(); sound.on = !sound.on; saveSound(); render(); if (sound.on) sfx('click'); }
+function cycleVolume() { keepSetupDraft(); sound.level = (sound.level + 1) % 3; saveSound(); render(); sfx('gavel'); }
 
-    function saveRoundsData() {
-      localStorage.setItem(STORAGE_KEY_AUCTION, JSON.stringify(roundsData));
+/* ===================== 2. 작품 그리기 (코드로 그리는 창작 그림) ===================== */
+function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function drawArt(canvas, tier, seed) {
+  const W = 800, H = 600; canvas.width = W; canvas.height = H;
+  const c = canvas.getContext('2d'); const r = rng(seed);
+  const pick = arr => arr[Math.floor(r() * arr.length)];
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  if (tier === 1) {
+    c.fillStyle = '#f3efe4'; c.fillRect(0, 0, W, H);
+    c.strokeStyle = 'rgba(120,150,200,.35)'; c.lineWidth = 2;
+    for (let y = 60; y < H; y += 38) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
+    c.strokeStyle = 'rgba(220,90,90,.4)'; c.beginPath(); c.moveTo(80, 0); c.lineTo(80, H); c.stroke();
+    for (let k = 0; k < 4 + Math.floor(r() * 3); k++) {
+      c.strokeStyle = `rgba(60,60,60,${0.5 + r() * 0.4})`; c.lineWidth = 2 + r() * 3;
+      let x = 120 + r() * 560, y = 80 + r() * 440; c.beginPath(); c.moveTo(x, y);
+      for (let i = 0; i < 18; i++) { x += (r() - 0.5) * 120; y += (r() - 0.5) * 90; x = Math.max(100, Math.min(760, x)); y = Math.max(40, Math.min(570, y)); c.quadraticCurveTo(x + (r() - .5) * 60, y + (r() - .5) * 60, x, y); }
+      c.stroke();
     }
-
-    function renderTable() {
-      const tbody = document.getElementById('auctionTableBody');
-      tbody.innerHTML = roundsData.map((r, rIdx) => `
-        <tr>
-          <td class="round-col">${r.round}R</td>
-          <td class="point-col">
-            <input type="number" min="1" max="4" value="${r.chocoPoint}" class="point-input"
-                   onchange="updatePoint(${rIdx}, this.value)"> 점
-          </td>
-          ${[0, 1, 2, 3].map(tIdx => `
-            <td>
-              <input type="number" min="0" placeholder="만원" class="bid-input"
-                     value="${r.bids[tIdx]}"
-                     oninput="updateBid(${rIdx},${tIdx}, this.value)">
-            </td>
-          `).join('')}
-          <td>
-            <button class="check-btn ${r.isEvaluated ? 'checked' : ''}" id="btn-${rIdx}" onclick="evaluateRound(${rIdx})">
-              ${r.isEvaluated ? '수정/재확인' : '결과 판정'}
-            </button>
-          </td>
-          <td class="status-col" id="status-${rIdx}">${r.summaryHtml || '-'}</td>
-        </tr>
-      `).join('');
+    const fx = 220 + r() * 360, fy = 200 + r() * 200, fr = 50 + r() * 40;
+    c.strokeStyle = '#333'; c.lineWidth = 4; c.beginPath(); c.ellipse(fx, fy, fr, fr * (0.85 + r() * .3), r(), 0, Math.PI * 2); c.stroke();
+    c.beginPath(); c.arc(fx - fr * .35, fy - fr * .2, 5, 0, 7); c.arc(fx + fr * .35, fy - fr * .15, 5, 0, 7); c.fillStyle = '#333'; c.fill();
+    c.beginPath(); c.arc(fx, fy + fr * .15, fr * .45, 0.2, Math.PI - 0.2); c.stroke();
+    c.beginPath(); c.moveTo(fx, fy + fr); c.lineTo(fx, fy + fr + 110); c.moveTo(fx, fy + fr + 40); c.lineTo(fx - 60, fy + fr + 10); c.moveTo(fx, fy + fr + 40); c.lineTo(fx + 60, fy + fr + 15);
+    c.moveTo(fx, fy + fr + 110); c.lineTo(fx - 40, fy + fr + 170); c.moveTo(fx, fy + fr + 110); c.lineTo(fx + 45, fy + fr + 168); c.stroke();
+    return;
+  }
+  if (tier === 2) {
+    const skies = [['#8ec5ff', '#e8f4ff'], ['#ffb385', '#ffe7c4'], ['#a5d8ff', '#fff3d6']];
+    const [s1, s2] = pick(skies); const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, s1); g.addColorStop(1, s2); c.fillStyle = g; c.fillRect(0, 0, W, H);
+    c.fillStyle = '#ffd34d'; c.beginPath(); c.arc(120 + r() * 560, 90 + r() * 70, 45 + r() * 20, 0, 7); c.fill();
+    for (let k = 0; k < 3; k++) { c.fillStyle = 'rgba(255,255,255,.85)'; const cx = r() * W, cy = 70 + r() * 120; for (let i = 0; i < 4; i++) { c.beginPath(); c.arc(cx + i * 30, cy + (i % 2) * 10, 24, 0, 7); c.fill(); } }
+    const greens = ['#5e9c4a', '#77b35a', '#4a8540', '#8cc36b'];
+    for (let k = 0; k < 3; k++) {
+      c.fillStyle = greens[k % greens.length]; c.beginPath(); c.moveTo(0, H);
+      const base = 330 + k * 80, amp = 40 + r() * 50, ph = r() * 6;
+      for (let x = 0; x <= W; x += 20) c.lineTo(x, base - Math.sin(x / 140 + ph) * amp);
+      c.lineTo(W, H); c.fill();
     }
-
-    function updatePoint(rIdx, val) {
-      const parsed = parseInt(val, 10);
-      roundsData[rIdx].chocoPoint = isNaN(parsed) ? 1 : Math.max(1, Math.min(4, parsed));
-      if (roundsData[rIdx].isEvaluated) evaluateRound(rIdx);
-      saveRoundsData();
+    const hx = 200 + r() * 380, hy = 400;
+    c.fillStyle = pick(['#f1e3c6', '#ffffff', '#ffe0b3']); c.fillRect(hx, hy, 120, 90);
+    c.fillStyle = pick(['#c0392b', '#7d4b2a', '#3d5a80']); c.beginPath(); c.moveTo(hx - 15, hy); c.lineTo(hx + 60, hy - 60); c.lineTo(hx + 135, hy); c.fill();
+    c.fillStyle = '#6b4226'; c.fillRect(hx + 48, hy + 45, 26, 45); c.fillStyle = '#9fd3ff'; c.fillRect(hx + 12, hy + 20, 24, 22); c.fillRect(hx + 86, hy + 20, 24, 22);
+    const tx = hx > 400 ? hx - 140 : hx + 220;
+    c.fillStyle = '#7a4e2d'; c.fillRect(tx, 380, 18, 100); c.fillStyle = '#3f7d3a'; c.beginPath(); c.arc(tx + 9, 360, 55, 0, 7); c.fill();
+    return;
+  }
+  if (tier === 3) {
+    c.fillStyle = '#f1ebdd'; c.fillRect(0, 0, W, H);
+    const pals = [['#d1453b', '#1f4e8c', '#f2b632'], ['#2a9d8f', '#e76f51', '#264653'], ['#6a4c93', '#ff595e', '#ffca3a'], ['#0b6e4f', '#f08a4b', '#1d3557']];
+    const pal = pick(pals);
+    c.globalAlpha = 0.85;
+    for (let k = 0; k < 9; k++) {
+      c.fillStyle = pick(pal);
+      if (r() < 0.55) c.fillRect(r() * 650, r() * 460, 80 + r() * 260, 60 + r() * 220);
+      else { c.beginPath(); c.arc(100 + r() * 600, 100 + r() * 400, 40 + r() * 110, 0, 7); c.fill(); }
     }
+    c.globalAlpha = 1; c.strokeStyle = '#1b1b1b'; c.lineWidth = 8;
+    for (let k = 0; k < 3; k++) { c.beginPath(); if (r() < .5) { const x = 60 + r() * 680; c.moveTo(x, 0); c.lineTo(x, H); } else { const y = 60 + r() * 480; c.moveTo(0, y); c.lineTo(W, y); } c.stroke(); }
+    c.fillStyle = 'rgba(0,0,0,.08)'; for (let i = 0; i < 2500; i++) c.fillRect(r() * W, r() * H, 2, 2);
+    return;
+  }
+  if (tier === 4) {
+    const bg = c.createRadialGradient(400, 250, 50, 400, 300, 520); bg.addColorStop(0, pick(['#5a3a22', '#3d2b1f', '#2f3b2a'])); bg.addColorStop(1, '#0d0806'); c.fillStyle = bg; c.fillRect(0, 0, W, H);
+    const cloak = pick(['#8e1b26', '#1f3a7a', '#4b1f6e', '#145a3c']);
+    c.fillStyle = cloak; c.beginPath(); c.moveTo(150, H); c.quadraticCurveTo(170, 400, 400, 380); c.quadraticCurveTo(630, 400, 650, H); c.fill();
+    c.fillStyle = '#f2eee6'; c.beginPath(); c.moveTo(330, H); c.lineTo(400, 400); c.lineTo(470, H); c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 6; c.setLineDash([2, 12]); c.beginPath(); c.moveTo(160, 520); c.quadraticCurveTo(400, 430, 640, 520); c.stroke(); c.setLineDash([]);
+    c.fillStyle = '#e9c4a0'; c.fillRect(375, 330, 50, 60);
+    const fg = c.createRadialGradient(385, 250, 10, 400, 270, 110); fg.addColorStop(0, '#f6d6b5'); fg.addColorStop(1, '#c79a72'); c.fillStyle = fg; c.beginPath(); c.ellipse(400, 265, 80, 100, 0, 0, 7); c.fill();
+    c.fillStyle = pick(['#3a2414', '#8a5a2b', '#1c1c1c', '#c9a26b']); c.beginPath(); c.ellipse(400, 210, 88, 55, 0, Math.PI, 0); c.fill(); c.fillRect(312, 205, 22, 90); c.fillRect(466, 205, 22, 90);
+    c.fillStyle = '#2b1b12'; c.beginPath(); c.arc(372, 262, 6, 0, 7); c.arc(428, 262, 6, 0, 7); c.fill();
+    c.strokeStyle = '#8a4b3a'; c.lineWidth = 4; c.beginPath(); c.arc(400, 300, 20, 0.3, Math.PI - 0.3); c.stroke();
+    const cg = c.createLinearGradient(0, 120, 0, 175); cg.addColorStop(0, '#fff2b0'); cg.addColorStop(1, '#c9921f'); c.fillStyle = cg;
+    c.beginPath(); c.moveTo(330, 175); c.lineTo(330, 135); c.lineTo(355, 155); c.lineTo(378, 115); c.lineTo(400, 150); c.lineTo(422, 115); c.lineTo(445, 155); c.lineTo(470, 135); c.lineTo(470, 175); c.fill();
+    ['#e63946', '#3a86ff', '#2ec27e'].forEach((col, i) => { c.fillStyle = col; c.beginPath(); c.arc(360 + i * 40, 162, 6, 0, 7); c.fill(); });
+    const vg = c.createRadialGradient(400, 300, 220, 400, 300, 470); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.75)'); c.fillStyle = vg; c.fillRect(0, 0, W, H);
+    return;
+  }
+  // tier 5: 흐름을 따라 소용돌이치는 붓질
+  const pals = [['#0b1d51', '#1f4fa3', '#f7c548', '#ffe9a3', '#3a7bd5'], ['#3b0a45', '#a4133c', '#ff8c42', '#ffd166', '#7b2cbf'], ['#04342c', '#0f7a5c', '#e9c46a', '#f4a261', '#2a9d8f']];
+  const pal = pick(pals);
+  const bg = c.createLinearGradient(0, 0, W, H); bg.addColorStop(0, pal[0]); bg.addColorStop(1, pal[1]); c.fillStyle = bg; c.fillRect(0, 0, W, H);
+  const cx = 200 + r() * 400, cy = 150 + r() * 200, k1 = 0.004 + r() * 0.004, k2 = 0.005 + r() * 0.004;
+  const angle = (x, y) => { const dx = x - cx, dy = y - cy; return Math.atan2(dy, dx) + Math.PI / 2 + Math.sin(x * k1) * 1.1 + Math.cos(y * k2) * 1.1; };
+  for (let i = 0; i < 1300; i++) {
+    let x = r() * W, y = r() * H; const col = pal[1 + Math.floor(r() * 4)];
+    c.strokeStyle = col; c.globalAlpha = 0.35 + r() * 0.5; c.lineWidth = 2 + r() * 5; c.beginPath(); c.moveTo(x, y);
+    for (let s = 0; s < 14; s++) { const a = angle(x, y); x += Math.cos(a) * 6; y += Math.sin(a) * 6; c.lineTo(x, y); }
+    c.stroke();
+  }
+  c.globalAlpha = 1;
+  const sg = c.createRadialGradient(cx, cy, 5, cx, cy, 120); sg.addColorStop(0, '#fffbe6'); sg.addColorStop(0.35, pal[3]); sg.addColorStop(1, 'rgba(255,220,120,0)'); c.fillStyle = sg; c.beginPath(); c.arc(cx, cy, 120, 0, 7); c.fill();
+  for (let i = 0; i < 40; i++) { const x = r() * W, y = r() * H * .6, s = 1 + r() * 3; c.fillStyle = 'rgba(255,250,220,.9)'; c.beginPath(); c.arc(x, y, s, 0, 7); c.fill(); }
+}
 
-    function updateBid(rIdx, tIdx, val) {
-      roundsData[rIdx].bids[tIdx] = val.trim();
-      saveRoundsData();
+/* ===================== 3. 상태 ===================== */
+let S = null;
+let history = [];
+let animating = false;
+let setupDraft = { teamCount: 4, names: [], totalRounds: 12, guarantee5: true };
+let bidDraft = [], activeBid = 0, peeking = false;
+
+function rollTier(rand) {
+  const total = TIER_WEIGHTS.reduce((a, b) => a + b, 0); let x = rand() * total;
+  for (let i = 0; i < 5; i++) { if (x < TIER_WEIGHTS[i]) return i + 1; x -= TIER_WEIGHTS[i]; }
+  return 1;
+}
+function makeRounds(n, guarantee5) {
+  const rounds = Array.from({ length: n }, () => {
+    const tier = rollTier(Math.random);
+    const titles = TIERS[tier].titles;
+    return { tier, title: titles[Math.floor(Math.random() * titles.length)], seed: Math.floor(Math.random() * 1e9), bids: null, result: null };
+  });
+  if (guarantee5 && !rounds.some(r => r.tier === 5)) {
+    const i = Math.floor(Math.random() * n);
+    const t = TIERS[5].titles;
+    rounds[i].tier = 5; rounds[i].title = t[Math.floor(Math.random() * t.length)];
+  }
+  return rounds;
+}
+function load() { try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) S = JSON.parse(raw); } catch (e) {} }
+function save() { try { if (S) localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); else localStorage.removeItem(STORAGE_KEY); } catch (e) {} }
+function snapshot() { history.push(JSON.stringify(S)); if (history.length > 120) history.shift(); }
+function undo() { if (!history.length || animating) return; S = JSON.parse(history.pop()); save(); render(true); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+const curRound = () => S.rounds[S.round - 1];
+
+/* ===================== 4. 판정 (기존 초코 경매 규칙 그대로) ===================== */
+// - 최저 입찰 모둠 모두 -1점
+// - 높은 금액부터 보며, 그 금액을 쓴 모둠이 2개 이상이면 무효, 처음으로 단독인 금액의 모둠이 낙찰
+// - 낙찰 모둠만 입찰 금액을 지출
+function judge(bids) {
+  const min = Math.min(...bids);
+  const losers = bids.map((b, i) => b === min ? i : -1).filter(i => i >= 0);
+  const count = {}; bids.forEach(b => { count[b] = (count[b] || 0) + 1; });
+  const amounts = Object.keys(count).map(Number).sort((a, b) => b - a);
+  let winner = null, winningBid = 0; const voidTeams = [];
+  for (const a of amounts) {
+    if (count[a] === 1) { winner = bids.indexOf(a); winningBid = a; break; }
+    bids.forEach((b, i) => { if (b === a) voidTeams.push(i); });
+  }
+  return { winner, winningBid, voidTeams, losers };
+}
+function totals(upTo = S.rounds.length) {
+  const n = S.teams.length; const pts = Array(n).fill(0), spent = Array(n).fill(0);
+  S.rounds.slice(0, upTo).forEach(r => {
+    if (!r.result) return;
+    if (r.result.winner !== null) { pts[r.result.winner] += r.tier; spent[r.result.winner] += r.result.winningBid; }
+    r.result.losers.forEach(i => { pts[i] -= 1; });
+  });
+  return { pts, spent };
+}
+function totalWinningSum(upTo) { return S.rounds.slice(0, upTo).reduce((a, r) => a + (r.result && r.result.winner !== null ? r.result.winningBid : 0), 0); }
+
+/* ===================== 5. 진행 동작 ===================== */
+function openBidModal() {
+  if (animating) return;
+  const r = curRound();
+  bidDraft = r.bids ? r.bids.map(String) : S.teams.map(() => '');
+  activeBid = Math.max(0, bidDraft.findIndex(v => v === '')); peeking = false;
+  document.getElementById('bidTitle').innerText = `${S.round}라운드 입찰 금액 입력 (진행자)`;
+  document.getElementById('bidError').innerText = '';
+  renderBidModal();
+  document.getElementById('bidModal').hidden = false;
+}
+function closeBidModal() { document.getElementById('bidModal').hidden = true; peeking = false; }
+function renderBidModal() {
+  document.getElementById('bidList').innerHTML = S.teams.map((t, i) => {
+    const v = bidDraft[i];
+    const shown = peeking && v !== '';
+    return `<button class="bid-field ${i === activeBid ? 'active' : ''}" onclick="selectBid(${i})">
+      <div class="bn">${esc(t)}</div>
+      <div class="bv ${v === '' ? 'empty' : ''} ${shown ? 'shown' : ''}">${v === '' ? '비어 있음' : shown ? esc(v) + '만원' : '●●●'}</div></button>`;
+  }).join('');
+}
+function selectBid(i) { activeBid = i; sfx('click'); renderBidModal(); }
+function keyPress(k) {
+  let v = bidDraft[activeBid];
+  if (k === 'back') v = v.slice(0, -1);
+  else if (k === 'clear') v = '';
+  else if (k === 'next') { activeBid = (activeBid + 1) % S.teams.length; renderBidModal(); return; }
+  else if (/^\d$/.test(k)) { if (v === '0') v = ''; if (v.length < 6) v += k; }
+  bidDraft[activeBid] = v; sfx('click');
+  document.getElementById('bidError').innerText = '';
+  renderBidModal();
+}
+function buildKeypad() {
+  const keys = ['1','2','3','4','5','6','7','8','9','clear','0','back'];
+  const label = { clear: '지우기', back: '⌫' };
+  document.getElementById('keypad').innerHTML = keys.map(k => `<button class="key ${label[k] ? 'small' : ''}" onclick="keyPress('${k}')">${label[k] || k}</button>`).join('') +
+    `<button class="key small" style="grid-column:1/-1;" onclick="keyPress('next')">다음 모둠 ▶</button>`;
+}
+function submitBids() {
+  const empty = bidDraft.map((v, i) => v === '' ? S.teams[i] : null).filter(Boolean);
+  if (empty.length) { document.getElementById('bidError').innerText = `${empty.join(', ')} 금액이 비어 있습니다.`; return; }
+  snapshot();
+  curRound().bids = bidDraft.map(v => parseInt(v, 10));
+  curRound().result = null;
+  S.stage = 'submitted';
+  closeBidModal();
+  sfx('bidDone');
+  save(); render();
+}
+function revealRound() {
+  if (animating || S.stage !== 'submitted') return;
+  snapshot();
+  const r = curRound();
+  r.result = judge(r.bids);
+  S.stage = 'revealed';
+  save();
+  // 연출: 두구두구 → 카드 뒤집기 → 결과 발표
+  animating = true;
+  render(false, { holdFlip: true });
+  sfx('drumroll', 0, 1.3);
+  setTimeout(() => {
+    document.querySelectorAll('.flip').forEach(el => el.classList.add('flipped'));
+    sfx('flip');
+  }, 1350);
+  setTimeout(() => {
+    animating = false;
+    render();
+    const res = r.result;
+    if (res.winner !== null) sfx('gavel');
+    if (res.voidTeams.length) sfx('voidS', 0.8);
+    if (res.losers.length) sfx('lose', res.voidTeams.length ? 1.15 : 0.8);
+  }, 2150);
+}
+function nextRound() {
+  if (animating) return;
+  snapshot();
+  if (S.round >= S.rounds.length) { S.phase = 'over'; save(); render(); setTimeout(playEnding, 300); return; }
+  S.round++; S.stage = 'bidding';
+  save(); render(true);
+  sfx('art', 0.1, curRound().tier);
+}
+function showTotal() {
+  const amt = totalWinningSum(S.round);
+  document.getElementById('totalTitle').innerText = `📢 ${S.round}라운드 종료 · 지금까지의 낙찰 총액`;
+  document.getElementById('totalAmount').innerText = `${amt.toLocaleString()}만원`;
+  document.getElementById('totalModal').hidden = false;
+  sfx('dudung');
+}
+function closeModal(id) { document.getElementById(id).hidden = true; }
+
+/* ===================== 6. 최종 결과 계산 ===================== */
+function finalStanding() {
+  const { pts, spent } = totals();
+  const maxSpent = Math.max(...spent);
+  const bankrupt = maxSpent > 0 ? spent.map((s, i) => s === maxSpent ? i : -1).filter(i => i >= 0) : [];
+  const order = S.teams.map((name, i) => ({ i, name, pts: pts[i], spent: spent[i], bankrupt: bankrupt.includes(i) }))
+    .sort((a, b) => (a.bankrupt - b.bankrupt) || (b.pts - a.pts));
+  let rank = 0, prevKey = null;
+  order.forEach((o, idx) => { const key = o.bankrupt ? 'B' : 'P' + o.pts; if (key !== prevKey) { rank = idx + 1; prevKey = key; } o.rank = o.bankrupt ? null : rank; });
+  return { order, bankrupt };
+}
+function playEnding() {
+  const { bankrupt, order } = finalStanding();
+  if (bankrupt.length) sfx('bankrupt');
+  if (order.some(o => o.rank === 1)) sfx('victory', bankrupt.length ? 1.8 : 0.2);
+}
+
+/* ===================== 7. 화면 그리기 ===================== */
+function render(newArt = false, opt = {}) {
+  const app = document.getElementById('app');
+  if (!S) { app.innerHTML = renderSetup(); bindSetup(); return; }
+  if (S.phase === 'over') { app.innerHTML = renderTopbar() + renderResult(); return; }
+  app.innerHTML = renderTopbar() + renderPlay(opt) + renderCredit();
+  const r = curRound();
+  const cv = document.getElementById('artCanvas');
+  drawArt(cv, r.tier, r.seed);
+  if (newArt) document.getElementById('artFrame').classList.add('enter');
+}
+
+function renderTopbar() {
+  return `<div class="topbar">
+    <div class="brand">무제한 명화 경매<small>${S.phase === 'over' ? '최종 결과' : `${S.round} / ${S.rounds.length} 라운드`}</small></div>
+    <div class="chips">
+      ${BACK_LINK ? `<a class="chip" href="${BACK_LINK}">← 놀이 목록</a>` : ''}
+      <button class="chip" onclick="toggleSound()">${sound.on ? '🔊 효과음 켬' : '🔇 효과음 끔'}</button>
+      <button class="chip" onclick="cycleVolume()" ${sound.on ? '' : 'disabled'}>음량: ${VOL_LEVELS[sound.level].name}</button>
+      ${S.phase === 'play' ? `<button class="chip hold peek-btn" id="hostBtn">🔒 진행자 기록 보기 (누르는 동안)</button>` : ''}
+      <button class="chip" onclick="undo()" ${history.length ? '' : 'disabled'}>↩️ 되돌리기</button>
+      <button class="chip" onclick="newGame()">🔄 새 게임</button>
+    </div>
+  </div>`;
+}
+
+function renderPlay(opt) {
+  const r = curRound();
+  const { pts } = totals();
+  const sorted = [...new Set(pts)].sort((a, b) => b - a);
+  const anyResult = S.rounds.some(x => x.result);
+  const stars = '★'.repeat(r.tier) + '☆'.repeat(5 - r.tier);
+  const res = S.stage === 'revealed' && !opt.holdFlip ? r.result : null;
+  const isMilestone = S.round % 3 === 0 && S.round < S.rounds.length;
+  const isLast = S.round >= S.rounds.length;
+
+  let banner = '';
+  if (res) banner = res.winner !== null
+    ? `<div class="sold-banner">🔨 낙찰! ${esc(S.teams[res.winner])}</div>`
+    : `<div class="sold-banner unsold">유찰</div>`;
+
+  let side;
+  if (S.stage === 'bidding') {
+    side = `<div class="msg">${esc(r.title)} 경매를 시작합니다. 모둠별로 입찰 금액을 쪽지에 적어 진행자에게 내세요.</div>
+      <div class="btn-row"><button class="btn btn-gold" onclick="openBidModal()">🔒 입찰 금액 입력하기 (진행자)</button></div>`;
+  } else if (S.stage === 'submitted') {
+    side = `<div class="msg">모든 모둠의 입찰이 끝났습니다. 결과를 공개할까요?</div>
+      <div class="btn-row">
+        <button class="btn btn-red" onclick="revealRound()" ${animating ? 'disabled' : ''}>확인 (결과 공개)</button>
+        <button class="btn btn-ghost" onclick="openBidModal()" style="min-height:46px; font-size:16px;">입찰 금액 다시 입력</button>
+      </div>`;
+  } else {
+    const msgParts = [];
+    if (r.result) {
+      if (r.result.winner !== null) msgParts.push(`🔨 <b>${esc(S.teams[r.result.winner])}</b> 낙찰 (+${r.tier}점)`); else msgParts.push('단독 최고가가 없어 유찰되었습니다. (낙찰 없음)');
+      if (r.result.voidTeams.length) msgParts.push(`⚖️ 동점 무효: ${r.result.voidTeams.map(i => esc(S.teams[i])).join(', ')}`);
+      msgParts.push(`📉 최저가 감점(-1): ${r.result.losers.map(i => esc(S.teams[i])).join(', ')}`);
     }
+    side = `<div class="msg">${opt.holdFlip ? '두구두구… 결과를 공개합니다!' : msgParts.join('<br>')}</div>
+      ${isMilestone && !opt.holdFlip ? `<div class="milestone-note">📢 ${S.round}라운드 종료 — 낙찰 총액을 공개할 차례입니다.</div>` : ''}
+      <div class="btn-row">
+        ${isMilestone ? `<button class="btn btn-blue" onclick="showTotal()" ${opt.holdFlip ? 'disabled' : ''}>📢 낙찰 총액 공개</button>` : ''}
+        <button class="btn btn-gold" onclick="nextRound()" ${opt.holdFlip ? 'disabled' : ''}>${isLast ? '🏆 최종 결과 보기' : `${S.round + 1}라운드 시작 ▶`}</button>
+      </div>`;
+  }
 
-    function evaluateRound(rIdx) {
-      const r = roundsData[rIdx];
-      const parsedBids = r.bids.map(b => b === '' ? NaN : parseFloat(b));
-
-      if (parsedBids.some(b => isNaN(b))) {
-        alert(`${r.round}라운드: 4개 조의 입찰 금액을 빠짐없이 입력해주세요.`);
-        return;
-      }
-
-      r.winner = null;
-      r.winningBid = 0;
-      r.losers = [];
-      r.spentAmounts = [0, 0, 0, 0];
-
-      // 최저 입찰 조 감점(-1)
-      const minBid = Math.min(...parsedBids);
-      parsedBids.forEach((bid, idx) => { if (bid === minBid) r.losers.push(idx); });
-
-      // 빈도수 계산
-      const bidCountMap = {};
-      parsedBids.forEach(b => { bidCountMap[b] = (bidCountMap[b] || 0) + 1; });
-
-      const uniqueBidsDescending = Object.keys(bidCountMap).map(Number).sort((a, b) => b - a);
-
-      let winnerIdx = null;
-      let winningAmount = 0;
-      let drawMessages = [];
-
-      for (const amount of uniqueBidsDescending) {
-        if (bidCountMap[amount] === 1) {
-          winnerIdx = parsedBids.indexOf(amount);
-          winningAmount = amount;
-          break;
-        } else {
-          const drawTeams = parsedBids.map((b, idx) => b === amount ? (idx + 1) + '조' : null).filter(Boolean);
-          drawMessages.push(`${amount}만 무효(${drawTeams.join(',')})`);
-        }
-      }
-
-      r.winner = winnerIdx;
-      r.winningBid = winningAmount;
-      if (winnerIdx !== null) r.spentAmounts[winnerIdx] = winningAmount;
-      r.isEvaluated = true;
-
-      let summary = '';
-      if (drawMessages.length > 0) summary += `<span class="tag-draw">${drawMessages.join(' | ')}</span><br>`;
-      if (r.winner !== null) {
-        summary += `<span class="tag-win">낙찰: ${r.winner + 1}조 (+${r.chocoPoint})</span> / <span class="tag-spent">지출: ${r.winningBid}만</span><br>`;
-      } else {
-        summary += `<span style="color:#64748b;">모두 동점으로 유찰</span><br>`;
-      }
-      summary += `<span class="tag-loss">감점: ${r.losers.map(i => (i + 1) + '조').join(',')}</span>`;
-
-      r.summaryHtml = summary;
-
-      const statusEl = document.getElementById(`status-${rIdx}`);
-      if (statusEl) statusEl.innerHTML = summary;
-
-      const btn = document.getElementById(`btn-${rIdx}`);
-      if (btn) {
-        btn.classList.add('checked');
-        btn.textContent = '수정/재확인';
-      }
-
-      recalculateAll();
-      saveRoundsData();
+  const teams = S.teams.map((name, i) => {
+    const rank = anyResult ? sorted.indexOf(pts[i]) + 1 : null;
+    let front, flipped = false, back = '';
+    if (S.stage === 'bidding') front = `<div class="face front">입찰 대기 중</div>`;
+    else front = `<div class="face front done">입찰 완료 ✓</div>`;
+    if (S.stage === 'revealed' && r.result) {
+      flipped = !opt.holdFlip;
+      const tags = [];
+      if (r.result.winner === i) tags.push(`<span class="tag win">🏆 낙찰 +${r.tier}</span>`);
+      if (r.result.voidTeams.includes(i)) tags.push(`<span class="tag void">⚖️ 동점 무효</span>`);
+      if (r.result.losers.includes(i)) tags.push(`<span class="tag lose">📉 최저가 -1</span>`);
+      back = `<div class="face back">${tags.length ? tags.join('') : '<span class="tag none">변동 없음</span>'}</div>`;
     }
+    // 결과 공개 연출 중에는 점수를 바뀌기 전 값으로 보여 줌
+    const shownPts = opt.holdFlip ? totals(S.round - 1).pts[i] : pts[i];
+    return `<div class="tcard ${anyResult && rank === 1 && !opt.holdFlip ? 'lead' : ''}">
+      <div class="t-head"><span class="t-name">${esc(name)}</span><span class="t-rank">${rank && !opt.holdFlip ? rank + '위' : ''}</span></div>
+      <div class="t-points num ${shownPts < 0 ? 'neg' : ''}">${shownPts}<small> 점</small></div>
+      <div class="flip ${flipped ? 'flipped' : ''}"><div class="flip-inner">${front}${back}</div></div>
+    </div>`;
+  }).join('');
 
-    function recalculateAll() {
-      const totalPoints = [0, 0, 0, 0];
-      const totalSpent = [0, 0, 0, 0];
+  return `<div class="main">
+    <div class="stage">
+      <div class="art-frame t${r.tier}" id="artFrame"><canvas id="artCanvas" width="800" height="600" aria-label="${esc(TIERS[r.tier].name)}: ${esc(r.title)}"></canvas></div>
+      <div class="art-caption">
+        <div class="art-tier"><span class="art-stars" aria-hidden="true">${stars}</span> ${esc(TIERS[r.tier].name)}</div>
+        <div class="art-title"><span>「${esc(r.title)}」</span><span class="art-points">${r.tier}점</span></div>
+      </div>
+      ${banner}
+    </div>
+    <div class="side">
+      <div class="card"><div class="round-big num">${S.round}R</div><div class="round-sub">전체 ${S.rounds.length}라운드 · 3라운드마다 낙찰 총액 공개</div></div>
+      <div class="card" style="display:flex; flex-direction:column; gap:12px;">${side}</div>
+    </div>
+  </div>
+  <div class="teams">${teams}</div>`;
+}
 
-      roundsData.forEach(r => {
-        if (r.isEvaluated) {
-          if (r.winner !== null) {
-            totalPoints[r.winner] += r.chocoPoint;
-            totalSpent[r.winner] += r.spentAmounts[r.winner];
-          }
-          r.losers.forEach(lIdx => { totalPoints[lIdx] -= 1; });
-        }
-      });
+function bidTable(upTo, opts = {}) {
+  const rows = S.rounds.slice(0, upTo).map((r, idx) => {
+    const cells = S.teams.map((_, i) => {
+      if (!r.bids) return '<td>-</td>';
+      let cls = '';
+      if (r.result) { if (r.result.winner === i) cls = 'c-win'; else if (r.result.voidTeams.includes(i)) cls = 'c-void'; else if (r.result.losers.includes(i)) cls = 'c-lose'; }
+      const minus = r.result && r.result.losers.includes(i) && cls !== 'c-lose' ? ' <small style="color:var(--lose)">(-1)</small>' : '';
+      return `<td class="${cls} num">${r.bids[i]}${minus}</td>`;
+    }).join('');
+    return `<tr><td class="num">${idx + 1}R</td><td class="art">${'★'.repeat(r.tier)} ${esc(r.title)}</td>${cells}</tr>`;
+  }).join('');
+  const { spent, pts } = totals(upTo);
+  return `<div class="legend"><span style="color:var(--gold-light)">■ 낙찰</span><span style="color:var(--void)">■ 동점 무효</span><span style="color:var(--lose)">■ 최저가 감점 ((-1)은 무효·낙찰과 동시에 감점)</span><span>(단위: 만원)</span></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>라운드</th><th>작품</th>${S.teams.map(t => `<th>${esc(t)}</th>`).join('')}</tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr><td colspan="2">누적 지출</td>${spent.map(s => `<td class="num">${s}</td>`).join('')}</tr>
+    ${opts.showPts ? `<tr><td colspan="2">점수</td>${pts.map(p => `<td class="num">${p}</td>`).join('')}</tr>` : ''}</tfoot>
+  </table></div>`;
+}
 
-      const isGameFinished = roundsData.every(r => r.isEvaluated);
-      let bankruptTeams = [];
-      if (isGameFinished) {
-        const maxSpent = Math.max(...totalSpent);
-        if (maxSpent > 0) {
-          totalSpent.forEach((spent, idx) => { if (spent === maxSpent) bankruptTeams.push(idx); });
-        }
-      }
+function renderResult() {
+  const { order, bankrupt } = finalStanding();
+  const winners = order.filter(o => o.rank === 1).map(o => o.name);
+  const head = winners.length ? `🏆 ${esc(winners.join(', '))} 우승!` : '모든 모둠 파산!';
+  const cards = order.map(o => `<div class="rank-card ${o.rank === 1 ? 'first' : ''} ${o.bankrupt ? 'bankrupt' : ''}">
+    <div class="rk">${o.bankrupt ? '파산 (최하위)' : o.rank + '위'}</div>
+    <div class="nm">${esc(o.name)}</div>
+    <div class="pt num">${o.pts}점</div>
+    <div class="sp num">누적 지출 ${o.spent.toLocaleString()}만원</div>
+    ${o.bankrupt ? '<div class="bk">💸 파산 패배</div>' : ''}
+  </div>`).join('');
+  return `<div class="result">
+    <h1>${head}</h1>
+    <div class="credit" style="font-size:15px;">${bankrupt.length ? `누적 지출이 가장 많은 ${bankrupt.map(i => esc(S.teams[i])).join(', ')} 파산!` : '파산한 모둠이 없습니다.'}</div>
+    <div class="rank-grid">${cards}</div>
+    <div class="card"><div style="font-weight:900; margin-bottom:4px;">📜 라운드별 전체 입찰 금액 공개</div>${bidTable(S.rounds.length, { showPts: true })}</div>
+    ${renderCredit()}
+  </div>`;
+}
 
-      const teamIndices = [0, 1, 2, 3];
-      teamIndices.sort((a, b) => {
-        const aBankrupt = bankruptTeams.includes(a);
-        const bBankrupt = bankruptTeams.includes(b);
-        if (aBankrupt && !bBankrupt) return 1;
-        if (!aBankrupt && bBankrupt) return -1;
-        return totalPoints[b] - totalPoints[a];
-      });
+function renderCredit() {
+  return `<div class="credit">규칙 출처: 블레스유 선생님의 「무제한 초코 경매」 자료 · <a href="https://indischool.com/boards/libRecreation/37327221" target="_blank" rel="noopener">indischool.com/boards/libRecreation/37327221</a><br>낙찰 모둠만 지출 · 동점 입찰 무효(단독 차순위 낙찰) · 최저가 -1점 · 마지막에 누적 지출 최다 모둠 파산</div>`;
+}
 
-      const finalRankMap = {};
-      teamIndices.forEach((tIdx, rankIdx) => { finalRankMap[tIdx] = rankIdx + 1; });
+function renderSetup() {
+  const n = setupDraft.teamCount;
+  const inputs = Array.from({ length: n }, (_, i) => `<input type="text" id="teamName${i}" maxlength="10" value="${esc(setupDraft.names[i] || `${i + 1}모둠`)}" aria-label="${i + 1}번째 모둠 이름">`).join('');
+  const countOpts = [3,4,5,6,7,8].map(k => `<option value="${k}" ${k === n ? 'selected' : ''}>${k}개 모둠</option>`).join('');
+  const roundOpts = ROUND_OPTIONS.map(k => `<option value="${k}" ${k === setupDraft.totalRounds ? 'selected' : ''}>${k}라운드</option>`).join('');
+  return `<div class="setup">
+    ${BACK_LINK ? `<a href="${BACK_LINK}" style="color:var(--text-dim); font-weight:700; text-decoration:none;">← 교실 놀이 수업실로</a>` : ''}
+    <h1>무제한 명화 경매</h1>
+    <p class="lead">돈은 무제한! 하지만 마지막에 가장 많이 쓴 모둠은 파산합니다. 매 라운드 무작위로 나오는 작품(1~5점)을 비공개 입찰로 낙찰받으세요.</p>
+    <div class="card">
+      <div class="field"><label for="teamCount">모둠 수</label><select id="teamCount">${countOpts}</select></div>
+      <div class="field"><span class="lbl">모둠 이름</span><div class="team-inputs">${inputs}</div></div>
+      <div class="field"><label for="totalRounds">라운드 수 (3라운드마다 낙찰 총액 공개)</label><select id="totalRounds">${roundOpts}</select></div>
+      <div class="field"><label class="check"><input type="checkbox" id="guarantee5" ${setupDraft.guarantee5 ? 'checked' : ''}> 5점 「전설의 명화」 최소 1번 등장 보장</label></div>
+      <div class="field"><span class="lbl">효과음</span><div class="chips">
+        <button class="chip" onclick="toggleSound()">${sound.on ? '🔊 효과음 켬' : '🔇 효과음 끔'}</button>
+        <button class="chip" onclick="cycleVolume()" ${sound.on ? '' : 'disabled'}>음량: ${VOL_LEVELS[sound.level].name} (눌러서 바꾸기)</button>
+      </div></div>
+      <div class="field"><span class="lbl">규칙</span><ul class="rules">
+        <li>작품 점수는 1~3점이 자주, 4~5점은 드물게 나옵니다.</li>
+        <li><b>가장 높은 금액을 단독으로</b> 쓴 모둠이 낙찰받고, 그 금액을 지출합니다. 같은 금액끼리는 무효입니다.</li>
+        <li><b>가장 낮은 금액</b>을 쓴 모둠은 -1점입니다.</li>
+        <li>입찰 금액은 공개되지 않습니다. 3라운드마다 지금까지의 낙찰 총액만 공개합니다.</li>
+        <li>마지막에 <b>누적 지출이 가장 많은 모둠은 파산</b>하여 최하위가 됩니다.</li>
+      </ul></div>
+      <button class="btn btn-gold" onclick="startGame()">경매 시작</button>
+    </div>
+    <div style="margin-top:12px;">${renderCredit()}</div>
+  </div>`;
+}
+function readSetupNames() { const a = []; for (let i = 0; i < setupDraft.teamCount; i++) { const el = document.getElementById('teamName' + i); a.push(el ? el.value : (setupDraft.names[i] || '')); } return a; }
+function keepSetupDraft() {
+  if (S || !document.getElementById('totalRounds')) return;
+  setupDraft.names = readSetupNames();
+  setupDraft.totalRounds = parseInt(document.getElementById('totalRounds').value, 10);
+  setupDraft.guarantee5 = document.getElementById('guarantee5').checked;
+}
+function bindSetup() {
+  document.getElementById('teamCount').onchange = e => { keepSetupDraft(); setupDraft.teamCount = parseInt(e.target.value, 10); render(); };
+}
+function startGame() {
+  keepSetupDraft();
+  const names = setupDraft.names.map((v, i) => v.trim() || `${i + 1}모둠`);
+  S = { phase: 'play', teams: names, rounds: makeRounds(setupDraft.totalRounds, setupDraft.guarantee5), round: 1, stage: 'bidding' };
+  history = [];
+  save(); render(true);
+  sfx('art', 0.1, curRound().tier);
+}
 
-      const scoreGrid = document.getElementById('scoreGrid');
-      const hasEvaluated = roundsData.some(r => r.isEvaluated);
+/* ===================== 8. 확인 창 / 새 게임 ===================== */
+let confirmAction = null;
+function askConfirm(title, text, action) {
+  document.getElementById('confirmTitle').innerText = title; document.getElementById('confirmText').innerText = text;
+  confirmAction = action; document.getElementById('confirmModal').hidden = false;
+}
+document.getElementById('confirmOk').onclick = () => { const a = confirmAction; closeModal('confirmModal'); if (a) a(); };
+function newGame() {
+  askConfirm('새 게임을 시작할까요?', '지금까지의 모든 라운드 기록이 지워지고 설정 화면으로 돌아갑니다.', () => {
+    if (S) { setupDraft.teamCount = S.teams.length; setupDraft.names = S.teams.slice(); setupDraft.totalRounds = S.rounds.length; }
+    S = null; history = []; save(); render();
+  });
+}
 
-      scoreGrid.innerHTML = [0, 1, 2, 3].map(idx => {
-        const isBankrupt = bankruptTeams.includes(idx);
-        const isTop = hasEvaluated && finalRankMap[idx] === 1 && !isBankrupt;
+/* ===================== 9. 누르고 있는 동안만 보기 ===================== */
+function holdHandlers(el, onDown, onUp) {
+  el.addEventListener('pointerdown', e => { e.preventDefault(); onDown(); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => el.addEventListener(t, onUp));
+  el.addEventListener('contextmenu', e => e.preventDefault());
+}
+holdHandlers(document.getElementById('peekBtn'), () => { peeking = true; renderBidModal(); }, () => { if (peeking) { peeking = false; renderBidModal(); } });
+document.getElementById('app').addEventListener('pointerdown', e => {
+  if (e.target.closest('#hostBtn')) {
+    e.preventDefault();
+    document.getElementById('hostBody').innerHTML = bidTable(S.round, { showPts: true });
+    document.getElementById('hostModal').hidden = false;
+  }
+});
+['pointerup', 'pointercancel'].forEach(t => document.addEventListener(t, () => { document.getElementById('hostModal').hidden = true; }));
 
-        return `
-          <div class="score-card ${isTop ? 'winner' : ''} ${isBankrupt ? 'bankrupt' : ''}">
-            ${isBankrupt ? '<div class="bankrupt-tag">파산 패배</div>' : ''}
-            <div class="team-title">${idx + 1}조</div>
-            <div class="team-points">${totalPoints[idx]}점</div>
-            <div class="team-spent">사용 누적: ${totalSpent[idx]}만원</div>
-            <div class="team-rank">${hasEvaluated ? (isBankrupt ? '파산 (최하위)' : finalRankMap[idx] + '위') : '-'}</div>
-          </div>
-        `;
-      }).join('');
+/* ===================== 10. 키보드 ===================== */
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('bidModal').hidden) {
+    if (/^\d$/.test(e.key)) { keyPress(e.key); e.preventDefault(); }
+    else if (e.key === 'Backspace') { keyPress('back'); e.preventDefault(); }
+    else if (e.key === 'Tab') { keyPress('next'); e.preventDefault(); }
+    else if (e.key === 'Enter') { submitBids(); e.preventDefault(); }
+    else if (e.key === 'Escape') closeBidModal();
+    return;
+  }
+  if (e.key === 'Escape') { ['totalModal', 'confirmModal'].forEach(closeModal); }
+});
 
-      checkMilestones();
-    }
-
-    let currentMilestoneSum = 0;
-    let currentMilestoneRound = 0;
-
-    function checkMilestones() {
-      const noticeText = document.getElementById('noticeText');
-      const noticeBtn = document.getElementById('noticeBtn');
-
-      const milestones = [9, 6, 3];
-      let activeM = null;
-
-      for (const m of milestones) {
-        if (roundsData.slice(0, m).every(r => r.isEvaluated)) {
-          activeM = m;
-          break;
-        }
-      }
-
-      if (activeM !== null) {
-        currentMilestoneRound = activeM;
-        currentMilestoneSum = roundsData.slice(0, activeM).reduce((acc, cur) => acc + (cur.winner !== null ? cur.winningBid : 0), 0);
-        noticeText.innerHTML = `📢 <strong>${activeM}라운드 종료!</strong> 아이들에게 공개할 지금까지 낙찰 총액이 준비되었습니다.`;
-        noticeBtn.style.display = 'inline-block';
-      } else {
-        noticeBtn.style.display = 'none';
-        noticeText.innerHTML = '📌 3R, 6R, 9R가 완료되면 아이들에게 공개할 낙찰 총액 안내 버튼이 나타납니다.';
-      }
-    }
-
-    function openNoticeModal() {
-      document.getElementById('modalTitle').textContent = `📢 [${currentMilestoneRound}라운드 종료] 전체 낙찰 총액 공개`;
-      document.getElementById('modalAmount').textContent = `${currentMilestoneSum} 만원`;
-      document.getElementById('noticeModal').style.display = 'flex';
-    }
-
-    function closeNoticeModal() {
-      document.getElementById('noticeModal').style.display = 'none';
-    }
-
-    function resetGame() {
-      if (!confirm('초코 경매를 새로 시작하시겠습니까? 현재 입력된 모든 라운드 기록이 초기화됩니다.')) return;
-      roundsData = defaultRoundsData();
-      saveRoundsData();
-      renderTable();
-      recalculateAll();
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      renderTable();
-      recalculateAll();
-    });
-  </script>
+/* ===================== 11. 시작 ===================== */
+buildKeypad();
+function boot() { load(); render(true); }
+if (window.claude?.hot) {
+  window.claude.hot.snapshot(() => ({ S, history }));
+  if (window.claude.hot.ready) window.claude.hot.ready(d => { if (d && 'S' in d) { S = d.S; history = d.history || []; render(); } else boot(); });
+  else boot();
+} else boot();
+</script>
 </body>
 </html>
