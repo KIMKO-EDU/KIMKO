@@ -249,6 +249,55 @@
   .modal-card { background: var(--panel); color: var(--text); border: 0.1875rem solid var(--ink); border-radius: 1.25rem; }
   .modal-card h3 { font-family: var(--font-display); font-weight: 400; font-size: 1.5rem; color: var(--gold); }
 
+
+  /* ===== 사용법 팝업 ===== */
+  .guide-btn { cursor: pointer; }
+  .guide-overlay { position: fixed; inset: 0; z-index: 2000; background: rgba(10,6,2,.78); display: none; align-items: center; justify-content: center; padding: 1rem; font-family: 'Gowun Dodum', 'Noto Sans KR', sans-serif; }
+  .guide-overlay.open { display: flex; }
+  .guide-card { background: #2e2217; color: #fff6e5; border: 0.25rem solid #f5e6c8; border-radius: 1.375rem;  width: 100%; max-width: 51.25rem; max-height: min(92vh, 47.5rem); display: flex; flex-direction: column; overflow: hidden; text-align: left; }
+  .guide-head { background: #1f1610; color: #fcd34d; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.875rem 1.25rem; }
+  .guide-head h2 { margin: 0; font-family: 'Jua', 'Gowun Dodum', sans-serif; font-weight: 400; font-size: 1.625rem; line-height: 1.25; }
+  .guide-x { min-width: 2.75rem; min-height: 2.75rem; border-radius: 50%; border: 0.125rem solid #f5e6c8; background: transparent; color: #fff6e5; font-size: 1.375rem; cursor: pointer; line-height: 1; }
+  .guide-tabs { display: flex; gap: 0.5rem; padding: 0.75rem 1.25rem 0; flex-wrap: wrap; }
+  .guide-tab { min-height: 2.75rem; padding: 0.375rem 1.125rem; border-radius: 999px; border: 0.125rem solid #f5e6c8; background: transparent; color: #fff6e5; font-family: 'Jua', 'Gowun Dodum', sans-serif; font-size: 1.0625rem; cursor: pointer; }
+  .guide-tab[aria-selected="true"] { background: #fcd34d; color: #1f1610; }
+  .guide-body { overflow-y: auto; padding: 0.5rem 1.5rem 1.125rem; font-size: 1.0625rem; line-height: 1.7; word-break: keep-all; flex: 1; }
+  .guide-panel { display: none; }
+  .guide-panel.on { display: block; }
+  .guide-body h4 { margin: 1rem 0 0.375rem; font-family: 'Jua', 'Gowun Dodum', sans-serif; font-weight: 400; font-size: 1.25rem; color: #fcd34d; }
+  .guide-body p { margin: 0.375rem 0; }
+  .guide-body ul, .guide-body ol { margin: 0.375rem 0; padding-left: 1.4em; }
+  .guide-body li { margin: 0.25rem 0; }
+  .guide-body b { color: #fff6e5; font-weight: 700; }
+  .g-note { background: #1f1610; border: 0.125rem dashed #f5e6c8; border-radius: 0.75rem; padding: 0.5rem 0.875rem; font-size: 1rem; }
+  .g-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 1rem; }
+  .g-table th, .g-table td { border: 0.125rem solid #f5e6c8; padding: 0.4375rem 0.75rem; text-align: left; }
+  .g-table th { background: #1f1610; }
+  .guide-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; padding: 0.75rem 1.25rem; border-top: 0.1875rem solid #f5e6c8; }
+  .guide-foot label { font-size: 0.9375rem; display: flex; align-items: center; gap: 0.5rem; min-height: 2.75rem; cursor: pointer; }
+  .guide-foot input { width: 1.25rem; height: 1.25rem; accent-color: #fcd34d; }
+  .guide-actions { display: flex; gap: 0.625rem; }
+  .guide-act { min-height: 2.75rem; padding: 0.5rem 1.25rem; border-radius: 0.875rem; border: 0.1875rem solid #f5e6c8; background: transparent; color: #fff6e5; font-family: 'Jua', 'Gowun Dodum', sans-serif; font-size: 1.0625rem; cursor: pointer; }
+  .guide-act.main { background: #fcd34d; color: #1f1610; }
+  .guide-overlay button:focus-visible { outline: 0.1875rem solid #7dd3fc; outline-offset: 0.125rem; }
+  @media (max-width: 600px) {
+    .guide-overlay { padding: 8px; }
+    .guide-head h2 { font-size: 1.3125rem; }
+    .guide-body { padding: 6px 16px 14px; font-size: 1rem; }
+    .guide-tab { padding: 6px 12px; font-size: 0.9375rem; }
+  }
+  body.guide-printing > *:not(.guide-overlay) { display: none !important; }
+  @media print {
+    body.guide-printing .guide-overlay { position: static !important; display: block !important; background: none !important; padding: 0 !important; }
+    body.guide-printing .guide-card { max-height: none !important; box-shadow: none !important; border: 1px solid #000 !important; background: #fff !important; color: #000 !important; }
+    body.guide-printing .guide-head { background: #fff !important; color: #000 !important; border-bottom: 2px solid #000; }
+    body.guide-printing .guide-body { overflow: visible !important; color: #000 !important; }
+    body.guide-printing .guide-body h4, body.guide-printing .guide-body b { color: #000 !important; }
+    body.guide-printing .guide-panel { display: block !important; page-break-inside: avoid; }
+    body.guide-printing .guide-tabs, body.guide-printing .guide-foot, body.guide-printing .guide-x { display: none !important; }
+    body.guide-printing .g-note, body.guide-printing .g-table th { background: #fff !important; }
+  }
+
   .rot-note { display: none; position: fixed; left: 0; right: 0; top: 0; z-index: 99; background: #f5c542; color: #2a1d00; text-align: center; font-weight: 900; padding: .5rem; font-size: 1rem; }
   html.portrait .rot-note { display: block; }
 </style>
@@ -268,6 +317,56 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
 
+
+<div class="guide-overlay" id="guideModal" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
+  <div class="guide-card">
+    <div class="guide-head"><h2 id="guideTitle">📖 결합 게임 (합! 결!) 사용법</h2><button type="button" class="guide-x" onclick="closeGuide()" aria-label="닫기">✕</button></div>
+    <div class="guide-tabs" role="tablist"><button type="button" class="guide-tab" role="tab" aria-selected="true" onclick="showGuideTab(0)">준비하기</button><button type="button" class="guide-tab" role="tab" aria-selected="false" onclick="showGuideTab(1)">진행하기</button><button type="button" class="guide-tab" role="tab" aria-selected="false" onclick="showGuideTab(2)">팁 · 문제 해결</button></div>
+    <div class="guide-body"><section class="guide-panel on" role="tabpanel"><h3 style="display:none">준비하기</h3><h4>이런 게임이에요</h4>
+<p>3×3 판에 놓인 타일 9장에서 <b>모양·색·바탕색</b> 세 가지가 각각 <b>모두 같거나 모두 다른</b> 타일 3장을 찾는 관찰력 게임이에요. 이런 3장을 <b>합</b>이라고 불러요. 조별로 차례를 돌며 합을 찾고, 가장 높은 점수를 얻은 조가 이겨요.</p>
+<h4>준비물</h4>
+<ul><li>교실 TV·전자칠판 (<b>가로 화면</b> 권장). 이 페이지를 띄워 두세요.</li>
+<li>화면은 <b>선생님(진행자)</b>이 조작해요. 학생은 말로 "합!", "결!", "패스", 타일 번호를 말합니다.</li></ul>
+<h4>시작 화면 설정</h4>
+<ul>
+<li><b>조 개수</b> 2~8개, <b>조 이름</b>은 입력한 순서가 차례 순서예요.</li>
+<li><b>판 수</b> 5·10·15·20판 또는 제한 없음 (제한 없음이면 <b>게임 끝내기</b> 버튼으로 종료).</li>
+<li><b>차례마다 결정 시간</b> 10·15·20·30초 또는 제한 없음.</li>
+<li><b>효과음</b> 켬/끔, 음량 조절.</li>
+</ul>
+<p class="g-note">처음 하는 학급이라면 4조 · 10판 · 20초 정도로 시작해 보세요. 익숙해지면 시간을 줄여 긴장감을 높일 수 있어요.</p></section><section class="guide-panel" role="tabpanel"><h3 style="display:none">진행하기</h3><h4>한 판의 흐름</h4>
+<ol>
+<li>새 판이 나오면 학생들에게 잠깐 살펴볼 시간을 줘요. 곧 결정 시간이 흐르기 시작해요.</li>
+<li>차례인 조가 <b>합! · 결! · 패스</b> 중 하나를 말하면 선생님이 해당 버튼을 눌러요.</li>
+<li><b>합!</b>을 누르면 <b>8초 안에</b> 타일 번호 3개를 골라야 해요. 선택 후 확인하면 바로 정답 여부가 나와요.</li>
+<li>합을 맞히면 <b>같은 조가 계속</b> 도전해요. 틀리거나 결!·패스를 하면 다음 조로 넘어가요.</li>
+<li><b>결!</b>은 "남은 합이 없다"는 선언이에요. 맞으면 판이 끝나고 다음 판은 다음 조부터 시작해요.</li>
+<li>정한 판 수가 끝나면 순위 화면이 나와요.</li>
+</ol>
+<h4>점수표</h4>
+<table class="g-table">
+<tr><th>상황</th><th>점수</th></tr>
+<tr><td>합! 정답</td><td>+1 (같은 조 계속)</td></tr>
+<tr><td>합! 오답 · 이미 찾은 합</td><td>−1 (다음 조)</td></tr>
+<tr><td>결! 정답 (남은 합 없음)</td><td>+2 (다음 판)</td></tr>
+<tr><td>결! 오답 (합이 남아 있음)</td><td>−2 (다음 조)</td></tr>
+<tr><td>패스 · 시간 초과</td><td>0 (다음 조)</td></tr>
+</table>
+<p class="g-note">판마다 합은 0~6개이고, 남은 개수는 공개되지 않아요.</p></section><section class="guide-panel" role="tabpanel"><h3 style="display:none">팁 · 문제 해결</h3><ul>
+<li><b>↩️ 되돌리기</b>: 잘못 눌렀을 때 직전 동작을 취소해요.</li>
+<li><b>시간 초과</b>: 감점 없이 다음 조로 넘어가요. 선생님이 <b>➕ 5초 더 주기</b>를 눌러 기회를 한 번 더 줄 수도 있어요.</li>
+<li><b>🔑 정답 보기(진행자)</b>: 이 판의 합이 모두 보여요. 학생들이 보지 않을 때, 이의가 있을 때만 쓰세요. 다시 누르면 숨겨져요.</li>
+<li><b>🏁 게임 끝내기</b>: 판 수가 "제한 없음"일 때 수업 시간에 맞춰 끝내는 버튼이에요.</li>
+<li><b>효과음</b>이 안 나오면 화면을 한 번 눌러 보세요. 브라우저 규칙상 클릭 후에 소리가 나요.</li>
+<li>진행 중에 <b>새로고침</b>해도 게임이 이어져요. 새로 시작하려면 <b>🔄 새 게임</b>을 누르세요.</li>
+<li>화면이 세로면 "가로 화면에서 사용" 안내가 떠요. TV·노트북 가로 화면을 권장해요.</li>
+</ul></section></div>
+    <div class="guide-foot">
+      <label><input type="checkbox" id="guideNever"> 다음부터 자동으로 열지 않기</label>
+      <div class="guide-actions"><button type="button" class="guide-act" onclick="printGuide()">🖨️ 인쇄</button><button type="button" class="guide-act main" onclick="closeGuide()">닫기</button></div>
+    </div>
+  </div>
+</div>
 <div class="rot-note">📺 가로 화면(TV·노트북)에서 사용해 주세요</div>
 </head>
 <body>
@@ -708,6 +807,7 @@ function renderTopbar() {
       ${S.phase === 'play' ? `<button class="chip ${S.showAnswer ? 'on' : ''}" onclick="toggleAnswer()">🔑 정답 보기(진행자)</button>
       <button class="chip" onclick="endGame()">🏁 게임 끝내기</button>` : ''}
       <button class="chip" onclick="newGame()">🔄 새 게임</button>
+      <button class="chip guide-btn" onclick="openGuide()">📖 사용법</button>
     </div>
   </div>`;
 }
@@ -808,6 +908,7 @@ function renderSetup() {
   return `<div class="setup">
     <a href="play.html" style="color:var(--text-dim); font-weight:700; text-decoration:none;">← 교실 놀이 수업실로</a>
     <h1>결합 게임</h1>
+    <div style="margin:0.25rem 0 0.5rem"><button class="chip guide-btn" onclick="openGuide()">📖 사용법</button></div>
     <p class="lead">3×3 판에서 <b>모양·색·바탕색</b>이 각각 모두 같거나 모두 다른 타일 3장을 찾는 조별 게임입니다.</p>
     <div class="card">
       <div class="field"><label for="teamCount">조 개수</label><select id="teamCount">${countOpts}</select></div>
@@ -880,6 +981,57 @@ if (window.claude?.hot) {
   if (window.claude.hot.ready) window.claude.hot.ready(d => { if (d && 'S' in d) { S = d.S; history = d.history || []; if (S) { if (S.timeLimit === undefined) S.timeLimit = 15; if (S.streak === undefined) S.streak = 0; S.mode = 'idle'; S.selected = []; startDecide(); } render(); } else boot(); });
   else boot();
 } else boot();
+
+/* ===== 사용법 팝업 ===== */
+(function () {
+  var KEY = 'guide_seen_hapgyeol';
+  var lastFocus = null;
+  function $(id) { return document.getElementById(id); }
+  window.showGuideTab = function (i) {
+    var tabs = document.querySelectorAll('#guideModal .guide-tab');
+    var panels = document.querySelectorAll('#guideModal .guide-panel');
+    for (var k = 0; k < tabs.length; k++) {
+      tabs[k].setAttribute('aria-selected', k === i ? 'true' : 'false');
+      panels[k].className = 'guide-panel' + (k === i ? ' on' : '');
+    }
+    var b = document.querySelector('#guideModal .guide-body'); if (b) b.scrollTop = 0;
+  };
+  window.openGuide = function () {
+    var m = $('guideModal'); if (!m) return;
+    lastFocus = document.activeElement;
+    try { var c = $('guideNever'); if (c) c.checked = localStorage.getItem(KEY) === '1'; } catch (e) {}
+    showGuideTab(0);
+    m.className = 'guide-overlay open';
+    var x = m.querySelector('.guide-x'); if (x) x.focus();
+  };
+  window.closeGuide = function () {
+    var m = $('guideModal'); if (!m) return;
+    m.className = 'guide-overlay';
+    try { var c = $('guideNever'); localStorage.setItem(KEY, (c && c.checked) ? '1' : '0.5'); } catch (e) {}
+    if (lastFocus && lastFocus.focus) { try { lastFocus.focus(); } catch (e) {} }
+  };
+  window.printGuide = function () {
+    document.body.classList.add('guide-printing');
+    var done = function () { document.body.classList.remove('guide-printing'); window.removeEventListener('afterprint', done); };
+    window.addEventListener('afterprint', done);
+    window.print();
+    setTimeout(done, 1500);
+  };
+  document.addEventListener('keydown', function (e) {
+    var m = $('guideModal');
+    if (e.key === 'Escape' && m && m.className.indexOf('open') > -1) { e.stopPropagation(); closeGuide(); }
+  }, true);
+  document.addEventListener('click', function (e) {
+    if (e.target && e.target.id === 'guideModal') closeGuide();
+  });
+  function autoOpen() {
+    var seen = null;
+    try { seen = localStorage.getItem(KEY); } catch (e) {}
+    var force = /[?&]guide=1/.test(location.search);
+    if (force || seen === null) setTimeout(openGuide, 400);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', autoOpen); else autoOpen();
+})();
 </script>
 </body>
 </html>

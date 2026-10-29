@@ -76,6 +76,11 @@
     .theme-student .card-head, .theme-student .btn-link { background: var(--green); }
     .theme-student .card-title { color: var(--green-text); }
 
+    .guide-links { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; background: rgba(255,255,255,.55); border: 3px dashed var(--ink); border-radius: 18px; padding: 14px 18px; }
+    .guide-links-title { font-family: var(--font-title); font-size: 19px; margin-right: 6px; }
+    .guide-links a { min-height: 44px; display: inline-flex; align-items: center; padding: 6px 16px; border: 3px solid var(--ink); border-radius: 999px; background: #fff; font-size: 16px; font-weight: 700; box-shadow: 2px 2px 0 var(--ink); }
+    .guide-links a:hover { background: var(--sun); }
+    .guide-links a:active { transform: translate(2px, 2px); box-shadow: none; }
     .footer { text-align: center; font-size: 15px; color: var(--ink); }
 
     /* 학교 코드 입력 팝업 */
@@ -170,6 +175,14 @@
         </span>
       </button>
     </div>
+
+    <nav class="guide-links" aria-label="선생님 사용법">
+      <span class="guide-links-title">📖 선생님 사용법</span>
+      <a href="stacking.html?guide=1">스태킹 랭킹전</a>
+      <a href="mock-match.html?guide=1">모의 경기장</a>
+      <a href="choco-auction.html?guide=1">명화 경매</a>
+      <a href="hapgyeol.html?guide=1">결합 게임</a>
+    </nav>
 
     <div class="footer">KIMKO-EDU · 체육 수업과 교실 활동을 위한 도구 모음</div>
   </div>
