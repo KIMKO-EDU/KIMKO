@@ -5,104 +5,120 @@
   <!-- [적용 1] 모바일 뷰포트 메타 태그 추가 (화면 강제 축소 방지 및 글자 크기 정상화) -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>스포츠스태킹 자율 기록실</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
   <style>
+    /* ===== 따뜻한 교실 테마 ===== */
+    :root {
+      --paper: #fdf6e7;
+      --ink: #3a2a1a;
+      --ink-soft: #6b4f33;
+      --card: #ffffff;
+      --sun: #fcd34d;  --sun-soft: #fef3c7;
+      --green: #bbf7d0; --green-soft: #dcfce7; --green-ink: #166534;
+      --font-title: 'Jua', 'Gowun Dodum', sans-serif;
+      --font-body: 'Gowun Dodum', 'Noto Sans KR', sans-serif;
+    }
     * { box-sizing: border-box; }
     body {
-      font-family: 'Pretendard', sans-serif, -apple-system;
-      background: #f0fdf4;
-      color: #166534;
+      font-family: var(--font-body);
+      background: var(--paper);
+      color: var(--ink);
       padding: 20px;
       max-width: 600px;
       margin: 0 auto;
       -webkit-text-size-adjust: 100%; /* 모바일 가로/세로 전환 시 글자 크기 자동조절 방지 */
     }
-    
+    button, input { font-family: inherit; color: inherit; }
+    :focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+
     /* 상단 네비게이션 */
     .top-nav {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
+      gap: 8px;
     }
-    .back-btn {
-      text-decoration: none;
-      color: #15803d;
+    .back-btn, .admin-btn {
+      background: var(--card);
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      padding: 7px 14px;
       font-size: 14px;
-      font-weight: 600;
-      padding: 6px 0;
-    }
-    .admin-btn {
-      background: none;
-      border: none;
-      color: #94a3b8;
-      font-size: 13px;
+      color: var(--ink);
+      text-decoration: none;
+      box-shadow: 3px 3px 0 var(--ink);
       cursor: pointer;
-      font-weight: 600;
-      padding: 6px 4px;
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
     }
+    .admin-btn { color: var(--ink-soft); }
+    .back-btn:active, .admin-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
 
     .card {
-      background: #ffffff;
-      border-radius: 16px;
+      background: var(--card);
+      border: 3px solid var(--ink);
+      border-radius: 24px;
       padding: 24px;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-      margin-bottom: 20px;
-      border: 1px solid #dcfce7;
+      box-shadow: 6px 6px 0 var(--ink);
+      margin-bottom: 24px;
     }
     h1 {
       text-align: center;
-      color: #14532d;
-      font-size: 24px;
+      font-family: var(--font-title);
+      font-weight: 400;
+      font-size: 30px;
       margin-top: 0;
-      margin-bottom: 16px;
+      margin-bottom: 10px;
       word-break: keep-all;
     }
-    
+    h2 { font-family: var(--font-title); font-weight: 400; }
+
     /* 학생 정보 입력칸 */
-    .input-group { 
-      display: flex; 
-      gap: 8px; 
-      margin-bottom: 14px; 
+    .input-group {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
       width: 100%;
     }
     .input-group input {
       padding: 12px 8px;
-      border: 1px solid #bbf7d0;
-      border-radius: 8px;
-      font-size: 16px; /* 16px 이상 유지하여 모바일 터치 시 화면 자동 줌인 방지 */
+      border: 3px solid var(--ink);
+      border-radius: 14px;
+      background: var(--paper);
+      font-size: 17px; /* 16px 이상 유지하여 모바일 터치 시 화면 자동 줌인 방지 */
       text-align: center;
       min-width: 0;
-      min-height: 48px;
+      min-height: 50px;
     }
     #grade { flex: 1; }
     #cls { flex: 1; }
     #name { flex: 2.2; }
-    
     .input-group input:focus {
       outline: none;
-      border-color: #16a34a;
-      box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.15);
+      background: #ffffff;
+      box-shadow: 0 0 0 4px var(--sun);
     }
-    
+
     .btn-search {
       width: 100%;
-      background: #16a34a;
-      color: white;
-      padding: 15px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: bold;
+      background: var(--green);
+      color: var(--ink);
+      padding: 14px;
+      border: 3px solid var(--ink);
+      border-radius: 16px;
+      font-family: var(--font-title);
+      font-size: 20px;
       cursor: pointer;
-      min-height: 50px;
-      transition: background 0.15s, opacity 0.15s;
+      min-height: 54px;
+      box-shadow: 4px 4px 0 var(--ink);
+      transition: transform .1s, box-shadow .1s;
     }
-    .btn-search:hover { background: #15803d; }
-    .btn-search:disabled {
-      background: #86efac;
-      cursor: not-allowed;
-    }
-    
+    .btn-search:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ink); }
+    .btn-search:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
     /* 개인 기록 조회용: 스태킹 컵 바운스 로더 */
     #loadingMsg {
       display: none;
@@ -111,9 +127,9 @@
       justify-content: center;
       margin-top: 18px;
       padding: 16px;
-      background: #f0fdf4;
-      border-radius: 12px;
-      border: 1px dashed #bbf7d0;
+      background: var(--paper);
+      border-radius: 16px;
+      border: 2px dashed var(--ink);
     }
     .cup-loader {
       display: flex;
@@ -129,9 +145,9 @@
       border-radius: 2px;
       animation: cupBounce 0.6s infinite ease-in-out alternate;
     }
-    .cup-icon:nth-child(1) { background: #16a34a; animation-delay: 0s; }
-    .cup-icon:nth-child(2) { background: #22c55e; animation-delay: 0.15s; }
-    .cup-icon:nth-child(3) { background: #15803d; animation-delay: 0.3s; }
+    .cup-icon:nth-child(1) { background: #ef4444; animation-delay: 0s; }
+    .cup-icon:nth-child(2) { background: #f59e0b; animation-delay: 0.15s; }
+    .cup-icon:nth-child(3) { background: #3b82f6; animation-delay: 0.3s; }
 
     @keyframes cupBounce {
       0% { transform: translateY(0) scaleY(0.95); }
@@ -139,9 +155,8 @@
     }
 
     .loading-text {
-      color: #166534;
-      font-weight: 700;
-      font-size: 14px;
+      color: var(--ink);
+      font-size: 15px;
       text-align: center;
       word-break: keep-all;
     }
@@ -164,13 +179,13 @@
       display: flex;
       align-items: center;
       padding: 10px 14px;
-      border-radius: 10px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      height: 58px;
+      border-radius: 14px;
+      background: var(--paper);
+      border: 2px solid #e7d9bd;
+      height: 60px;
     }
     .sk-box {
-      background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+      background: linear-gradient(90deg, #efe2c6 25%, #f8efdc 50%, #efe2c6 75%);
       background-size: 200% 100%;
       animation: shimmer 1.4s infinite linear;
       border-radius: 6px;
@@ -188,100 +203,98 @@
 
     /* 기록판 및 입력 영역 */
     #recordBoard { display: none; }
-    
-    .record-grid { 
-      display: grid; 
-      grid-template-columns: repeat(3, 1fr); 
-      gap: 10px; 
-      margin: 16px 0 24px 0; 
+
+    .record-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 16px 0 24px 0;
     }
     .record-item {
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
+      background: var(--green-soft);
+      border: 2px solid var(--ink);
       padding: 12px 8px;
-      border-radius: 8px;
+      border-radius: 16px;
       text-align: center;
       transition: all 0.3s ease;
     }
-    .record-title { font-size: 13px; color: #166534; font-weight: 600; margin-bottom: 4px; word-break: keep-all; }
-    .record-score { font-size: 17px; font-weight: 800; color: #15803d; word-break: keep-all; }
-    .record-empty { font-size: 14px; font-weight: 600; color: #94a3b8; }
+    .record-title { font-size: 14px; color: var(--ink-soft); margin-bottom: 4px; word-break: keep-all; }
+    .record-score { font-family: var(--font-title); font-size: 20px; color: var(--ink); word-break: keep-all; }
+    .record-empty { font-family: var(--font-body); font-size: 14px; color: var(--ink-soft); }
 
     .record-highlight {
-      background: #dcfce7 !important;
-      border-color: #16a34a !important;
-      transform: scale(1.05);
+      background: var(--sun) !important;
+      transform: scale(1.06);
+      box-shadow: 3px 3px 0 var(--ink);
     }
 
     /* 새 기록 입력 영역 */
     .submit-area {
-      background: #fdfae8;
-      border: 2px dashed #fde047;
+      background: var(--sun-soft);
+      border: 3px dashed var(--ink);
       padding: 20px;
-      border-radius: 12px;
+      border-radius: 20px;
     }
-    .submit-area h3 { margin: 0 0 12px 0; color: #854d0e; text-align: center; font-size: 16px; word-break: keep-all; }
-    
+    .submit-area h3 { margin: 0 0 14px 0; font-family: var(--font-title); font-weight: 400; font-size: 19px; text-align: center; word-break: keep-all; }
+
     .event-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
     .event-btn {
       padding: 12px 6px;
-      background: white;
-      border: 1px solid #fde047;
-      border-radius: 6px;
+      background: var(--card);
+      border: 2px solid var(--ink);
+      border-radius: 12px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 15px;
       text-align: center;
       transition: all 0.15s;
       word-break: keep-all;
       display: flex;
       align-items: center;
       justify-content: center;
+      min-height: 46px;
     }
     .event-btn.selected {
-      background: #eab308;
-      color: white;
-      font-weight: bold;
-      border-color: #ca8a04;
+      background: var(--sun);
+      font-family: var(--font-title);
+      box-shadow: 3px 3px 0 var(--ink);
     }
 
     .score-input-group { display: flex; gap: 8px; }
     .score-input {
       flex: 1.8;
       padding: 12px;
-      border: 1px solid #fde047;
-      border-radius: 8px;
-      font-size: 18px;
+      border: 3px solid var(--ink);
+      border-radius: 14px;
+      font-size: 19px;
       text-align: center;
       min-width: 0;
-      min-height: 48px;
+      min-height: 52px;
+      background: var(--card);
     }
-    .score-input:focus {
-      outline: none;
-      border-color: #ca8a04;
-    }
+    .score-input:focus { outline: none; box-shadow: 0 0 0 4px var(--sun); }
     .btn-submit {
       flex: 1.2;
-      background: #eab308;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 16px;
+      background: var(--sun);
+      color: var(--ink);
+      border: 3px solid var(--ink);
+      border-radius: 14px;
+      font-family: var(--font-title);
+      font-size: 19px;
       cursor: pointer;
-      min-height: 48px;
-      transition: background 0.15s;
+      min-height: 52px;
+      box-shadow: 3px 3px 0 var(--ink);
     }
-    .btn-submit:hover { background: #ca8a04; }
+    .btn-submit:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
 
     #syncStatus {
       display: none;
       text-align: center;
-      font-size: 12px;
-      color: #64748b;
-      margin-top: 8px;
+      font-size: 13px;
+      color: var(--ink-soft);
+      margin-top: 10px;
     }
 
-    /* 🎵 가요 차트 스타일 실시간 랭킹보드 */
+    /* 실시간 TOP 5 랭킹보드 */
     .chart-header {
       display: flex;
       justify-content: space-between;
@@ -291,34 +304,35 @@
       gap: 6px;
     }
     .chart-title {
-      font-size: 18px;
-      font-weight: 800;
-      color: #0f172a;
+      font-family: var(--font-title);
+      font-size: 22px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
     .live-badge {
-      background: #fee2e2;
-      color: #dc2626;
+      background: #fecaca;
+      color: #991b1b;
+      border: 2px solid var(--ink);
+      font-family: var(--font-body);
       font-size: 11px;
-      font-weight: 800;
-      padding: 2px 8px;
-      border-radius: 12px;
+      font-weight: 700;
+      padding: 1px 8px;
+      border-radius: 999px;
       letter-spacing: 0.5px;
       animation: pulse 1.5s infinite;
     }
     @keyframes pulse {
       0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+      50% { opacity: 0.55; }
     }
 
     .chart-tabs {
       display: flex;
       gap: 6px;
       overflow-x: auto;
-      padding-bottom: 8px;
-      margin-bottom: 12px;
+      padding: 2px 4px 10px 2px;
+      margin-bottom: 10px;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
     }
@@ -326,19 +340,19 @@
     .tab-chip {
       flex: 0 0 auto;
       padding: 8px 14px;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      border-radius: 20px;
+      background: var(--card);
+      border: 2px solid var(--ink);
+      border-radius: 999px;
       font-size: 14px;
-      font-weight: 600;
-      color: #64748b;
+      color: var(--ink);
       cursor: pointer;
+      min-height: 40px;
       transition: all 0.2s;
     }
     .tab-chip.active {
-      background: #16a34a;
-      color: white;
-      border-color: #16a34a;
+      background: var(--green);
+      font-family: var(--font-title);
+      box-shadow: 2px 2px 0 var(--ink);
     }
 
     .chart-list {
@@ -353,52 +367,42 @@
       display: flex;
       align-items: center;
       padding: 12px 14px;
-      border-radius: 10px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      background: var(--paper);
+      border: 2px solid var(--ink);
       transition: transform 0.15s ease;
     }
-    .chart-item:hover {
-      transform: translateX(4px);
-      background: #f1f5f9;
-    }
+    .chart-item:first-child { background: var(--sun-soft); }
+    .chart-item:hover { transform: translateX(4px); }
     .chart-rank {
-      width: 36px;
-      font-size: 16px;
-      font-weight: 900;
+      width: 40px;
+      font-family: var(--font-title);
+      font-size: 17px;
       text-align: center;
       margin-right: 10px;
     }
-    .rank-1-badge { color: #d97706; font-size: 18px; }
-    .rank-2-badge { color: #64748b; font-size: 18px; }
-    .rank-3-badge { color: #b45309; font-size: 18px; }
-    .rank-etc-badge { color: #94a3b8; font-size: 15px; }
+    .rank-1-badge { color: #92400e; font-size: 19px; }
+    .rank-2-badge { color: #475569; font-size: 19px; }
+    .rank-3-badge { color: #9a3412; font-size: 19px; }
+    .rank-etc-badge { color: var(--ink-soft); font-size: 16px; }
 
     .chart-info {
       flex: 1;
       display: flex;
       flex-direction: column;
     }
-    .chart-student-name {
-      font-size: 16px;
-      font-weight: 700;
-      color: #1e293b;
-    }
-    .chart-student-class {
-      font-size: 13px;
-      color: #64748b;
-    }
+    .chart-student-name { font-family: var(--font-title); font-size: 18px; }
+    .chart-student-class { font-size: 13px; color: var(--ink-soft); }
     .chart-record {
-      font-size: 17px;
-      font-weight: 800;
-      color: #15803d;
-      letter-spacing: -0.3px;
+      font-family: var(--font-title);
+      font-size: 20px;
+      color: var(--green-ink);
     }
     .chart-empty {
       text-align: center;
       padding: 24px 12px;
-      color: #94a3b8;
-      font-size: 14px;
+      color: var(--ink-soft);
+      font-size: 15px;
       word-break: keep-all;
     }
 
@@ -410,56 +414,43 @@
     }
     .lock-input {
       padding: 12px;
-      border: 2px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 16px;
+      border: 3px solid var(--ink);
+      border-radius: 14px;
+      background: var(--paper);
+      font-size: 17px;
       text-align: center;
       margin-bottom: 12px;
       width: 200px;
     }
+    .lock-input:focus { outline: none; background: #fff; box-shadow: 0 0 0 4px var(--sun); }
 
-    /* ========================================================
-       [적용 2 & 3] 안드로이드/모바일 스마트폰 최적화 반응형 스타일
-       ======================================================== */
+    /* 모바일 스마트폰 최적화 */
     @media (max-width: 480px) {
-      body {
-        padding: 10px; /* 좌우 바깥 여백 축소로 화면 꽉 차게 */
-      }
+      body { padding: 12px; }
       .card {
-        padding: 18px 14px; /* 카드 내부 여백 최적화 */
-        border-radius: 14px;
-        margin-bottom: 14px;
+        padding: 18px 14px;
+        border-radius: 20px;
+        margin-bottom: 18px;
+        box-shadow: 4px 4px 0 var(--ink);
       }
-      h1 {
-        font-size: 21px;
-        margin-bottom: 12px;
-      }
+      h1 { font-size: 25px; }
       /* 6개 종목 그리드를 3열 -> 2열로 전환하여 글자 잘림 방지 및 가독성 확대 */
       .record-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 8px;
       }
-      .record-item {
-        padding: 12px 10px;
-      }
-      .record-title {
-        font-size: 14px;
-      }
-      .record-score {
-        font-size: 18px;
-      }
-      /* 종목 선택 버튼도 2열로 큼직하게 배치 */
+      .record-item { padding: 12px 10px; }
+      .record-title { font-size: 14px; }
+      .record-score { font-size: 20px; }
       .event-selector {
         grid-template-columns: repeat(2, 1fr);
         gap: 8px;
       }
-      .event-btn {
-        font-size: 15px;
-        padding: 12px 8px;
-      }
-      .submit-area {
-        padding: 16px 12px;
-      }
+      .event-btn { font-size: 15px; padding: 12px 8px; }
+      .submit-area { padding: 16px 12px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
     }
   </style>
 </head>
@@ -469,7 +460,7 @@
   <div class="card" id="lockScreen">
     <div style="font-size:48px; margin-bottom:12px;">🔒</div>
     <h2>학교 코드 인증이 필요합니다</h2>
-    <p style="color:#64748b; font-size:14px; margin-bottom:20px;">우리 학교 학생만 접근 가능한 페이지입니다.</p>
+    <p style="color:#6b4f33; font-size:15px; margin-bottom:20px;">우리 학교 학생만 접근 가능한 페이지입니다.</p>
     <input type="password" id="directCodeInput" class="lock-input" placeholder="학교 코드" onkeypress="if(event.key==='Enter') unlockDirectly()"><br>
     <button class="btn-search" style="max-width:200px;" onclick="unlockDirectly()">인증 및 입장</button>
   </div>
@@ -485,7 +476,7 @@
     <!-- 1. 기록 조회 카드 -->
     <div class="card">
       <h1>⏱️ 스포츠스태킹 자율 기록실</h1>
-      <p style="text-align:center; color:#15803d; font-size:14px; margin-top:0;">본인의 정보를 입력하고 최고 기록을 조회하세요.</p>
+      <p style="text-align:center; color:#6b4f33; font-size:15px; margin-top:0;">본인의 정보를 입력하고 최고 기록을 조회하세요.</p>
       
       <!-- [적용 4] 모바일 숫자 키패드 자동 호출(inputmode="numeric") -->
       <div class="input-group">
@@ -510,7 +501,7 @@
 
     <!-- 2. 조회 완료 시 나타나는 개인 기록판 및 입력창 -->
     <div class="card" id="recordBoard">
-      <h2 style="font-size: 18px; text-align: center; margin-top: 0; color:#14532d;">🏆 <span id="displayInfo"></span>의 최고 기록</h2>
+      <h2 style="font-size: 22px; text-align: center; margin-top: 0;">🏆 <span id="displayInfo"></span>의 최고 기록</h2>
       
       <div class="record-grid">
         <div class="record-item" id="card-3-3-3"><div class="record-title">3-3-3</div><div class="record-score" id="score-3-3-3">기록 없음</div></div>
@@ -548,7 +539,7 @@
           <span>🔥 실시간 TOP 5 랭킹차트</span>
           <span class="live-badge">LIVE</span>
         </div>
-        <span style="font-size:12px; color:#64748b;" id="chartUpdateNotice">실시간 연동 중</span>
+        <span style="font-size:13px; color:#6b4f33;" id="chartUpdateNotice">실시간 연동 중</span>
       </div>
 
       <!-- 종목 선택 칩 -->

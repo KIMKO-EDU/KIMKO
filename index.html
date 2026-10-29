@@ -2,382 +2,201 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <!-- 모바일 뷰포트 설정 (안드로이드/스마트폰 화면 비율 및 글자 크기 정상화) -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KIMKO-EDU 체육 & 교실 플랫폼</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
   <style>
+    /* ===== 따뜻한 교실 테마 공통 색·글꼴 ===== */
+    :root {
+      --paper: #fdf6e7;      /* 크림색 바탕 */
+      --ink: #3a2a1a;        /* 진한 갈색 글씨·테두리 */
+      --ink-soft: #6b4f33;   /* 설명 글씨 */
+      --card: #ffffff;
+      --sun: #fcd34d;        /* 노란 포인트 */
+      --blue: #bfdbfe;  --blue-soft: #dbeafe;
+      --orange: #fed7aa; --orange-soft: #ffedd5;
+      --green: #bbf7d0; --green-soft: #dcfce7;
+      --font-title: 'Jua', 'Gowun Dodum', sans-serif;
+      --font-body: 'Gowun Dodum', 'Noto Sans KR', sans-serif;
+    }
     * { box-sizing: border-box; }
     body {
-      font-family: 'Pretendard', sans-serif, -apple-system;
+      font-family: var(--font-body);
       margin: 0;
-      padding: 50px 20px 80px;
-      background: #f8fafc;
-      color: #0f172a;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      padding: 40px 20px 72px;
+      background: var(--paper);
+      color: var(--ink);
       min-height: 100vh;
       -webkit-text-size-adjust: 100%;
     }
-    .header {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-    h1 {
-      font-size: 32px;
-      margin: 0 0 10px 0;
-      color: #1e293b;
-      font-weight: 800;
-      word-break: keep-all;
-    }
-    .subtitle {
-      font-size: 16px;
-      color: #64748b;
-      margin: 0;
-      word-break: keep-all;
-    }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; color: inherit; }
+    :focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
+    .page { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 36px; }
 
-    /* =======================================================
-       [추가] 스포츠스태킹 5세트 모의 경기장 상단 하이라이트 배너
-       ======================================================= */
-    .banner-wrapper {
-      width: 100%;
-      max-width: 980px;
-      margin-bottom: 24px;
+    /* 머리말 */
+    .header { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+    .pill {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 999px;
+      padding: 4px 16px; font-size: 14px; box-shadow: 3px 3px 0 var(--ink);
     }
+    h1 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 52px; line-height: 1.2; word-break: keep-all; }
+    .subtitle { margin: 0; font-size: 18px; color: var(--ink-soft); line-height: 1.6; word-break: keep-all; }
+
+    /* 모의 경기장 배너 */
     .mock-match-banner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: linear-gradient(135deg, #0f172a 0%, #15803d 100%);
-      color: #ffffff;
-      padding: 24px 28px;
-      border-radius: 18px;
-      text-decoration: none;
-      box-shadow: 0 10px 20px -5px rgba(21, 128, 61, 0.3);
-      transition: all 0.25s ease;
-      cursor: pointer;
-      border: 2px solid #4ade80;
+      display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+      background: var(--sun); border: 3px solid var(--ink); border-radius: 28px;
+      padding: 30px 34px; box-shadow: 8px 8px 0 var(--ink);
+      transition: transform .15s, box-shadow .15s;
     }
-    .mock-match-banner:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 28px -5px rgba(21, 128, 61, 0.45);
-    }
-    .banner-left {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .banner-badge-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+    .mock-match-banner:hover { transform: translate(-2px, -2px); box-shadow: 10px 10px 0 var(--ink); }
+    .mock-match-banner:active { transform: translate(4px, 4px); box-shadow: 4px 4px 0 var(--ink); }
+    .banner-left { display: flex; flex-direction: column; gap: 10px; flex: 1 1 420px; min-width: 0; }
     .banner-badge {
-      background: #facc15;
-      color: #0f172a;
-      font-size: 12px;
-      font-weight: 900;
-      padding: 4px 10px;
-      border-radius: 20px;
-      letter-spacing: 0.3px;
+      width: fit-content; background: var(--card); border: 2px solid var(--ink); border-radius: 999px;
+      padding: 3px 14px; font-size: 14px; font-weight: 700;
     }
-    .banner-sub-tag {
-      font-size: 12px;
-      color: #86efac;
-      font-weight: 700;
-    }
-    .banner-title {
-      font-size: 22px;
-      font-weight: 800;
-      margin: 0;
-      color: #ffffff;
-      word-break: keep-all;
-    }
-    .banner-desc {
-      font-size: 14px;
-      color: #e2e8f0;
-      margin: 0;
-      line-height: 1.5;
-      word-break: keep-all;
-    }
+    .banner-title { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 32px; line-height: 1.3; word-break: keep-all; }
+    .banner-desc { margin: 0; font-size: 16px; line-height: 1.65; word-break: keep-all; }
     .banner-action {
-      margin-top: 4px;
-      font-size: 14px;
-      font-weight: 800;
-      color: #facc15;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .banner-right {
-      font-size: 36px;
-      background: rgba(255, 255, 255, 0.12);
-      width: 68px;
-      height: 68px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-left: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: var(--card); border: 3px solid var(--ink); border-radius: 16px; padding: 14px 24px;
+      font-family: var(--font-title); font-size: 20px; min-height: 52px; display: flex; align-items: center;
     }
 
-    /* 허브 카드 그리드 */
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 24px;
-      width: 100%;
-      max-width: 980px;
-    }
+    /* 허브 카드 */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; }
     .hub-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 18px;
-      padding: 28px;
-      text-decoration: none;
-      color: inherit;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04);
-      transition: all 0.25s ease;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      cursor: pointer;
+      background: var(--card); border: 3px solid var(--ink); border-radius: 24px; padding: 26px;
+      display: flex; flex-direction: column; gap: 12px; text-align: left; font-size: inherit;
+      box-shadow: 6px 6px 0 var(--ink); cursor: pointer; width: 100%;
+      transition: transform .15s, box-shadow .15s;
     }
-    .hub-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 14px 25px -4px rgba(0,0,0,0.08);
-      border-color: #cbd5e1;
+    .hub-card:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 var(--ink); }
+    .hub-card:active { transform: translate(3px, 3px); box-shadow: 3px 3px 0 var(--ink); }
+    .card-icon {
+      width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--ink);
+      display: flex; align-items: center; justify-content: center;
     }
-    .card-icon { font-size: 44px; margin-bottom: 14px; }
-    .card-title { font-size: 22px; font-weight: 700; margin-bottom: 10px; word-break: keep-all; }
-    .card-desc { font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 20px; word-break: keep-all; }
-    .card-tag {
-      display: inline-block;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 6px;
-      margin-bottom: 14px;
-      width: fit-content;
-    }
-    .btn-link {
-      font-size: 14px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
+    .card-tag { width: fit-content; border: 2px solid var(--ink); border-radius: 999px; padding: 2px 12px; font-size: 13px; }
+    .card-title { font-family: var(--font-title); font-size: 26px; word-break: keep-all; }
+    .card-desc { font-size: 16px; color: var(--ink-soft); line-height: 1.65; word-break: keep-all; }
+    .btn-link { margin-top: auto; padding-top: 4px; font-family: var(--font-title); font-size: 18px; }
+    .theme-stacking .card-icon { background: var(--blue); }
+    .theme-stacking .card-tag { background: var(--blue-soft); }
+    .theme-play .card-icon { background: var(--orange); }
+    .theme-play .card-tag { background: var(--orange-soft); }
+    .theme-student .card-icon { background: var(--green); }
+    .theme-student .card-tag { background: var(--green-soft); }
 
-    /* 카드별 테마 */
-    .theme-stacking { border-top: 4px solid #2563eb; }
-    .theme-stacking .card-title { color: #1e40af; }
-    .theme-stacking .card-tag { background: #eff6ff; color: #1d4ed8; }
-    .theme-stacking .btn-link { color: #2563eb; }
+    .footer { text-align: center; font-size: 14px; color: var(--ink-soft); }
 
-    .theme-play { border-top: 4px solid #ea580c; }
-    .theme-play .card-title { color: #9a3412; }
-    .theme-play .card-tag { background: #fff7ed; color: #c2410c; }
-    .theme-play .btn-link { color: #ea580c; }
-
-    .theme-student { border-top: 4px solid #16a34a; }
-    .theme-student .card-title { color: #14532d; }
-    .theme-student .card-tag { background: #f0fdf4; color: #15803d; }
-    .theme-student .btn-link { color: #16a34a; }
-
-    /* 학교 코드 입력 팝업 모달 */
+    /* 학교 코드 입력 팝업 */
     .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(4px);
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
+      display: none; position: fixed; inset: 0;
+      background: rgba(58, 42, 26, 0.55);
+      justify-content: center; align-items: center; z-index: 1000; padding: 16px;
     }
     .modal-card {
-      background: #ffffff;
-      padding: 30px;
-      border-radius: 16px;
-      width: 90%;
-      max-width: 400px;
-      text-align: center;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+      background: var(--card); border: 3px solid var(--ink); border-radius: 24px;
+      padding: 30px; width: 100%; max-width: 400px; text-align: center; box-shadow: 8px 8px 0 var(--ink);
     }
-    .modal-icon { font-size: 40px; margin-bottom: 12px; }
-    .modal-card h3 { margin: 0 0 8px 0; font-size: 20px; color: #1e293b; }
-    .modal-card p { font-size: 14px; color: #64748b; margin: 0 0 20px 0; line-height: 1.5; }
+    .modal-icon {
+      width: 64px; height: 64px; margin: 0 auto 12px; border-radius: 50%; background: var(--green);
+      border: 3px solid var(--ink); display: flex; align-items: center; justify-content: center;
+    }
+    .modal-card h3 { margin: 0 0 8px; font-family: var(--font-title); font-weight: 400; font-size: 26px; }
+    .modal-card p { font-size: 15px; color: var(--ink-soft); margin: 0 0 20px; line-height: 1.6; }
     .code-input {
-      width: 100%;
-      padding: 12px;
-      border: 2px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 18px;
-      text-align: center;
-      letter-spacing: 2px;
-      font-weight: bold;
-      margin-bottom: 14px;
+      width: 100%; padding: 12px; border: 3px solid var(--ink); border-radius: 14px;
+      font-size: 18px; text-align: center; letter-spacing: 2px; margin-bottom: 14px;
+      font-family: inherit; background: var(--paper); color: var(--ink);
     }
-    .code-input:focus {
-      outline: none;
-      border-color: #16a34a;
+    .code-input:focus { outline: none; background: #fff; box-shadow: 0 0 0 4px var(--sun); }
+    .modal-btns { display: flex; gap: 10px; }
+    .btn-submit-code, .btn-cancel-code {
+      border: 3px solid var(--ink); border-radius: 14px; padding: 12px 16px; min-height: 50px;
+      font-family: var(--font-title); font-size: 18px; cursor: pointer; box-shadow: 3px 3px 0 var(--ink);
     }
-    .modal-btns {
-      display: flex;
-      gap: 8px;
-    }
-    .btn-submit-code {
-      flex: 1;
-      background: #16a34a;
-      color: #ffffff;
-      border: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .btn-submit-code:hover { background: #15803d; }
-    .btn-cancel-code {
-      background: #e2e8f0;
-      color: #475569;
-      border: none;
-      padding: 12px 16px;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .btn-cancel-code:hover { background: #cbd5e1; }
+    .btn-submit-code { flex: 1; background: var(--green); }
+    .btn-cancel-code { background: var(--card); }
+    .btn-submit-code:active, .btn-cancel-code:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+    .btn-submit-code:disabled { opacity: .6; cursor: wait; }
 
-    /* 안드로이드/모바일 스마트폰 최적화 */
     @media (max-width: 600px) {
-      body {
-        padding: 28px 14px 50px;
-      }
-      .header {
-        margin-bottom: 22px;
-      }
-      h1 {
-        font-size: 25px;
-      }
-      .subtitle {
-        font-size: 14px;
-      }
-      .banner-wrapper {
-        margin-bottom: 16px;
-      }
-      .mock-match-banner {
-        padding: 18px 16px;
-        border-radius: 16px;
-      }
-      .banner-title {
-        font-size: 18px;
-      }
-      .banner-desc {
-        font-size: 13px;
-      }
-      .banner-right {
-        width: 52px;
-        height: 52px;
-        font-size: 28px;
-        margin-left: 12px;
-      }
-      .card-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-      }
-      .hub-card {
-        padding: 22px 18px;
-        border-radius: 16px;
-      }
-      .card-icon {
-        font-size: 36px;
-        margin-bottom: 10px;
-      }
-      .card-title {
-        font-size: 19px;
-      }
+      body { padding: 28px 16px 52px; }
+      .page { gap: 28px; }
+      h1 { font-size: 40px; }
+      .subtitle { font-size: 16px; }
+      .mock-match-banner { padding: 22px 20px; border-radius: 22px; box-shadow: 6px 6px 0 var(--ink); }
+      .banner-title { font-size: 25px; }
+      .banner-action { width: 100%; justify-content: center; }
+      .card-grid { gap: 22px; }
+      .hub-card { padding: 22px 20px; }
+      .card-title { font-size: 23px; }
     }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <h1>🏫 KIMKO-EDU 플랫폼</h1>
-    <p class="subtitle">체육 수업 및 교실 활동을 지원하는 교육 웹 도구 모음</p>
-  </div>
+  <div class="page">
+    <div class="header">
+      <span class="pill">우리 교실 놀이터</span>
+      <h1>KIMKO-EDU</h1>
+      <p class="subtitle">체육 시간도, 교실 놀이도 여기서 시작해요!</p>
+    </div>
 
-  <!-- [추가] 스포츠스태킹 5세트 모의 경기장 하이라이트 배너 -->
-  <div class="banner-wrapper">
+    <!-- 스포츠스태킹 5세트 모의 경기장 배너 -->
     <a href="mock-match.html" class="mock-match-banner">
       <div class="banner-left">
-        <div class="banner-badge-row">
-          <span class="banner-badge">🔥 NEW 실전 훈련</span>
-          <span class="banner-sub-tag">학교스포츠클럽 대회 완벽 대비</span>
-        </div>
-        <h2 class="banner-title">🤖 AI와 대결! 스포츠스태킹 5세트 모의 경기장</h2>
-        <p class="banner-desc">
-          3-6-3 릴레이, 개인·더블 사이클, 시간 릴레이까지! 초·중·고급 AI 팀과 만화 중계 및 효과음으로 0.001초 승부를 펼쳐보세요.
-        </p>
-        <div class="banner-action">모의 경기장 바로 입장하기 →</div>
+        <span class="banner-badge">NEW 실전 훈련 · 학교스포츠클럽 대회 대비</span>
+        <h2 class="banner-title">AI와 대결! 스포츠스태킹 5세트 모의 경기장</h2>
+        <p class="banner-desc">3-6-3 릴레이, 개인·더블 사이클, 시간 릴레이까지! 초·중·고급 AI 팀과 중계·효과음으로 0.001초 승부를 펼쳐 봐요.</p>
       </div>
-      <div class="banner-right">🏆</div>
+      <span class="banner-action">경기장 입장하기!</span>
     </a>
-  </div>
 
-  <div class="card-grid">
-    <!-- 1. 스포츠스태킹 기록실 (체육 교과용 4개 탭) -->
-    <a href="stacking.html" class="hub-card theme-stacking">
-      <div>
-        <div class="card-icon">⚡</div>
+    <div class="card-grid">
+      <!-- 1. 스포츠스태킹 랭킹전 -->
+      <a href="stacking.html" class="hub-card theme-stacking">
+        <span class="card-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3a2a1a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg></span>
         <span class="card-tag">체육 수업용</span>
-        <div class="card-title">스포츠스태킹 랭킹전</div>
-        <div class="card-desc">
-          3-3-3, 3-6-3, 사이클, 개인 종합 4개 종목의 실시간 학급 순위 산출 및 엑셀(.xlsx) 저장/인쇄 최적화 도구입니다.
-        </div>
-      </div>
-      <div class="btn-link">수업 기록표 열기 →</div>
-    </a>
+        <span class="card-title">스포츠스태킹 랭킹전</span>
+        <span class="card-desc">3-3-3, 3-6-3, 사이클, 개인 종합 4개 종목의 학급 순위를 계산하고, 엑셀로 저장·인쇄까지 할 수 있어요.</span>
+        <span class="btn-link">수업 기록표 열기 →</span>
+      </a>
 
-    <!-- 2. 교실 놀이 수업실 -->
-    <a href="play.html" class="hub-card theme-play">
-      <div>
-        <div class="card-icon">🎲</div>
+      <!-- 2. 교실 놀이 수업실 -->
+      <a href="play.html" class="hub-card theme-play">
+        <span class="card-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3a2a1a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1" fill="#3a2a1a"/><circle cx="15.5" cy="15.5" r="1" fill="#3a2a1a"/><circle cx="12" cy="12" r="1" fill="#3a2a1a"/></svg></span>
         <span class="card-tag">교실 놀이</span>
-        <div class="card-title">교실 놀이 수업실</div>
-        <div class="card-desc">
-          무제한 초코 경매 등 학급에서 재미있게 진행할 수 있는 다양한 교실 놀이 전용 스코어보드 허브입니다.
-        </div>
-      </div>
-      <div class="btn-link">놀이 목록 보기 →</div>
-    </a>
+        <span class="card-title">교실 놀이 수업실</span>
+        <span class="card-desc">명화 경매, 결합 게임! TV 화면에 띄워 다 같이 즐기는 교실 놀이 모음이에요.</span>
+        <span class="btn-link">놀이 목록 보기 →</span>
+      </a>
 
-    <!-- 3. 학생 자율 기록실 (학교 코드 인증 보안) -->
-    <div class="hub-card theme-student" onclick="openCodeModal()">
-      <div>
-        <div class="card-icon">⏱️</div>
-        <span class="card-tag">🔒 학교 인증 전용</span>
-        <div class="card-title">스포츠스태킹 자율기록실</div>
-        <div class="card-desc">
-          자율 연습실에서 학생들이 자신의 누적 최고 기록을 조회하고, 신기록 달성 시 직접 입력하여 구글 시트로 전송합니다.
-        </div>
-      </div>
-      <div class="btn-link">인증 후 입장하기 →</div>
+      <!-- 3. 학생 자율 기록실 (학교 코드 인증) -->
+      <button type="button" class="hub-card theme-student" onclick="openCodeModal()">
+        <span class="card-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3a2a1a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2h5"/></svg></span>
+        <span class="card-tag">학교 코드 필요</span>
+        <span class="card-title">스포츠스태킹 자율기록실</span>
+        <span class="card-desc">내 최고 기록을 확인하고, 신기록이 나오면 직접 입력해서 선생님께 보내요.</span>
+        <span class="btn-link">코드 입력하고 입장 →</span>
+      </button>
     </div>
+
+    <div class="footer">KIMKO-EDU · 체육 수업과 교실 활동을 위한 도구 모음</div>
   </div>
 
   <!-- 학교 코드 입력 모달 -->
   <div class="modal-overlay" id="codeModal">
-    <div class="modal-card">
-      <div class="modal-icon">🔐</div>
-      <h3>학교 코드 인증</h3>
-      <p>우리 학교 학생만 이용할 수 있습니다.<br>안내받은 학교 코드를 입력해주세요.</p>
-      <input type="password" id="schoolCodeInput" class="code-input" placeholder="학교 코드" onkeypress="handleEnter(event)">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="codeModalTitle">
+      <div class="modal-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3a2a1a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+      <h3 id="codeModalTitle">학교 코드 인증</h3>
+      <p>우리 학교 학생만 이용할 수 있어요.<br>안내받은 학교 코드를 입력해 주세요.</p>
+      <input type="password" id="schoolCodeInput" class="code-input" placeholder="학교 코드" aria-label="학교 코드" onkeypress="handleEnter(event)">
       <div class="modal-btns">
         <button class="btn-cancel-code" onclick="closeCodeModal()">취소</button>
         <button class="btn-submit-code" onclick="verifySchoolCode()">입장하기</button>

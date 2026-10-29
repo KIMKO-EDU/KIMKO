@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>스포츠스태킹 5세트 모의 경기장</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
     body {
@@ -523,6 +525,101 @@
       .cups-container { gap: 10px; }
       .cup-stack { width: 58px; }
     }
+
+    /* =====================================================================
+       따뜻한 교실 테마 (색·글꼴·테두리만 덮어씀 — 배치와 기능은 위 설정 그대로)
+       ===================================================================== */
+    :root {
+      --paper: #fdf6e7;
+      --ink: #3a2a1a;
+      --ink-soft: #6b4f33;
+      --sun: #fcd34d;
+      --font-title: 'Jua', 'Gowun Dodum', sans-serif;
+      --font-body: 'Gowun Dodum', 'Noto Sans KR', sans-serif;
+    }
+    body { font-family: var(--font-body); background: var(--paper); color: var(--ink); }
+    button, input, select { font-family: inherit; }
+    :focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+
+    .back-btn {
+      background: #ffffff; color: var(--ink); border: 2px solid var(--ink); border-radius: 999px;
+      padding: 6px 14px; box-shadow: 2px 2px 0 var(--ink); font-weight: 400;
+    }
+    .chip-btn, .level-select {
+      background: #ffffff; color: var(--ink); border: 2px solid var(--ink); border-radius: 999px;
+      box-shadow: 2px 2px 0 var(--ink); font-weight: 400;
+    }
+    .level-select { background: #fef3c7; }
+    .chip-btn:active, .back-btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink); }
+
+    .card { border: 3px solid var(--ink); border-radius: 22px; box-shadow: 5px 5px 0 var(--ink); }
+
+    /* 전광판 */
+    .set-badge { background: var(--sun); color: var(--ink); border: 2px solid var(--ink); font-family: var(--font-title); font-weight: 400; font-size: 15px; }
+    .practice-toggle { color: var(--ink-soft); }
+    .main-score-row { background: var(--ink); border-radius: 16px; }
+    .team-name { font-family: var(--font-title); font-weight: 400; font-size: 17px; }
+    .team-sub { color: #e7d9bd; }
+    .set-score-num { color: var(--sun); font-family: var(--font-title); font-weight: 400; font-size: 36px; }
+
+    .set-tab { background: var(--paper); color: var(--ink); border: 2px solid var(--ink); border-radius: 10px; font-weight: 400; font-size: 11px; letter-spacing: -0.02em; }
+    .set-tab.active { background: var(--sun); color: var(--ink); border-color: var(--ink); font-family: var(--font-title); box-shadow: 2px 2px 0 var(--ink); }
+    .set-tab.done-win { background: #dbeafe; color: #1e40af; border-color: var(--ink); }
+    .set-tab.done-lose { background: #fee2e2; color: #991b1b; border-color: var(--ink); }
+
+    .detail-status-box { background: var(--paper); border: 2px solid #e7d9bd; border-radius: 14px; }
+    .win-dot { background: #e7d9bd; box-shadow: inset 0 0 0 1px var(--ink-soft); }
+
+    /* 만화 중계 스테이지 */
+    .comic-stage { background: radial-gradient(circle at center, #ffffff 40%, var(--paper) 100%); border: 3px solid var(--ink); border-radius: 16px; }
+    .comic-stage.action-lines { background: repeating-conic-gradient(from 0deg, #ffffff 0deg 8deg, #fef3c7 8deg 16deg); }
+    .speech-bubble { background: var(--ink); box-shadow: 0 3px 0 var(--sun); font-family: var(--font-title); font-weight: 400; font-size: 14px; }
+    .speech-bubble.fumble { background: #b91c1c; box-shadow: 0 3px 0 #7f1d1d; }
+    .sfx-text { font-family: var(--font-title); font-weight: 400; font-size: 22px; color: #f59e0b; text-shadow: 2px 2px 0 var(--ink), -1px -1px 0 var(--ink); }
+    .stage-timer-box { background: var(--ink); border-color: var(--ink-soft); }
+    .runner-tag { background: #ffffff; color: var(--ink); border: 1.5px solid var(--ink); font-weight: 400; }
+    .stack-table-bar { background: #b5844a; border-color: var(--ink); }
+    .relay-banner { background: rgba(58, 42, 26, 0.9); color: var(--sun); font-family: var(--font-title); font-weight: 400; }
+    .countdown-overlay { background: rgba(58, 42, 26, 0.78); font-family: var(--font-title); font-weight: 400; font-size: 48px; }
+
+    /* 시작 버튼 · 기록 입력 */
+    .btn-start-match {
+      background: var(--sun); color: var(--ink); border: 3px solid var(--ink); border-radius: 16px;
+      box-shadow: 4px 4px 0 var(--ink); font-family: var(--font-title); font-weight: 400; font-size: 20px;
+    }
+    .btn-start-match:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ink); }
+    .btn-start-match:disabled { background: #e7d9bd; color: var(--ink-soft); box-shadow: none; }
+    .judge-box { background: #fef3c7; border: 3px dashed var(--ink); border-radius: 18px; }
+    .judge-guide { color: var(--ink); font-weight: 400; font-size: 14px; }
+    .score-input { border: 3px solid var(--ink); border-radius: 14px; font-family: var(--font-title); font-weight: 400; color: var(--ink); }
+    .score-input:focus { outline: none; box-shadow: 0 0 0 4px var(--sun); }
+    .btn-judge {
+      background: #fed7aa; color: var(--ink); border: 3px solid var(--ink); border-radius: 14px;
+      font-family: var(--font-title); font-weight: 400; font-size: 18px; box-shadow: 3px 3px 0 var(--ink);
+    }
+    .btn-judge:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+    .btn-judge:disabled { background: #e7d9bd; color: var(--ink-soft); box-shadow: none; }
+
+    /* 중계 기록 */
+    .log-item { background: var(--paper); border-left-color: var(--ink-soft); border-radius: 10px; }
+    .log-item.win { border-left-color: #2563eb; background: #dbeafe; }
+    .log-item.lose { border-left-color: #dc2626; background: #fee2e2; }
+
+    /* 설정 모달 */
+    .modal-backdrop { background: rgba(58, 42, 26, 0.55); }
+    .modal-card { border: 3px solid var(--ink); border-radius: 22px; box-shadow: 6px 6px 0 var(--ink); }
+    .modal-card h3 { font-family: var(--font-title); font-weight: 400; font-size: 22px; }
+    .config-row input { border: 2px solid #d6c4a0; border-radius: 8px; }
+
+    @media (max-width: 480px) {
+      .card { border-radius: 18px; box-shadow: 4px 4px 0 var(--ink); }
+      .set-score-num { font-size: 30px; }
+      .btn-start-match { font-size: 17px; }
+      .set-tab { padding: 6px 1px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .comic-stage.fumble-shake { animation: none; }
+    }
   </style>
 </head>
 <body>
@@ -640,7 +737,7 @@
   <!-- 4. 실시간 경기 중계 로그 -->
   <div class="card">
     <div class="log-header">
-      <strong style="font-size:15px; color:#0f172a;">📜 실시간 경기 중계 기록</strong>
+      <strong style="font-size:16px; color:#3a2a1a;">📜 실시간 경기 중계 기록</strong>
       <span style="font-size:12px; color:#64748b;" id="matchRuleHint">0.001초 단위 정밀 판정</span>
     </div>
     <ul class="log-list" id="matchLogList">
@@ -651,7 +748,7 @@
   <!-- ⚙️ 난이도별 기록 범위 설정 모달 -->
   <div class="modal-backdrop" id="configModal">
     <div class="modal-card">
-      <h3 style="margin-top:0; color:#14532d;">⚙️ AI 기록 범위 및 실수 설정</h3>
+      <h3 style="margin-top:0; color:#3a2a1a;">⚙️ AI 기록 범위 및 실수 설정</h3>
       <p style="font-size:12px; color:#64748b; margin-top:-6px;">현장 학생들 수준에 맞춰 AI의 최소~최대 기록(초)을 자유롭게 조정하세요.</p>
       
       <div id="configFormArea"></div>

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>무제한 명화 경매</title>
 <style>
-  /* 레이아웃: 경매장 — 위 진행 바 / 가운데 조명 받은 액자(작품) + 오른쪽 진행 버튼 / 아래 모둠 카드 줄. 프로젝터용 단일 어두운 테마 */
+  /* 레이아웃: 경매장 — 위 진행 바 / 가운데 조명 받은 액자(작품) + 오른쪽 진행 버튼 / 아래 모둠 카드 줄. 따뜻한 교실 테마(밝은 크림색) */
   :root {
     --bg: #1a0f12;
     --wall: #2b1519;
@@ -62,7 +62,7 @@
     border: 0.0625rem solid var(--line); border-radius: 1.125rem; padding: 1.125rem 1.125rem 0.875rem;
     display: flex; flex-direction: column; align-items: center; gap: 0.625rem; position: relative; min-width: 0;
   }
-  .art-frame { position: relative; width: 100%; max-width: min(100%, calc((100vh - 26rem) * 4 / 3)); min-width: 15rem; transition: transform .5s; }
+  .art-frame { position: relative; width: 100%; max-width: min(100%, calc((100vh - 27rem) * 4 / 3)); min-width: 15rem; transition: transform .5s; }
   .art-frame canvas { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; }
   /* 등급별 액자 */
   .art-frame.t1 { padding: 0; transform: rotate(-1.5deg); box-shadow: 0 0.375rem 1rem rgba(0,0,0,.5); }
@@ -202,6 +202,98 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
   }
+  /* ===== 따뜻한 교실 테마 (밝은 크림색 전시장) — 위 규칙의 색·글꼴·테두리만 덮어씀 ===== */
+  :root {
+    --bg: #fdf6e7;
+    --wall: #fff7e6;
+    --panel: #ffffff;
+    --panel-2: #fff7e6;
+    --line: #3a2a1a;
+    --ink: #3a2a1a;
+    --text: #3a2a1a;
+    --text-dim: #6b4f33;
+    --gold: #fcd34d;
+    --gold-light: #b45309;   /* 글씨로 쓰는 금색 → 밝은 바탕에서 읽히는 진한 호박색 */
+    --win: #fcd34d;
+    --void: #7c3aed;
+    --lose: #1d4ed8;
+    --good: #15803d;
+    --bad: #dc2626;
+    --font-display: 'Jua', 'Gowun Dodum', sans-serif;
+    --font-body: 'Gowun Dodum', 'Noto Sans KR', sans-serif;
+    color-scheme: light;
+  }
+  body { background: var(--bg); }
+  button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline-color: #2563eb; }
+  .brand { color: var(--ink); font-weight: 400; }
+  .brand small { color: var(--text-dim); font-weight: 400; }
+  .chip { background: #ffffff; color: var(--ink); border: 0.125rem solid var(--ink); box-shadow: 0.125rem 0.125rem 0 var(--ink); font-weight: 400; }
+  .chip:hover:not(:disabled) { color: var(--ink); border-color: var(--ink); background: var(--panel-2); }
+  .chip:active:not(:disabled), .chip.hold:active { background: var(--gold); transform: translate(0.125rem, 0.125rem); box-shadow: 0 0 0 var(--ink); }
+
+  .stage {
+    background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.9) 0%, transparent 60%), var(--wall);
+    border: 0.1875rem solid var(--ink); border-radius: 1.375rem; box-shadow: 0.375rem 0.375rem 0 var(--ink);
+  }
+  .art-tier { color: var(--text-dim); font-weight: 400; }
+  .art-title { font-weight: 400; color: var(--ink); }
+  .art-points { color: var(--ink); border: 0.125rem solid var(--ink); font-family: var(--font-display); font-weight: 400; }
+  .art-stars { color: #d97706; }
+
+  .card { border: 0.1875rem solid var(--ink); border-radius: 1.25rem; box-shadow: 0.3125rem 0.3125rem 0 var(--ink); }
+  .round-big { font-weight: 400; }
+  .round-sub { color: var(--text-dim); font-weight: 400; }
+  .msg { font-weight: 400; }
+  .milestone-note { font-weight: 400; }
+
+  .btn { border: 0.1875rem solid var(--ink); box-shadow: 0.25rem 0.25rem 0 var(--ink); font-family: var(--font-display); font-weight: 400; }
+  .btn:active:not(:disabled) { transform: translate(0.1875rem, 0.1875rem); box-shadow: 0.0625rem 0.0625rem 0 var(--ink); }
+  .btn:disabled { box-shadow: none; }
+  .btn-gold { background: var(--gold); color: var(--ink); }
+  .btn-red { background: #fecaca; color: var(--ink); }
+  .btn-blue { background: #bfdbfe; color: var(--ink); }
+  .btn-ghost { background: #ffffff; color: var(--ink); border: 0.1875rem solid var(--ink); }
+
+  .tcard { border: 0.1875rem solid var(--ink); border-radius: 1.25rem; box-shadow: 0.25rem 0.25rem 0 var(--ink); }
+  .tcard.lead { border-color: var(--ink); background: #fef3c7; }
+  .t-name { font-family: var(--font-display); font-weight: 400; }
+  .t-rank { color: var(--text-dim); font-weight: 400; }
+  .t-points { font-weight: 400; }
+  .face.front { background: var(--panel-2); color: var(--text-dim); font-weight: 400; border: 0.125rem dashed #d6c4a0; }
+  .face.front.done { background: #dcfce7; color: #166534; border-color: #166534; }
+  .face.back { background: #ffffff; border: 0.125rem solid var(--ink); }
+  .tag { border: 0.125rem solid var(--ink); font-weight: 400; font-family: var(--font-display); }
+  .tag.win { background: var(--gold); color: var(--ink); }
+  .tag.void { background: #e9d5ff; color: #581c87; }
+  .tag.lose { background: #bfdbfe; color: #1e3a8a; }
+  .tag.none { border: none; color: var(--text-dim); }
+
+  .credit { color: var(--text-dim); }
+  .credit a { color: var(--text-dim); }
+
+  .modal { background: rgba(58, 42, 26, 0.6); }
+  .modal-card { border: 0.1875rem solid var(--ink); border-radius: 1.25rem; box-shadow: 0.375rem 0.375rem 0 var(--ink); }
+  .modal-card h3 { font-family: var(--font-display); font-weight: 400; font-size: 1.5rem; }
+  .bid-field { background: var(--panel-2); border: 0.125rem solid #d6c4a0; }
+  .bid-field.active { border-color: var(--ink); box-shadow: 0 0 0 0.25rem var(--gold); }
+  .bid-field .bn { font-family: var(--font-display); font-weight: 400; }
+  .key { background: #ffffff; border: 0.125rem solid var(--ink); color: var(--ink); box-shadow: 0.125rem 0.125rem 0 var(--ink); font-family: var(--font-display); font-weight: 400; }
+  .key:active { background: var(--gold); transform: translate(0.125rem, 0.125rem); box-shadow: none; }
+  .reveal-amount { font-weight: 400; }
+
+  th { background: var(--panel); }
+  td.c-win { background: #fef3c7; color: #92400e; }
+
+  .setup h1 { color: var(--ink); font-weight: 400; }
+  .field select, .field input[type=text] { background: #ffffff; border: 0.125rem solid var(--ink); }
+  .check input { accent-color: #b45309; }
+  .result h1 { color: #c2410c; font-weight: 400; }
+  .rank-card { border: 0.1875rem solid var(--ink); box-shadow: 0.25rem 0.25rem 0 var(--ink); }
+  .rank-card.first { border-color: var(--ink); background: var(--gold); }
+  .rank-card.bankrupt { border-color: var(--bad); background: #fee2e2; }
+  .rank-card .nm { font-family: var(--font-display); font-weight: 400; }
+  .rank-card .pt { font-weight: 400; }
+  .rank-card .sp { color: var(--text-dim); font-weight: 400; }
   .rot-note { display: none; position: fixed; left: 0; right: 0; top: 0; z-index: 99; background: #f5c542; color: #2a1d00; text-align: center; font-weight: 900; padding: .5rem; font-size: 1rem; }
   html.portrait .rot-note { display: block; }
 </style>
@@ -219,7 +311,7 @@
 
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
 
 <div class="rot-note">📺 가로 화면(TV·노트북)에서 사용해 주세요</div>
 </head>

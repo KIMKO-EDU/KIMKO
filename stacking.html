@@ -6,62 +6,82 @@
   <title>스포츠스태킹 기록실</title>
   <!-- SheetJS 엑셀 라이브러리 -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
   <style>
+    /* ===== 따뜻한 교실 테마 ===== */
+    :root {
+      --paper: #fdf6e7;
+      --ink: #3a2a1a;
+      --ink-soft: #6b4f33;
+      --card: #ffffff;
+      --line-soft: #e7d9bd;
+      --sun: #fcd34d;
+      /* 종목별 색: [진한 글씨, 연한 배경] */
+      --c333: #4338ca;  --c333-bg: #e0e7ff;
+      --c363: #1d4ed8;  --c363-bg: #dbeafe;
+      --ccyc: #047857;  --ccyc-bg: #d1fae5;
+      --call: #b45309;  --call-bg: #fef3c7;
+      --font-title: 'Jua', 'Gowun Dodum', sans-serif;
+      --font-body: 'Gowun Dodum', 'Noto Sans KR', sans-serif;
+    }
     * { box-sizing: border-box; }
     body {
-      font-family: 'Pretendard', sans-serif, -apple-system;
+      font-family: var(--font-body);
       margin: 20px auto;
       max-width: 1200px;
-      background: #f8fafc;
-      color: #1e293b;
-      padding: 0 15px 40px;
+      background: var(--paper);
+      color: var(--ink);
+      padding: 0 16px 40px;
     }
+    button, input { font-family: inherit; color: inherit; }
+    :focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+
     .header-nav {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 16px;
+      gap: 8px;
+      margin-bottom: 18px;
     }
     .back-btn {
       text-decoration: none;
-      color: #64748b;
+      color: var(--ink);
+      background: var(--card);
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      padding: 7px 16px;
       font-size: 14px;
-      font-weight: 600;
-      transition: color 0.15s;
+      box-shadow: 3px 3px 0 var(--ink);
     }
-    .back-btn:hover { color: #0f172a; }
+    .back-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+    .page-label { font-family: var(--font-title); font-size: 20px; }
 
-    /* 파일 탭 스타일 */
+    /* 종목 탭 */
     .tab-bar {
       display: flex;
-      gap: 6px;
-      border-bottom: 2px solid #cbd5e1;
-      margin-bottom: 20px;
+      gap: 8px;
+      margin-bottom: 18px;
       overflow-x: auto;
+      padding: 2px 6px 8px 2px;
     }
     .tab-btn {
-      background: #e2e8f0;
-      border: 1px solid #cbd5e1;
-      border-bottom: none;
-      padding: 10px 18px;
-      border-radius: 8px 8px 0 0;
+      background: var(--card);
+      border: 2px solid var(--ink);
+      padding: 9px 18px;
+      border-radius: 999px;
       cursor: pointer;
-      font-weight: 600;
-      color: #475569;
-      font-size: 14px;
+      color: var(--ink);
+      font-size: 15px;
       white-space: nowrap;
-      transition: all 0.2s;
+      min-height: 44px;
+      transition: transform .1s, box-shadow .1s;
     }
-    .tab-btn.active {
-      background: #ffffff;
-      border-color: #cbd5e1;
-      margin-bottom: -2px;
-      padding-bottom: 11px;
-    }
-    .tab-btn.tab-333.active { color: #6366f1; border-top: 3px solid #6366f1; }
-    .tab-btn.tab-363.active { color: #2563eb; border-top: 3px solid #2563eb; }
-    .tab-btn.tab-cycle.active { color: #059669; border-top: 3px solid #059669; }
-    .tab-btn.tab-all.active { color: #d97706; border-top: 3px solid #d97706; }
+    .tab-btn.active { font-family: var(--font-title); font-size: 16px; box-shadow: 3px 3px 0 var(--ink); }
+    .tab-btn.tab-333.active { background: var(--c333-bg); }
+    .tab-btn.tab-363.active { background: var(--c363-bg); }
+    .tab-btn.tab-cycle.active { background: var(--ccyc-bg); }
+    .tab-btn.tab-all.active { background: var(--call-bg); }
 
     .tab-content { display: none; }
     .tab-content.active { display: block; }
@@ -73,12 +93,12 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 10px;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
+      background: var(--card);
+      border: 3px solid var(--ink);
+      border-radius: 18px;
       padding: 10px 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+      margin-bottom: 18px;
+      box-shadow: 4px 4px 0 var(--ink);
     }
     .btn-group {
       display: flex;
@@ -87,61 +107,55 @@
       flex-wrap: wrap;
     }
     .btn {
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
+      padding: 7px 13px;
+      border-radius: 12px;
+      font-size: 14px;
       cursor: pointer;
-      border: 1px solid transparent;
+      border: 2px solid var(--ink);
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      transition: all 0.15s;
+      min-height: 38px;
+      color: var(--ink);
+      background: var(--card);
+      box-shadow: 2px 2px 0 var(--ink);
+      transition: transform .1s, box-shadow .1s;
     }
-    .btn-outline {
-      background: #ffffff;
-      border-color: #cbd5e1;
-      color: #334155;
-    }
-    .btn-outline:hover { background: #f1f5f9; border-color: #94a3b8; }
-    .btn-excel-save { background: #15803d; color: #ffffff; }
-    .btn-excel-save:hover { background: #166534; }
-    .btn-reset { background: #ef4444; color: #ffffff; }
-    .btn-reset:hover { background: #dc2626; }
-    .btn-indigo { background: #6366f1; color: #ffffff; }
-    .btn-indigo:hover { background: #4f46e5; }
-    .btn-primary { background: #2563eb; color: #ffffff; }
-    .btn-primary:hover { background: #1d4ed8; }
-    .btn-success { background: #059669; color: #ffffff; }
-    .btn-success:hover { background: #047857; }
-    .btn-amber { background: #d97706; color: #ffffff; }
-    .btn-amber:hover { background: #b45309; }
+    .btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink); }
+    .btn-outline { background: var(--card); }
+    .btn-outline:hover { background: var(--paper); }
+    .btn-excel-save { background: #bbf7d0; }
+    .btn-reset { background: #fecaca; }
+    .btn-indigo { background: var(--c333-bg); }
+    .btn-primary { background: var(--c363-bg); }
+    .btn-success { background: var(--ccyc-bg); }
+    .btn-amber { background: var(--call-bg); }
 
     .count-badge {
-      font-size: 14px;
-      color: #475569;
-      font-weight: 600;
+      font-size: 15px;
+      color: var(--ink);
       margin-right: 4px;
     }
+    .count-badge strong { font-family: var(--font-title); font-weight: 400; font-size: 18px; }
     .save-indicator {
-      font-size: 12px;
-      color: #059669;
-      font-weight: 600;
+      font-size: 13px;
+      color: var(--ccyc);
       margin-left: 6px;
       display: inline-flex;
       align-items: center;
       gap: 3px;
     }
 
-    /* 랭킹 보드 스타일 */
+    /* 랭킹 보드 */
     .ranking-container {
-      background: #ffffff;
-      border: 2px solid #e2e8f0;
-      border-radius: 12px;
+      background: var(--card);
+      border: 3px solid var(--ink);
+      border-radius: 20px;
       padding: 16px 20px;
       margin-bottom: 20px;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      box-shadow: 5px 5px 0 var(--ink);
     }
+    .rank-title { margin: 0 0 8px 0; font-family: var(--font-title); font-weight: 400; font-size: 22px; text-align: center; }
     .ranking-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -151,27 +165,31 @@
     .ranking-item {
       display: flex;
       justify-content: space-between;
-      padding: 6px 12px;
-      background: #f1f5f9;
-      border-radius: 6px;
-      font-size: 13px;
+      padding: 7px 12px;
+      background: var(--paper);
+      border: 1px solid var(--line-soft);
+      border-radius: 10px;
+      font-size: 14px;
     }
     .ranking-item.top3 {
-      background: #fef3c7;
+      background: var(--sun);
+      border: 2px solid var(--ink);
       font-weight: bold;
     }
-    .ranking-item.theme-333 .rank { color: #6366f1; }
-    .ranking-item.theme-363 .rank { color: #2563eb; }
-    .ranking-item.theme-cycle .rank { color: #059669; }
-    .ranking-item.theme-all .rank { color: #d97706; }
+    .ranking-item .rank { font-family: var(--font-title); font-weight: 400; }
+    .ranking-item.theme-333 .rank { color: var(--c333); }
+    .ranking-item.theme-363 .rank { color: var(--c363); }
+    .ranking-item.theme-cycle .rank { color: var(--ccyc); }
+    .ranking-item.theme-all .rank { color: var(--call); }
+    .ranking-item.top3 .rank { color: var(--ink); }
 
-    /* 입력 테이블 스타일 */
+    /* 입력 표 */
     .table-container {
-      background: #ffffff;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
+      background: var(--card);
+      border-radius: 20px;
+      border: 3px solid var(--ink);
       padding: 16px;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      box-shadow: 5px 5px 0 var(--ink);
       overflow-x: auto;
       margin-bottom: 30px;
     }
@@ -182,44 +200,39 @@
     }
     th, td {
       padding: 8px 4px;
-      border-bottom: 1px solid #e2e8f0;
-      font-size: 13px;
+      border-bottom: 1px solid var(--line-soft);
+      font-size: 14px;
     }
     th {
-      background: #f8fafc;
-      font-weight: 600;
-      color: #475569;
+      background: var(--paper);
+      font-weight: 700;
+      color: var(--ink);
+      border-bottom: 2px solid var(--ink);
     }
     .practice-col { background: #fdf2f8; }
     .official-col { background: #f0fdf4; }
-    .best-col-333 { background: #eef2ff; font-weight: bold; color: #4338ca; }
-    .best-col-363 { background: #eff6ff; font-weight: bold; color: #1d4ed8; }
-    .best-col-cycle { background: #ecfdf5; font-weight: bold; color: #047857; }
-    .best-col-all { background: #fef3c7; font-weight: bold; color: #b45309; }
+    .best-col-333 { background: var(--c333-bg); font-weight: bold; color: var(--c333); }
+    .best-col-363 { background: var(--c363-bg); font-weight: bold; color: var(--c363); }
+    .best-col-cycle { background: var(--ccyc-bg); font-weight: bold; color: var(--ccyc); }
+    .best-col-all { background: var(--call-bg); font-weight: bold; color: var(--call); }
 
-    .th-group-333 { background: #eef2ff; color: #4338ca; border-right: 1px solid #cbd5e1; }
-    .th-group-363 { background: #eff6ff; color: #1d4ed8; border-right: 1px solid #cbd5e1; }
-    .th-group-cycle { background: #ecfdf5; color: #047857; border-right: 1px solid #cbd5e1; }
-    .col-border-right { border-right: 1px solid #e2e8f0; }
+    .th-group-333 { background: var(--c333-bg); color: var(--c333); border-right: 1px solid var(--line-soft); }
+    .th-group-363 { background: var(--c363-bg); color: var(--c363); border-right: 1px solid var(--line-soft); }
+    .th-group-cycle { background: var(--ccyc-bg); color: var(--ccyc); border-right: 1px solid var(--line-soft); }
+    .col-border-right { border-right: 1px solid var(--line-soft); }
 
     input {
       width: 78px;
       padding: 5px 3px;
-      border: 1px solid #cbd5e1;
-      border-radius: 5px;
+      border: 2px solid #d6c4a0;
+      border-radius: 8px;
       text-align: center;
-      font-size: 13px;
+      font-size: 14px;
+      background: #fffdf8;
     }
     .table-all input { width: 66px; }
     input.name-input { width: 95px; }
-    input:focus {
-      outline: none;
-      box-shadow: 0 0 0 2px rgba(99,102,241,0.2);
-    }
-    .table-333 input:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,0.2); }
-    .table-363 input:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.2); }
-    .table-cycle input:focus { border-color: #059669; box-shadow: 0 0 0 2px rgba(5,150,105,0.2); }
-    .table-all input:focus { border-color: #d97706; box-shadow: 0 0 0 2px rgba(217,119,6,0.2); }
+    input:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 3px var(--sun); }
 
     /* 하단 메인 이동 버튼 */
     .footer-nav {
@@ -231,18 +244,19 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: #334155;
-      color: #ffffff;
+      background: var(--sun);
+      color: var(--ink);
+      border: 3px solid var(--ink);
       padding: 10px 24px;
-      border-radius: 8px;
+      border-radius: 16px;
       text-decoration: none;
-      font-size: 14px;
-      font-weight: 600;
-      transition: background 0.15s;
+      font-family: var(--font-title);
+      font-size: 18px;
+      box-shadow: 4px 4px 0 var(--ink);
     }
-    .home-btn:hover { background: #1e293b; }
+    .home-btn:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ink); }
 
-    /* A4 인쇄 / PDF 최적화 */
+    /* A4 인쇄 / PDF 최적화 (기존 설정 그대로) */
     @media print {
       @page {
         size: A4 portrait;
@@ -302,6 +316,13 @@
       }
     }
     .print-title { display: none; }
+    /* 인쇄 시 새 테마의 글자 크기·모서리를 예전 인쇄 모양에 맞춤 */
+    @media print {
+      .rank-title { font-size: 17px !important; }
+      .ranking-container, .table-container { border-radius: 8px !important; }
+      th, td { font-size: 13px !important; }
+      .ranking-item.top3 { border: 1px solid #e2e8f0 !important; }
+    }
   </style>
 </head>
 <body>
@@ -309,7 +330,7 @@
   <!-- 상단 네비게이션 -->
   <div class="header-nav">
     <a href="index.html" class="back-btn">← 메인 플랫폼으로 돌아가기</a>
-    <span style="font-size:13px; color:#94a3b8;">스포츠스태킹 연구실</span>
+    <span class="page-label">스포츠스태킹 랭킹전</span>
   </div>
 
   <!-- 상단 4단 파일 탭 -->
@@ -336,8 +357,8 @@
         <button class="btn btn-reset" onclick="resetData('333')">🔄 초기화</button>
       </div>
     </div>
-    <div class="ranking-container" style="border-color:#c7d2fe;">
-      <h2 style="margin:0 0 8px 0; font-size:17px; text-align:center; color:#4338ca;">🏆 3-3-3 실시간 순위 현황</h2>
+    <div class="ranking-container">
+      <h2 class="rank-title">🏆 3-3-3 실시간 순위 현황</h2>
       <div class="ranking-grid" id="rankingGrid-333"></div>
     </div>
     <div class="table-container table-333">
@@ -376,7 +397,7 @@
       </div>
     </div>
     <div class="ranking-container">
-      <h2 style="margin:0 0 8px 0; font-size:17px; text-align:center;">🏆 3-6-3 실시간 순위 현황</h2>
+      <h2 class="rank-title">🏆 3-6-3 실시간 순위 현황</h2>
       <div class="ranking-grid" id="rankingGrid-363"></div>
     </div>
     <div class="table-container table-363">
@@ -414,8 +435,8 @@
         <button class="btn btn-reset" onclick="resetData('cycle')">🔄 초기화</button>
       </div>
     </div>
-    <div class="ranking-container" style="border-color:#a7f3d0;">
-      <h2 style="margin:0 0 8px 0; font-size:17px; text-align:center; color:#065f46;">🏆 사이클(Cycle) 실시간 순위 현황</h2>
+    <div class="ranking-container">
+      <h2 class="rank-title">🏆 사이클(Cycle) 실시간 순위 현황</h2>
       <div class="ranking-grid" id="rankingGrid-cycle"></div>
     </div>
     <div class="table-container table-cycle">
@@ -453,8 +474,8 @@
         <button class="btn btn-reset" onclick="resetDataAll()">🔄 초기화</button>
       </div>
     </div>
-    <div class="ranking-container" style="border-color:#fde68a;">
-      <h2 style="margin:0 0 8px 0; font-size:17px; text-align:center; color:#b45309;">🏆 개인 종합 실시간 순위 현황</h2>
+    <div class="ranking-container">
+      <h2 class="rank-title">🏆 개인 종합 실시간 순위 현황</h2>
       <div class="ranking-grid" id="rankingGrid-all"></div>
     </div>
     <div class="table-container table-all">

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>결합 게임</title>
 <style>
-  /* 레이아웃: 가로형 — 왼쪽 큰 3×3 나무 바둑판, 오른쪽 진행판(차례·버튼·조별 점수·찾은 합). 좁으면 위아래로 쌓임. 프로젝터용 단일 어두운 테마 */
+  /* 레이아웃: 가로형 — 왼쪽 큰 3×3 나무 바둑판, 오른쪽 진행판(차례·버튼·조별 점수·찾은 합). 좁으면 위아래로 쌓임. 따뜻한 교실 테마(밝은 크림색) */
   :root {
     --bg: #1c1712;
     --panel: #2a221a;
@@ -181,6 +181,74 @@
   .modal-actions .btn { flex: 1; min-height: 3.125rem; font-size: 1.125rem; }
 
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  /* ===== 따뜻한 교실 테마 (밝은 크림색 화면) — 위 규칙의 색·글꼴·테두리만 덮어씀 ===== */
+  :root {
+    --bg: #fdf6e7;
+    --panel: #ffffff;
+    --panel-2: #fff7e6;
+    --line: #3a2a1a;
+    --ink: #3a2a1a;
+    --text: #3a2a1a;
+    --text-dim: #6b4f33;
+    --gold: #fcd34d;
+    --accent-text: #c2410c;
+    --good: #15803d;
+    --bad: #dc2626;
+    --font-display: 'Jua', 'Gowun Dodum', sans-serif;
+    --font-body: 'Gowun Dodum', 'Noto Sans KR', sans-serif;
+    color-scheme: light;
+  }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline-color: #2563eb; }
+  .brand { color: var(--ink); }
+  .brand small { color: var(--text-dim); }
+  .chip { background: #ffffff; color: var(--ink); border: 0.125rem solid var(--ink); box-shadow: 0.125rem 0.125rem 0 var(--ink); font-weight: 400; }
+  .chip:hover:not(:disabled) { color: var(--ink); border-color: var(--ink); background: var(--panel-2); }
+  .chip.on { background: var(--gold); color: var(--ink); border-color: var(--ink); }
+  .chip:active:not(:disabled) { transform: translate(0.125rem, 0.125rem); box-shadow: 0 0 0 var(--ink); }
+
+  .board-wrap { border-color: var(--ink); box-shadow: 0.5rem 0.5rem 0 var(--ink); }
+
+  .card { border: 0.1875rem solid var(--ink); border-radius: 1.25rem; box-shadow: 0.3125rem 0.3125rem 0 var(--ink); }
+  .turn-label { color: var(--text-dim); font-weight: 400; }
+  .turn-name { color: var(--accent-text); }
+  .streak { color: var(--accent-text); }
+  .msg { font-weight: 400; font-family: var(--font-display); }
+
+  .btn { border: 0.1875rem solid var(--ink); box-shadow: 0.25rem 0.25rem 0 var(--ink); color: var(--ink); }
+  .btn:active:not(:disabled) { transform: translate(0.1875rem, 0.1875rem); box-shadow: 0.0625rem 0.0625rem 0 var(--ink); }
+  .btn:disabled { box-shadow: none; }
+  .btn-hap { background: var(--gold); color: var(--ink); }
+  .btn-gyeol { background: #bfdbfe; color: var(--ink); }
+  .btn-ok { background: #bbf7d0; color: var(--ink); font-family: var(--font-display); font-weight: 400; }
+  .btn-cancel { background: #ffffff; color: var(--ink); border: 0.1875rem solid var(--ink); font-family: var(--font-display); font-weight: 400; }
+  .btn-pass { background: transparent; color: var(--text-dim); border: 0.125rem dashed var(--ink); box-shadow: none; font-weight: 400; }
+
+  .score-row { background: var(--panel-2); border: 0.125rem solid #eadbbd; }
+  .score-row.turn { border-color: var(--ink); background: #fef3c7; }
+  .score-row .rk { color: var(--text-dim); font-weight: 400; }
+  .score-row .nm { font-family: var(--font-display); font-weight: 400; }
+  .card-title { color: var(--text-dim); font-weight: 400; }
+
+  .found .tag { background: var(--panel-2); border: 0.125rem solid var(--ink); font-weight: 400; }
+
+  .timer { background: var(--panel-2); border: 0.125rem solid #eadbbd; }
+  .timer-bar { background: #efe2c6; }
+  .timer-bar span { background: #22c55e; }
+  .timer.select .timer-num { color: #b45309; }
+  .timer.select .timer-bar span { background: #f59e0b; }
+  .timer.warn .timer-bar span { background: var(--bad); }
+  .timer.over { background: #fee2e2; border-color: var(--bad); }
+  .timer-label { color: var(--text-dim); font-weight: 400; }
+  .answer-box { color: #92400e; }
+
+  .setup h1 { color: var(--ink); }
+  .field select, .field input[type=text] { background: #ffffff; border: 0.125rem solid var(--ink); }
+  .result h1 { color: var(--accent-text); }
+  .podium .score-row.first { border-color: var(--ink); background: var(--gold); }
+
+  .modal { background: rgba(58, 42, 26, 0.55); }
+  .modal-card { border: 0.1875rem solid var(--ink); border-radius: 1.25rem; box-shadow: 0.375rem 0.375rem 0 var(--ink); }
+  .modal-card h3 { font-family: var(--font-display); font-weight: 400; font-size: 1.5rem; }
   .rot-note { display: none; position: fixed; left: 0; right: 0; top: 0; z-index: 99; background: #f5c542; color: #2a1d00; text-align: center; font-weight: 900; padding: .5rem; font-size: 1rem; }
   html.portrait .rot-note { display: block; }
 </style>
@@ -198,7 +266,7 @@
 
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
 
 <div class="rot-note">📺 가로 화면(TV·노트북)에서 사용해 주세요</div>
 </head>

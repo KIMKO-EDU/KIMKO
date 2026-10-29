@@ -4,161 +4,129 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>교실 놀이 수업실</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
   <style>
+    /* ===== 따뜻한 교실 테마 공통 색·글꼴 ===== */
+    :root {
+      --paper: #fdf6e7;
+      --ink: #3a2a1a;
+      --ink-soft: #6b4f33;
+      --card: #ffffff;
+      --sun: #fcd34d;
+      --pink: #fecdd3;  --pink-soft: #ffe4e6;
+      --purple: #e9d5ff; --purple-soft: #f3e8ff;
+      --font-title: 'Jua', 'Gowun Dodum', sans-serif;
+      --font-body: 'Gowun Dodum', 'Noto Sans KR', sans-serif;
+    }
     * { box-sizing: border-box; }
     body {
-      font-family: 'Pretendard', sans-serif, -apple-system;
+      font-family: var(--font-body);
       margin: 0;
-      padding: 40px 20px 60px;
-      background: #fdf8f6;
-      color: #332724;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      padding: 32px 20px 72px;
+      background: var(--paper);
+      color: var(--ink);
       min-height: 100vh;
     }
-    .top-nav {
-      width: 100%;
-      max-width: 800px;
-      margin-bottom: 24px;
-    }
+    a { color: inherit; text-decoration: none; }
+    :focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
+    .page { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; }
+
     .back-btn {
-      text-decoration: none;
-      color: #78350f;
-      font-size: 14px;
-      font-weight: 600;
-      transition: color 0.15s;
+      width: fit-content; background: var(--card); border: 2px solid var(--ink); border-radius: 999px;
+      padding: 8px 18px; font-size: 15px; box-shadow: 3px 3px 0 var(--ink); min-height: 44px;
+      display: inline-flex; align-items: center;
     }
-    .back-btn:hover { color: #451a03; }
+    .back-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
 
-    .header-box {
-      text-align: center;
-      margin-bottom: 36px;
-    }
-    h1 { font-size: 28px; margin: 0 0 8px 0; color: #451a03; }
-    .subtitle { color: #8c6a5e; font-size: 15px; margin: 0; }
+    .header-box { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+    h1 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 46px; line-height: 1.2; word-break: keep-all; }
+    .subtitle { margin: 0; font-size: 18px; color: var(--ink-soft); line-height: 1.6; word-break: keep-all; }
 
-    /* 놀이 카드 그리드 */
-    .game-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 20px;
-      width: 100%;
-      max-width: 800px;
-    }
+    /* 놀이 카드 */
+    .game-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; }
     .game-card {
-      background: #ffffff;
-      border: 1px solid #ebd3cb;
-      border-radius: 16px;
-      padding: 24px;
-      text-decoration: none;
-      color: inherit;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04);
-      transition: all 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      background: var(--card); border: 3px solid var(--ink); border-radius: 24px; padding: 26px;
+      display: flex; flex-direction: column; gap: 12px; box-shadow: 6px 6px 0 var(--ink);
+      transition: transform .15s, box-shadow .15s;
     }
-    .game-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 20px -3px rgba(120,53,15,0.08);
-      border-color: #b45309;
+    a.game-card:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 var(--ink); }
+    a.game-card:active { transform: translate(3px, 3px); box-shadow: 3px 3px 0 var(--ink); }
+    .game-icon {
+      width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--ink);
+      display: flex; align-items: center; justify-content: center;
     }
-    .game-icon { font-size: 38px; margin-bottom: 12px; }
-    .game-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: #2d1810; }
-    .game-desc { font-size: 14px; color: #6e554d; line-height: 1.5; margin-bottom: 16px; }
-    .game-meta {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-    }
-    .badge {
-      background: #fcf4f1;
-      color: #9a3412;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .btn-launch {
-      font-size: 14px;
-      font-weight: 700;
-      color: #c2410c;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
+    .game-title { font-family: var(--font-title); font-size: 26px; word-break: keep-all; }
+    .game-desc { font-size: 16px; color: var(--ink-soft); line-height: 1.65; word-break: keep-all; }
+    .game-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+    .badge { border: 2px solid var(--ink); border-radius: 999px; padding: 2px 12px; font-size: 13px; background: var(--paper); }
+    .btn-launch { margin-top: auto; padding-top: 4px; font-family: var(--font-title); font-size: 18px; }
 
-    /* 준비 중 카드 스타일 */
-    .game-card.disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      border-style: dashed;
+    .theme-art .game-icon { background: var(--pink); }
+    .theme-art .badge { background: var(--pink-soft); }
+    .theme-hap .game-icon { background: var(--sun); }
+    .theme-hap .badge { background: #fef3c7; }
+
+    /* 준비 중 카드 */
+    .game-card.disabled { border-style: dashed; box-shadow: none; background: transparent; }
+    .game-card.disabled .game-icon { background: var(--purple-soft); border-style: dashed; }
+    .soon { margin-top: auto; font-size: 15px; color: var(--ink-soft); }
+
+    @media (max-width: 600px) {
+      body { padding: 24px 16px 52px; }
+      h1 { font-size: 36px; }
+      .subtitle { font-size: 16px; }
+      .game-grid { gap: 22px; grid-template-columns: 1fr; }
+      .game-card { padding: 22px 20px; }
+      .game-title { font-size: 23px; }
     }
-    .game-card.disabled:hover {
-      transform: none;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04);
-      border-color: #ebd3cb;
-    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
   </style>
 </head>
 <body>
 
-  <div class="top-nav">
-    <a href="index.html" class="back-btn">← 메인 플랫폼으로 돌아가기</a>
-  </div>
+  <div class="page">
+    <a href="index.html" class="back-btn">← 메인으로 돌아가기</a>
 
-  <div class="header-box">
-    <h1>🎲 교실 놀이 수업실</h1>
-    <p class="subtitle">진행할 교실 놀이 프로그램을 선택하여 개별 전용 페이지로 입장하세요.</p>
-  </div>
+    <div class="header-box">
+      <h1>교실 놀이 수업실</h1>
+      <p class="subtitle">오늘은 어떤 놀이를 할까요? 놀이를 골라 TV 화면에 띄워 주세요.</p>
+    </div>
 
-  <div class="game-grid">
-    <!-- 1. 무제한 명화 경매 (단독 페이지 연결) -->
-    <a href="choco-auction.html" class="game-card">
-      <div>
-        <div class="game-icon">🖼️</div>
-        <div class="game-title">무제한 명화 경매</div>
-        <div class="game-desc">
-          매 라운드 무작위로 등장하는 1~5점 명화를 비공개 입찰로 낙찰받는 심리 눈치 게임! 최고가 단독 입찰 낙찰, 동점 입찰 무효, 최저가 감점, 마지막 최고 지출 모둠 파산 규칙을 웹에서 바로 진행합니다.
-        </div>
-        <div class="game-meta">
-          <span class="badge">👥 3~8개 모둠</span>
-          <span class="badge">⏱️ 9~30 라운드</span>
-          <span class="badge">📢 3라운드마다 총액 공개</span>
-        </div>
+    <div class="game-grid">
+      <!-- 1. 무제한 명화 경매 -->
+      <a href="choco-auction.html" class="game-card theme-art">
+        <span class="game-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3a2a1a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/></svg></span>
+        <span class="game-title">무제한 명화 경매</span>
+        <span class="game-desc">매 라운드 무작위로 등장하는 1~5점 명화를 비공개 입찰로 낙찰받는 심리 눈치 게임! 최고가 단독 입찰 낙찰, 동점 입찰 무효, 최저가 감점, 마지막 최고 지출 모둠 파산 규칙을 웹에서 바로 진행합니다.</span>
+        <span class="game-meta">
+          <span class="badge">3~8개 모둠</span>
+          <span class="badge">9~30 라운드</span>
+          <span class="badge">3라운드마다 총액 공개</span>
+        </span>
+        <span class="btn-launch">게임 진행 페이지 열기 →</span>
+      </a>
+
+      <!-- 2. 결합 게임 (합! 결!) -->
+      <a href="hapgyeol.html" class="game-card theme-hap">
+        <span class="game-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3a2a1a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 16H3z"/></svg></span>
+        <span class="game-title">결합 게임 (합! 결!)</span>
+        <span class="game-desc">3×3 판에서 모양·색·바탕색이 모두 같거나 모두 다른 타일 3장을 찾는 관찰력 게임! 조 순서대로 합! 또는 결!을 선택하면 정답 여부와 조별 점수가 자동으로 계산되는 진행자 전용 화면입니다.</span>
+        <span class="game-meta">
+          <span class="badge">2~8개 조</span>
+          <span class="badge">판마다 합 0~6개</span>
+          <span class="badge">시간 제한 · 효과음</span>
+        </span>
+        <span class="btn-launch">게임 진행 페이지 열기 →</span>
+      </a>
+
+      <!-- 3. 향후 추가할 놀이 (대기 슬롯) -->
+      <div class="game-card disabled">
+        <span class="game-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3a2a1a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>
+        <span class="game-title">새로운 교실 놀이 (준비 중)</span>
+        <span class="game-desc">학급 골든벨, 밸런스 토론 타이머, 팀 빌딩 보드게임 점수판 등 추후 제작될 새로운 수업 지원 도구가 탑재될 자리입니다.</span>
+        <span class="soon">업데이트 예정</span>
       </div>
-      <div class="btn-launch">게임 진행 페이지 열기 →</div>
-    </a>
-
-    <!-- 2. 결합 게임 (합! 결!) -->
-    <a href="hapgyeol.html" class="game-card">
-      <div>
-        <div class="game-icon">🔺</div>
-        <div class="game-title">결합 게임 (합! 결!)</div>
-        <div class="game-desc">
-          3×3 판에서 모양·색·바탕색이 모두 같거나 모두 다른 타일 3장을 찾는 관찰력 게임! 조 순서대로 합! 또는 결!을 선택하면 정답 여부와 조별 점수가 자동으로 계산되는 진행자 전용 화면입니다.
-        </div>
-        <div class="game-meta">
-          <span class="badge">👥 2~8개 조</span>
-          <span class="badge">🧩 판마다 합 0~6개</span>
-          <span class="badge">🔊 효과음</span>
-        </div>
-      </div>
-      <div class="btn-launch">게임 진행 페이지 열기 →</div>
-    </a>
-
-    <!-- 3. 향후 추가할 놀이 (대기 슬롯) -->
-    <div class="game-card disabled">
-      <div>
-        <div class="game-icon">✨</div>
-        <div class="game-title">새로운 교실 놀이 (준비 중)</div>
-        <div class="game-desc">
-          학급 골든벨, 밸런스 토론 타이머, 팀 빌딩 보드게임 점수판 등 추후 제작될 새로운 수업 지원 도구가 탑재될 자리입니다.
-        </div>
-      </div>
-      <div style="font-size: 13px; color: #a8a29e; font-weight: 600;">업데이트 예정</div>
     </div>
   </div>
 
