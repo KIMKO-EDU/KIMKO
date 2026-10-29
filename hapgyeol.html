@@ -33,41 +33,41 @@
   html, body { height: 100%; background: var(--bg); }
   body {
     margin: 0; color: var(--text); font-family: var(--font-body);
-    padding-left: max(16px, env(safe-area-inset-left, 0px));
-    padding-right: max(16px, env(safe-area-inset-right, 0px));
-    padding-block: 12px;
+    padding-left: max(1rem, env(safe-area-inset-left, 0));
+    padding-right: max(1rem, env(safe-area-inset-right, 0));
+    padding-block: 0.75rem;
   }
   button { font-family: inherit; }
-  button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 0.1875rem solid var(--gold); outline-offset: 0.125rem; }
   .num { font-variant-numeric: tabular-nums; }
 
-  .wrap { max-width: 1500px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; gap: 12px; }
+  .wrap { max-width: 93.75rem; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; gap: 0.75rem; }
 
-  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .brand { font-family: var(--font-display); font-size: 26px; color: var(--gold); letter-spacing: .02em; }
-  .brand small { font-family: var(--font-body); font-size: 14px; color: var(--text-dim); margin-left: 10px; font-weight: 500; }
-  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .brand { font-family: var(--font-display); font-size: 1.625rem; color: var(--gold); letter-spacing: .02em; }
+  .brand small { font-family: var(--font-body); font-size: 0.875rem; color: var(--text-dim); margin-left: 0.625rem; font-weight: 500; }
+  .chips { display: flex; gap: 0.375rem; flex-wrap: wrap; }
   .chip {
-    background: var(--panel-2); color: var(--text-dim); border: 1px solid var(--line);
-    border-radius: 999px; padding: 6px 14px; font-size: 14px; font-weight: 700; cursor: pointer; min-height: 34px;
+    background: var(--panel-2); color: var(--text-dim); border: 0.0625rem solid var(--line);
+    border-radius: 62.4375rem; padding: 0.375rem 0.875rem; font-size: 0.875rem; font-weight: 700; cursor: pointer; min-height: 2.125rem;
   }
   .chip:hover:not(:disabled) { color: var(--text); border-color: var(--text-dim); }
   .chip:disabled { opacity: .4; cursor: not-allowed; }
   .chip.on { background: var(--gold); color: #2a1d00; border-color: var(--gold); }
 
   /* ---------- 게임 화면 ---------- */
-  .game { flex: 1; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(320px, 1fr); gap: 16px; align-items: start; }
+  .game { flex: 1; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(20rem, 1fr); gap: 1rem; align-items: start; }
 
   .board-wrap {
     background: linear-gradient(135deg, var(--wood) 0%, #b5844a 100%);
-    border: 6px solid var(--wood-dark); border-radius: 18px; padding: clamp(10px, 1.8vw, 22px);
-    box-shadow: 0 10px 30px rgba(0,0,0,.45);
-    width: 100%; max-width: min(100%, calc(100vh - 110px)); margin: 0 auto;
+    border: 0.375rem solid var(--wood-dark); border-radius: 1.125rem; padding: clamp(0.625rem, 1.8vw, 1.375rem);
+    box-shadow: 0 0.625rem 1.875rem rgba(0,0,0,.45);
+    width: 100%; max-width: min(100%, calc(100vh - 9.375rem)); margin: 0 auto;
   }
-  .board-meta { display: flex; justify-content: space-between; color: #3b2711; font-weight: 800; font-size: clamp(14px, 1.5vw, 18px); margin-bottom: 8px; }
-  .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(8px, 1.4vw, 16px); }
+  .board-meta { display: flex; justify-content: space-between; color: #3b2711; font-weight: 800; font-size: clamp(0.875rem, 1.5vw, 1.125rem); margin-bottom: 0.5rem; }
+  .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(0.5rem, 1.4vw, 1rem); }
   .tile {
-    position: relative; aspect-ratio: 1; max-width: 100%; border-radius: 12px; border: 3px solid #3b2711;
+    position: relative; aspect-ratio: 1; max-width: 100%; border-radius: 0.75rem; border: 0.1875rem solid #3b2711;
     display: flex; align-items: center; justify-content: center; padding: 0; cursor: default;
     transition: transform .12s, box-shadow .12s;
   }
@@ -76,102 +76,131 @@
   .tile.bg2 { background: var(--tile-black); }
   .tile svg { width: 66%; height: 66%; overflow: visible; }
   .tile .no {
-    position: absolute; top: 6px; left: 9px; font-weight: 900; font-size: clamp(14px, 1.8vw, 22px);
+    position: absolute; top: 0.375rem; left: 0.5625rem; font-weight: 900; font-size: clamp(0.875rem, 1.8vw, 1.375rem);
     font-family: var(--font-display);
   }
   .tile.bg0 .no, .tile.bg1 .no { color: #15161a; }
   .tile.bg2 .no { color: #fbfaf7; }
   .board.selecting .tile { cursor: pointer; }
-  .board.selecting .tile:hover { transform: translateY(-3px); }
-  .tile.sel { box-shadow: 0 0 0 6px var(--gold), 0 0 24px 4px rgba(245,197,66,.7); transform: translateY(-4px); }
-  .tile.flash-good { box-shadow: 0 0 0 6px var(--good), 0 0 26px 6px rgba(62,207,142,.7); }
-  .tile.flash-bad { box-shadow: 0 0 0 6px var(--bad), 0 0 26px 6px rgba(240,96,93,.7); }
-  .tile.reveal { outline: 4px dashed var(--gold); outline-offset: -10px; }
+  .board.selecting .tile:hover { transform: translateY(-0.1875rem); }
+  .tile.sel { box-shadow: 0 0 0 0.375rem var(--gold), 0 0 1.5rem 0.25rem rgba(245,197,66,.7); transform: translateY(-0.25rem); }
+  .tile.flash-good { box-shadow: 0 0 0 0.375rem var(--good), 0 0 1.625rem 0.375rem rgba(62,207,142,.7); }
+  .tile.flash-bad { box-shadow: 0 0 0 0.375rem var(--bad), 0 0 1.625rem 0.375rem rgba(240,96,93,.7); }
+  .tile.reveal { outline: 0.25rem dashed var(--gold); outline-offset: -0.625rem; }
 
-  .side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+  .side { display: flex; flex-direction: column; gap: 0.625rem; min-width: 0; }
+  .card { background: var(--panel); border: 0.0625rem solid var(--line); border-radius: 1rem; padding: 0.75rem 0.875rem; }
 
   .turn-card { text-align: center; }
-  .turn-label { color: var(--text-dim); font-size: 15px; font-weight: 700; }
-  .turn-name { font-family: var(--font-display); font-size: clamp(34px, 4.2vw, 58px); line-height: 1.05; margin: 4px 0; color: var(--gold); overflow-wrap: anywhere; }
-  .msg { min-height: 1.5em; font-weight: 800; font-size: clamp(16px, 1.7vw, 22px); text-wrap: balance; }
+  .turn-label { color: var(--text-dim); font-size: 0.9375rem; font-weight: 700; }
+  .turn-name { font-family: var(--font-display); font-size: clamp(1.875rem, 3.4vw, 3.125rem); line-height: 1.05; margin: 0.125rem 0; color: var(--gold); overflow-wrap: anywhere; }
+  .msg { min-height: 1.4em; font-weight: 800; font-size: clamp(0.9375rem, 1.45vw, 1.25rem); text-wrap: balance; }
   .msg.good { color: var(--good); }
   .msg.bad { color: var(--bad); }
   .msg.info { color: var(--text-dim); }
 
-  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.625rem; }
   .btn {
-    border: none; border-radius: 14px; cursor: pointer; font-weight: 900; min-height: 64px;
-    font-size: clamp(20px, 2.2vw, 30px); padding: 10px; transition: transform .08s;
+    border: none; border-radius: 0.875rem; cursor: pointer; font-weight: 900; min-height: 3.625rem;
+    font-size: clamp(1.25rem, 2.2vw, 1.875rem); padding: 0.625rem; transition: transform .08s;
   }
-  .btn:active:not(:disabled) { transform: translateY(2px); }
+  .btn:active:not(:disabled) { transform: translateY(0.125rem); }
   .btn:disabled { opacity: .35; cursor: not-allowed; }
-  .btn-hap { background: var(--gold); color: #2a1d00; font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 3.4vw, 46px); }
-  .btn-gyeol { background: #e8ddcc; color: #2a1d00; font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 3.4vw, 46px); }
+  .btn-hap { background: var(--gold); color: #2a1d00; font-family: var(--font-display); font-weight: 400; font-size: clamp(1.875rem, 3.4vw, 2.875rem); }
+  .btn-gyeol { background: #e8ddcc; color: #2a1d00; font-family: var(--font-display); font-weight: 400; font-size: clamp(1.875rem, 3.4vw, 2.875rem); }
   .btn-ok { background: var(--good); color: #032417; }
-  .btn-cancel { background: var(--panel-2); color: var(--text); border: 2px solid var(--line); }
-  .btn-pass { grid-column: 1 / -1; background: transparent; color: var(--text-dim); border: 1px solid var(--line); min-height: 44px; font-size: 17px; }
+  .btn-cancel { background: var(--panel-2); color: var(--text); border: 0.125rem solid var(--line); }
+  .btn-pass { grid-column: 1 / -1; background: transparent; color: var(--text-dim); border: 0.0625rem solid var(--line); min-height: 2.5rem; font-size: 1.0625rem; }
   .sel-hint { grid-column: 1 / -1; text-align: center; color: var(--text-dim); font-weight: 700; }
 
-  .scores { display: grid; gap: 6px; }
+  .scores { display: grid; gap: 0.3125rem; }
+  .scores.two { grid-template-columns: 1fr 1fr; }
+  .scores.three { grid-template-columns: 1fr 1fr 1fr; }
+  .scores.three .score-row { gap: 0.375rem; padding: 0.3125rem 0.5rem; }
   .score-row {
-    display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
-    padding: 8px 12px; border-radius: 10px; background: var(--panel-2); border: 2px solid transparent;
+    display: grid; grid-template-columns: auto 1fr auto; gap: 0.625rem; align-items: center;
+    padding: 0.3125rem 0.625rem; border-radius: 0.625rem; background: var(--panel-2); border: 0.125rem solid transparent;
   }
   .score-row.turn { border-color: var(--gold); }
-  .score-row .rk { color: var(--text-dim); font-weight: 800; width: 1.6em; }
-  .score-row .nm { font-weight: 800; font-size: clamp(16px, 1.6vw, 21px); overflow-wrap: anywhere; min-width: 0; }
-  .score-row .pt { font-family: var(--font-display); font-size: clamp(24px, 2.4vw, 34px); }
+  .score-row .rk { color: var(--text-dim); font-weight: 800; min-width: 2.4em; white-space: nowrap; }
+  .score-row .nm { font-weight: 800; font-size: clamp(1rem, 1.6vw, 1.3125rem); overflow-wrap: anywhere; min-width: 0; }
+  .score-row .pt { font-family: var(--font-display); font-size: clamp(1.375rem, 2.1vw, 1.875rem); }
   .score-row .pt.neg { color: var(--bad); }
-  .card-title { font-weight: 800; color: var(--text-dim); font-size: 14px; margin-bottom: 8px; letter-spacing: .04em; }
+  .card-title { font-weight: 800; color: var(--text-dim); font-size: 0.875rem; margin-bottom: 0.375rem; letter-spacing: .04em; }
 
-  .found { display: flex; flex-wrap: wrap; gap: 6px; min-height: 30px; }
-  .found .tag { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; font-weight: 800; font-size: 16px; }
-  .found .tag small { color: var(--text-dim); font-weight: 600; margin-left: 4px; }
-  .found .empty { color: var(--text-dim); font-size: 14px; }
+  .found { display: flex; flex-wrap: wrap; gap: 0.375rem; min-height: 1.875rem; }
+  .found .tag { background: var(--panel-2); border: 0.0625rem solid var(--line); border-radius: 0.5rem; padding: 0.25rem 0.625rem; font-weight: 800; font-size: 1rem; }
+  .found .tag small { color: var(--text-dim); font-weight: 600; margin-left: 0.25rem; }
+  .found .empty { color: var(--text-dim); font-size: 0.875rem; }
 
-  .answer-box { margin-top: 8px; color: var(--gold); font-weight: 700; font-size: 14px; }
+  .streak { color: var(--gold); font-weight: 900; font-size: clamp(1rem, 1.7vw, 1.375rem); margin-bottom: 0.25rem; }
+  .timer { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.5rem; padding: 0.375rem 0.75rem; border-radius: 0.75rem; background: var(--panel-2); text-align: left; }
+  .timer-num { font-family: var(--font-display); font-size: clamp(2.125rem, 3.6vw, 3.25rem); line-height: 1; min-width: 1.4em; text-align: center; color: var(--text); }
+  .timer-side { flex: 1; min-width: 0; }
+  .timer-label { font-size: 0.875rem; color: var(--text-dim); font-weight: 700; margin-bottom: 0.375rem; }
+  .timer-bar { height: 0.625rem; background: var(--bg); border-radius: 62.4375rem; overflow: hidden; }
+  .timer-bar span { display: block; height: 100%; background: var(--good); transition: width .1s linear; }
+  .timer.warn .timer-num { color: var(--bad); }
+  .timer.warn .timer-bar span { background: var(--bad); }
+  .timer.select .timer-num { color: var(--gold); }
+  .timer.select .timer-bar span { background: var(--gold); }
+  .timer.select.warn .timer-num { color: var(--bad); }
+  .timer.over { background: #4a1b1b; }
+  .timer.over .timer-num { color: var(--bad); }
+  .timeout-hint { grid-column: 1 / -1; text-align: center; color: var(--bad); font-weight: 800; font-size: clamp(0.9375rem, 1.5vw, 1.1875rem); }
+  .answer-box { margin-top: 0.5rem; color: var(--gold); font-weight: 700; font-size: 0.875rem; }
 
   /* ---------- 설정 화면 ---------- */
-  .setup { max-width: 640px; margin: 4vh auto 0; width: 100%; }
-  .setup h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(40px, 6vw, 64px); color: var(--gold); margin: 0; }
-  .setup p.lead { color: var(--text-dim); margin: 6px 0 18px; line-height: 1.6; }
-  .field { margin-bottom: 16px; }
-  .field > label { display: block; font-weight: 800; margin-bottom: 6px; }
+  .setup { max-width: 40rem; margin: 4vh auto 0; width: 100%; }
+  .setup h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(2.5rem, 6vw, 4rem); color: var(--gold); margin: 0; }
+  .setup p.lead { color: var(--text-dim); margin: 0.375rem 0 1.125rem; line-height: 1.6; }
+  .field { margin-bottom: 1rem; }
+  .field > label { display: block; font-weight: 800; margin-bottom: 0.375rem; }
   .field select, .field input[type=text] {
-    width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
-    background: var(--bg); color: var(--text); font-size: 17px; font-family: inherit;
+    width: 100%; padding: 0.625rem 0.75rem; border-radius: 0.625rem; border: 0.0625rem solid var(--line);
+    background: var(--bg); color: var(--text); font-size: 1.0625rem; font-family: inherit;
   }
-  .team-inputs { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
-  .rules { color: var(--text-dim); font-size: 15px; line-height: 1.7; margin: 0; padding-left: 1.2em; }
+  .team-inputs { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.75rem, 1fr)); gap: 0.5rem; }
+  .rules { color: var(--text-dim); font-size: 0.9375rem; line-height: 1.7; margin: 0; padding-left: 1.2em; }
   .rules b { color: var(--text); }
 
   /* ---------- 결과 화면 ---------- */
-  .result { max-width: 720px; margin: 4vh auto 0; width: 100%; text-align: center; }
-  .result h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(40px, 6vw, 70px); color: var(--gold); margin: 0 0 6px; }
-  .result .sub { color: var(--text-dim); margin-bottom: 18px; }
-  .podium .score-row { text-align: left; padding: 12px 16px; }
+  .result { max-width: 45rem; margin: 4vh auto 0; width: 100%; text-align: center; }
+  .result h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(2.5rem, 6vw, 4.375rem); color: var(--gold); margin: 0 0 0.375rem; }
+  .result .sub { color: var(--text-dim); margin-bottom: 1.125rem; }
+  .podium .score-row { text-align: left; padding: 0.75rem 1rem; }
   .podium .score-row.first { border-color: var(--gold); background: #4a3a1c; }
-  .podium .score-row.first .nm { font-size: clamp(22px, 2.6vw, 32px); }
+  .podium .score-row.first .nm { font-size: clamp(1.375rem, 2.6vw, 2rem); }
 
   /* 모달 */
-  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.72); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
-  .modal-card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; max-width: 420px; width: 100%; }
-  .modal-card h3 { margin: 0 0 8px; font-size: 20px; }
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.72); display: flex; align-items: center; justify-content: center; padding: 1rem; z-index: 50; }
+  .modal-card { background: var(--panel); border: 0.0625rem solid var(--line); border-radius: 1rem; padding: 1.25rem; max-width: 26.25rem; width: 100%; }
+  .modal-card h3 { margin: 0 0 0.5rem; font-size: 1.25rem; }
   .modal-card p { margin: 0; color: var(--text-dim); }
-  .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
-  .modal-actions .btn { flex: 1; min-height: 50px; font-size: 18px; }
+  .modal-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+  .modal-actions .btn { flex: 1; min-height: 3.125rem; font-size: 1.125rem; }
 
-  @media (max-width: 860px) {
-    .game { grid-template-columns: 1fr; }
-    .board-wrap { max-width: 100%; }
-  }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  .rot-note { display: none; position: fixed; left: 0; right: 0; top: 0; z-index: 99; background: #f5c542; color: #2a1d00; text-align: center; font-weight: 900; padding: .5rem; font-size: 1rem; }
+  html.portrait .rot-note { display: block; }
 </style>
+<script>
+/* TV 가로 화면용: 1366×768을 기준으로 창 크기에 맞춰 전체 크기를 비례 조절 (모든 크기는 rem) */
+(function(){
+  function fit(){
+    var s = Math.max(0.6, Math.min(innerWidth/1366, innerHeight/768, 3));
+    document.documentElement.style.fontSize = (16*s) + 'px';
+    document.documentElement.classList.toggle('portrait', innerHeight > innerWidth);
+  }
+  fit(); addEventListener('resize', fit);
+})();
+</script>
+
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet">
 
+<div class="rot-note">📺 가로 화면(TV·노트북)에서 사용해 주세요</div>
 </head>
 <body>
 <div class="wrap" id="app"></div>
@@ -285,6 +314,10 @@ const SFX = {
   // 타일 선택 / 해제: 작은 "틱"
   pick: d => { tone(1400, 'triangle', 0.035, 0.09, d); },
   unpick: d => { tone(760, 'triangle', 0.035, 0.08, d); },
+  // 남은 시간 째깍
+  tick: d => { tone(1000, 'square', 0.04, 0.06, d); },
+  // 시간 초과 부저
+  timeUp: d => { tone(330, 'square', 0.25, 0.16, d); tone(330, 'square', 0.5, 0.16, d + 0.32); },
   // 최종 우승
   victory: d => {
     const seq = [[523, 0, .18], [523, .2, .12], [523, .34, .12], [659, .48, .3], [523, .8, .18], [659, .98, .18], [784, 1.16, .7]];
@@ -298,6 +331,7 @@ function keepSetupDraft() {
   if (S || !document.getElementById('totalBoards')) return;
   setupDraft.names = readSetupNames();
   setupDraft.totalBoards = parseInt(document.getElementById('totalBoards').value, 10);
+  setupDraft.timeLimit = parseInt(document.getElementById('timeLimit').value, 10);
 }
 function toggleSound() { keepSetupDraft(); sound.on = !sound.on; saveSound(); render(); if (sound.on) playSfx('pick'); }
 function cycleVolume() { keepSetupDraft(); sound.level = (sound.level + 1) % VOL_LEVELS.length; saveSound(); render(); playSfx('good'); }
@@ -307,9 +341,9 @@ let S = null;          // 게임 상태
 let history = [];      // 되돌리기용
 let flash = null;      // 방금 제출한 타일 강조 { idx:[...], type:'good'|'bad' }
 let flashTimer = null;
-let setupDraft = { teamCount: 4, names: [], totalBoards: 10 };
+let setupDraft = { teamCount: 4, names: [], totalBoards: 10, timeLimit: 15 };
 
-function newGameState(teamNames, totalBoards) {
+function newGameState(teamNames, totalBoards, timeLimit) {
   const b = makeBoard();
   return {
     phase: 'play',
@@ -317,6 +351,8 @@ function newGameState(teamNames, totalBoards) {
     turn: 0,
     boardNo: 1,
     totalBoards,             // 0이면 제한 없음
+    timeLimit,               // 차례마다 결정 시간(초), 0이면 제한 없음
+    streak: 0,               // 같은 조의 연속 합 성공 횟수
     tiles: b.tiles,
     haps: b.haps,
     found: [],               // [{idx:[i,j,k], team}]
@@ -330,13 +366,21 @@ function newGameState(teamNames, totalBoards) {
 
 function load() {
   try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) S = JSON.parse(raw); } catch (e) {}
+  if (S) {
+    if (S.timeLimit === undefined) S.timeLimit = 15;
+    if (S.streak === undefined) S.streak = 0;
+    S.mode = 'idle'; S.selected = [];
+    startDecide();
+  }
 }
 function save() { try { if (S) localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); else localStorage.removeItem(STORAGE_KEY); } catch (e) {} }
 function snapshot() { history.push(JSON.stringify(S)); if (history.length > 80) history.shift(); }
 function undo() {
   if (!history.length) return;
   S = JSON.parse(history.pop());
+  S.mode = 'idle'; S.selected = [];
   flash = null;
+  startDecide();
   save(); render();
 }
 function commit() { save(); render(); }
@@ -345,18 +389,114 @@ function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ 
 const keyOf = arr => arr.slice().sort((a, b) => a - b).join('-');
 const label = arr => arr.slice().sort((a, b) => a - b).map(i => i + 1).join('·');
 
+/* ===================== 3-1. 시간 제한 =====================
+   - 차례마다 결정 시간(기본 15초) 안에 합·결·패스 중 하나를 골라야 함
+   - 합을 누르면 결정 시간이 멈추고, 타일 3장 선택은 8초 안에 (넘으면 자동 취소 후 남은 결정 시간이 다시 흐름)
+   - 결정 시간이 0이 되면 진행자가 [다음 조로 넘기기] 또는 [+5초]를 누름 (감점 없음)
+   - 합을 맞혀 같은 조가 계속하면 결정 시간을 처음부터 다시 줌
+   - 새 판이 열리면 2초 뒤부터 시간이 흐름 */
+const SELECT_LIMIT_MS = 8000;
+const NEW_BOARD_DELAY_MS = 2000;
+const BONUS_MS = 5000;
+let T = { phase: 'off', startAt: 0, deadline: 0, decideRemain: 0, lastSec: null };
+const nowMs = () => performance.now();
+const limitMs = () => (S && S.timeLimit ? S.timeLimit * 1000 : 0);
+function remainMs() { return Math.max(0, T.deadline - Math.max(nowMs(), T.startAt)); }
+
+function startDecide(delayMs = 0) {
+  if (!S || S.phase !== 'play' || !limitMs()) { T.phase = 'off'; return; }
+  T.phase = 'decide'; T.startAt = nowMs() + delayMs; T.deadline = T.startAt + limitMs(); T.lastSec = null;
+}
+function stopTimer() { T.phase = 'off'; }
+function pauseForSelect() {
+  if (T.phase !== 'decide') return;
+  T.decideRemain = remainMs();
+  T.phase = 'select'; T.startAt = nowMs(); T.deadline = T.startAt + SELECT_LIMIT_MS; T.lastSec = null;
+}
+function resumeDecide() {
+  if (T.phase !== 'select') return;
+  T.phase = 'decide'; T.startAt = nowMs(); T.deadline = T.startAt + T.decideRemain; T.lastSec = null;
+}
+
+function timerView() {
+  if (!S || S.phase !== 'play' || T.phase === 'off') return null;
+  if (T.phase === 'expired') return { num: 0, label: '시간 초과!', pct: 0, cls: 'over' };
+  const ms = remainMs(), sec = Math.ceil(ms / 1000);
+  if (T.phase === 'select') {
+    return { num: sec, label: `타일 선택 남은 시간 (결정 시간 ${Math.ceil(T.decideRemain / 1000)}초에서 멈춤)`, pct: ms / SELECT_LIMIT_MS * 100, cls: 'select' + (sec <= 3 ? ' warn' : '') };
+  }
+  const waiting = nowMs() < T.startAt;
+  return { num: sec, label: waiting ? '새 판을 살펴보세요. 곧 시간이 흐릅니다.' : '합! · 결! · 패스 중 하나를 고르세요', pct: Math.min(100, ms / limitMs() * 100), cls: !waiting && sec <= 5 ? 'warn' : '' };
+}
+function timerHTML() {
+  const v = timerView();
+  if (!v) return '';
+  return `<div class="timer ${v.cls}" id="timerBox"><div class="timer-num num" id="timerNum">${v.num}</div>
+    <div class="timer-side"><div class="timer-label" id="timerLabel">${v.label}</div><div class="timer-bar"><span id="timerBar" style="width:${v.pct}%"></span></div></div></div>`;
+}
+function updateTimerUI() {
+  const v = timerView(), box = document.getElementById('timerBox');
+  if (!v || !box) return;
+  box.className = 'timer ' + v.cls;
+  document.getElementById('timerNum').textContent = v.num;
+  document.getElementById('timerLabel').textContent = v.label;
+  document.getElementById('timerBar').style.width = v.pct + '%';
+}
+function tick() {
+  if (!S || S.phase !== 'play' || T.phase === 'off' || T.phase === 'expired') return;
+  const ms = remainMs(), sec = Math.ceil(ms / 1000);
+  if (nowMs() >= T.startAt && sec !== T.lastSec) {
+    T.lastSec = sec;
+    if (ms > 0 && ((T.phase === 'decide' && sec <= 5) || (T.phase === 'select' && sec <= 3))) playSfx('tick');
+  }
+  if (ms <= 0) {
+    if (T.phase === 'select') {
+      S.mode = 'idle'; S.selected = [];
+      resumeDecide();
+      S.msg = `⌛ 타일 선택 시간(8초)이 지나 선택이 취소되었습니다. ${curTeam().name}, 남은 시간 안에 다시 고르세요.`; S.msgType = 'bad';
+      playSfx('dup'); save(); render();
+      return;
+    }
+    T.phase = 'expired';
+    S.msg = `⏰ ${curTeam().name} 시간 초과! 다음 조로 기회가 넘어갑니다.`; S.msgType = 'bad';
+    playSfx('timeUp'); save(); render();
+    return;
+  }
+  updateTimerUI();
+}
+setInterval(tick, 100);
+
+function passTimeout() {
+  if (T.phase !== 'expired') return;
+  snapshot();
+  const t = curTeam().name;
+  nextTurn();
+  S.msg = `⏰ ${t} 시간 초과 (감점 없음) → 다음: ${curTeam().name}`; S.msgType = 'info';
+  startDecide(); playSfx('turn');
+  commit();
+}
+function addBonus() {
+  if (T.phase !== 'expired') return;
+  T.phase = 'decide'; T.startAt = nowMs(); T.deadline = T.startAt + BONUS_MS; T.lastSec = null;
+  S.msg = `➕ 진행자 판단으로 ${curTeam().name}에게 5초를 더 줍니다.`; S.msgType = 'info';
+  save(); render();
+}
+
 /* ===================== 4. 게임 동작 ===================== */
-function nextTurn() { S.turn = (S.turn + 1) % S.teams.length; }
+function nextTurn() { S.turn = (S.turn + 1) % S.teams.length; S.streak = 0; }
 function curTeam() { return S.teams[S.turn]; }
 
 function pressHap() {
-  if (S.mode !== 'idle') return;
+  if (S.mode !== 'idle' || T.phase === 'expired') return;
   S.mode = 'selecting'; S.selected = [];
-  S.msg = `${curTeam().name} 합! — 타일 3장을 고른 뒤 [확인]을 누르세요.`; S.msgType = 'info';
+  pauseForSelect();
+  S.msg = `${curTeam().name} 합! — 타일 3장을 고른 뒤 [확인]을 누르세요.${limitMs() ? ' (8초 안에)' : ''}`; S.msgType = 'info';
   render();
 }
 function cancelHap() {
+  if (S.mode !== 'selecting') return;
   S.mode = 'idle'; S.selected = [];
+  resumeDecide();
   S.msg = `${curTeam().name} 선택을 취소했습니다. 다시 합! 또는 결!을 선택하세요.`; S.msgType = 'info';
   render();
 }
@@ -382,8 +522,13 @@ function confirmHap() {
     } else {
       team.score += 1;
       S.found.push({ idx: sel, team: team.name });
-      S.msg = `${team.name}: ${label(sel)}번 합! 정답입니다. +1점`; S.msgType = 'good'; playSfx('good');
+      S.streak = (S.streak || 0) + 1;
+      S.msg = `${team.name}: ${label(sel)}번 합! 정답입니다. +1점 → ${team.name} 계속 도전!`; S.msgType = 'good'; playSfx('good');
       setFlash(sel, 'good');
+      S.mode = 'idle'; S.selected = [];
+      startDecide();
+      commit();
+      return;
     }
   } else {
     team.score -= 1;
@@ -393,11 +538,12 @@ function confirmHap() {
   S.mode = 'idle'; S.selected = [];
   nextTurn();
   S.msg += ` → 다음: ${curTeam().name}`;
+  startDecide();
   playSfx('turn', 0.75);
   commit();
 }
 function pressGyeol() {
-  if (S.mode !== 'idle') return;
+  if (S.mode !== 'idle' || T.phase === 'expired') return;
   snapshot();
   const team = curTeam();
   const remaining = S.haps.length - S.found.length;
@@ -408,6 +554,7 @@ function pressGyeol() {
     if (isLast) {
       S.msg = `${team.name}: 결! 정답입니다. +2점 — 마지막 판이 끝났습니다.`; S.msgType = 'good';
       S.phase = 'over';
+      stopTimer();
       playSfx('gyeolGood'); playSfx('victory', 1.1);
       commit();
       return;
@@ -416,21 +563,24 @@ function pressGyeol() {
     S.tiles = b.tiles; S.haps = b.haps; S.found = []; S.boardNo++; S.showAnswer = false;
     S.msg = `${team.name}: 결! 정답입니다. +2점 → ${S.boardNo}번째 판, 다음: ${curTeam().name}`; S.msgType = 'good';
     flash = null;
+    startDecide(NEW_BOARD_DELAY_MS);
     playSfx('gyeolGood'); playSfx('newBoard', 0.95);
   } else {
     team.score -= 2;
     nextTurn();
     S.msg = `${team.name}: 결! 아직 합이 남아 있습니다. -2점 → 다음: ${curTeam().name}`; S.msgType = 'bad';
+    startDecide();
     playSfx('gyeolBad'); playSfx('turn', 1.05);
   }
   commit();
 }
 function pressPass() {
-  if (S.mode !== 'idle') return;
+  if (S.mode !== 'idle' || T.phase === 'expired') return;
   snapshot();
   const t = curTeam().name;
   nextTurn();
   S.msg = `${t} 패스 → 다음: ${curTeam().name}`; S.msgType = 'info';
+  startDecide();
   commit();
 }
 function toggleAnswer() { S.showAnswer = !S.showAnswer; save(); render(); }
@@ -452,11 +602,11 @@ function askConfirm(title, text, action) {
 function closeConfirm() { document.getElementById('confirmModal').hidden = true; confirmAction = null; }
 document.getElementById('confirmOk').onclick = () => { const a = confirmAction; closeConfirm(); if (a) a(); };
 
-function endGame() { askConfirm('게임을 끝낼까요?', '지금 점수로 최종 순위를 발표합니다.', () => { snapshot(); S.phase = 'over'; S.mode = 'idle'; S.selected = []; playSfx('victory'); commit(); }); }
+function endGame() { askConfirm('게임을 끝낼까요?', '지금 점수로 최종 순위를 발표합니다.', () => { snapshot(); S.phase = 'over'; S.mode = 'idle'; S.selected = []; stopTimer(); playSfx('victory'); commit(); }); }
 function newGame() {
   askConfirm('새 게임을 시작할까요?', '현재 점수와 판이 모두 지워지고 설정 화면으로 돌아갑니다.', () => {
-    if (S) { setupDraft.teamCount = S.teams.length; setupDraft.names = S.teams.map(t => t.name); setupDraft.totalBoards = S.totalBoards; }
-    S = null; history = []; flash = null; save(); render();
+    if (S) { setupDraft.teamCount = S.teams.length; setupDraft.names = S.teams.map(t => t.name); setupDraft.totalBoards = S.totalBoards; setupDraft.timeLimit = S.timeLimit ?? 15; }
+    S = null; history = []; flash = null; stopTimer(); save(); render();
   });
 }
 
@@ -510,6 +660,10 @@ function renderGame() {
     actions = `<div class="sel-hint">선택 ${S.selected.length} / 3 ${S.selected.length ? `(${label(S.selected)}번)` : ''}</div>
       <button class="btn btn-ok" onclick="confirmHap()" ${S.selected.length === 3 ? '' : 'disabled'}>확인</button>
       <button class="btn btn-cancel" onclick="cancelHap()">취소</button>`;
+  } else if (T.phase === 'expired') {
+    actions = `<div class="timeout-hint">⏰ 시간이 지났습니다. 다음 조로 기회가 넘어갑니다.</div>
+      <button class="btn btn-ok" style="grid-column:1/-1;" onclick="passTimeout()">다음 조로 넘기기 ▶</button>
+      <button class="btn btn-pass" onclick="addBonus()">➕ 5초 더 주기 (진행자 판단)</button>`;
   } else {
     actions = `<button class="btn btn-hap" onclick="pressHap()">합!</button>
       <button class="btn btn-gyeol" onclick="pressGyeol()">결!</button>
@@ -539,12 +693,14 @@ function renderGame() {
       <div class="card turn-card">
         <div class="turn-label">지금 차례</div>
         <div class="turn-name">${esc(team.name)}</div>
+        ${S.streak > 0 ? `<div class="streak">🔥 ${S.streak}연속 합! 계속 도전 중</div>` : ''}
         <div class="msg ${S.msgType}">${esc(S.msg)}</div>
+        ${timerHTML()}
       </div>
       <div class="actions">${actions}</div>
       <div class="card">
         <div class="card-title">조별 점수</div>
-        <div class="scores">${scores}</div>
+        <div class="scores ${S.teams.length > 6 ? 'three' : S.teams.length > 3 ? 'two' : ''}">${scores}</div>
       </div>
       <div class="card">
         <div class="card-title">이번 판에서 찾은 합</div>
@@ -577,6 +733,8 @@ function renderSetup() {
   const inputs = Array.from({ length: n }, (_, i) =>
     `<input type="text" id="teamName${i}" maxlength="12" value="${esc(setupDraft.names[i] || `${TEAM_LETTERS[i]}조`)}" aria-label="${i + 1}번째 조 이름">`).join('');
   const countOpts = [2,3,4,5,6,7,8].map(k => `<option value="${k}" ${k === n ? 'selected' : ''}>${k}개 조</option>`).join('');
+  const timeOpts = [[10,'10초'],[15,'15초'],[20,'20초'],[30,'30초'],[0,'제한 없음']]
+    .map(([v,l]) => `<option value="${v}" ${v === setupDraft.timeLimit ? 'selected' : ''}>${l}</option>`).join('');
   const boardOpts = [[5,'5판'],[10,'10판'],[15,'15판'],[20,'20판'],[0,'제한 없음 (게임 끝내기 버튼으로 종료)']]
     .map(([v,l]) => `<option value="${v}" ${v === setupDraft.totalBoards ? 'selected' : ''}>${l}</option>`).join('');
   return `<div class="setup">
@@ -587,11 +745,13 @@ function renderSetup() {
       <div class="field"><label for="teamCount">조 개수</label><select id="teamCount">${countOpts}</select></div>
       <div class="field"><label>조 이름 (차례 순서)</label><div class="team-inputs">${inputs}</div></div>
       <div class="field"><label for="totalBoards">판 수</label><select id="totalBoards">${boardOpts}</select></div>
+      <div class="field"><label for="timeLimit">차례마다 결정 시간 (합!·결!·패스 고르기)</label><select id="timeLimit">${timeOpts}</select></div>
       <div class="field"><label>점수 규칙</label>
         <ul class="rules">
-          <li>차례는 조 순서대로 돌아갑니다. 한 번 답하면 다음 조로 넘어갑니다.</li>
+          <li>차례는 조 순서대로 돌아갑니다. <b>합을 맞히면 같은 조가 계속</b>하고, 틀리거나 결!·패스를 하면 다음 조로 넘어갑니다.</li>
+          <li>정해진 시간 안에 합!·결!·패스 중 하나를 골라야 합니다. 합!을 누르면 <b>8초 안에</b> 타일 3장을 골라야 합니다. 시간이 지나면 감점 없이 다음 조로 넘어갑니다.</li>
           <li><b>합!</b> 정답 +1 / 틀리거나 이미 찾은 합 -1</li>
-          <li><b>결!</b> 남은 합이 없을 때 +2 (다음 판으로) / 합이 남아 있으면 -2</li>
+          <li><b>결!</b> 남은 합이 없을 때 +2 (다음 판은 다음 조부터) / 합이 남아 있으면 -2</li>
           <li>판마다 합은 0~6개이며, 남은 개수는 공개하지 않습니다.</li>
         </ul>
       </div>
@@ -618,15 +778,18 @@ function bindSetup() {
     setupDraft.names = readSetupNames();
     setupDraft.teamCount = parseInt(e.target.value, 10);
     setupDraft.totalBoards = parseInt(document.getElementById('totalBoards').value, 10);
+    setupDraft.timeLimit = parseInt(document.getElementById('timeLimit').value, 10);
     render();
   };
 }
 function startGame() {
   const names = readSetupNames().map((v, i) => v.trim() || `${TEAM_LETTERS[i]}조`);
   const total = parseInt(document.getElementById('totalBoards').value, 10);
-  setupDraft.names = names; setupDraft.totalBoards = total;
+  const timeLimit = parseInt(document.getElementById('timeLimit').value, 10);
+  setupDraft.names = names; setupDraft.totalBoards = total; setupDraft.timeLimit = timeLimit;
   history = []; flash = null;
-  S = newGameState(names, total);
+  S = newGameState(names, total, timeLimit);
+  startDecide(NEW_BOARD_DELAY_MS);
   playSfx('newBoard');
   commit();
 }
@@ -646,7 +809,7 @@ document.addEventListener('keydown', e => {
 function boot() { load(); render(); }
 if (window.claude?.hot) {
   window.claude.hot.snapshot(() => ({ S, history }));
-  if (window.claude.hot.ready) window.claude.hot.ready(d => { if (d && 'S' in d) { S = d.S; history = d.history || []; render(); } else boot(); });
+  if (window.claude.hot.ready) window.claude.hot.ready(d => { if (d && 'S' in d) { S = d.S; history = d.history || []; if (S) { if (S.timeLimit === undefined) S.timeLimit = 15; if (S.streak === undefined) S.streak = 0; S.mode = 'idle'; S.selected = []; startDecide(); } render(); } else boot(); });
   else boot();
 } else boot();
 </script>
