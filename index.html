@@ -7,147 +7,119 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
   <style>
-    /* ===== 따뜻한 교실 테마 공통 색·글꼴 ===== */
+    /* ===== 모래색 투톤 테마: 진한 머리띠 + 모래색 바탕 + 흰 카드 ===== */
     :root {
-      --paper: #fdf6e7;      /* 크림색 바탕 */
-      --ink: #3a2a1a;        /* 진한 갈색 글씨·테두리 */
-      --ink-soft: #6b4f33;   /* 설명 글씨 */
+      --ink: #2b1d10;        /* 진한 갈색: 글씨·테두리 */
+      --sand: #e8d3a0;       /* 모래색 바탕 */
       --card: #ffffff;
-      --sun: #fcd34d;        /* 노란 포인트 */
-      --blue: #bfdbfe;  --blue-soft: #dbeafe;
-      --orange: #fed7aa; --orange-soft: #ffedd5;
-      --green: #bbf7d0; --green-soft: #dcfce7;
+      --sun: #fcd34d;
+      --cream: #f5e6c8;
+      --blue: #1e40af;   --blue-text: #1e3a8a;
+      --orange: #c2410c; --orange-text: #9a3412;
+      --green: #166534;  --green-text: #14532d;
+      --red: #b91c1c;
       --font-title: 'Jua', 'Gowun Dodum', sans-serif;
       --font-body: 'Gowun Dodum', 'Noto Sans KR', sans-serif;
     }
     * { box-sizing: border-box; }
-    body {
-      font-family: var(--font-body);
-      margin: 0;
-      padding: 40px 20px 72px;
-      background: var(--paper);
-      color: var(--ink);
-      min-height: 100vh;
-      -webkit-text-size-adjust: 100%;
-    }
+    body { margin: 0; font-family: var(--font-body); background: var(--sand); color: var(--ink); min-height: 100vh; -webkit-text-size-adjust: 100%; }
     a { color: inherit; text-decoration: none; }
     button { font-family: inherit; color: inherit; }
     :focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
-    .page { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 36px; }
 
-    /* 머리말 */
-    .header { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
-    .pill {
-      background: var(--card); border: 2px solid var(--ink); border-radius: 999px;
-      padding: 4px 16px; font-size: 14px; box-shadow: 3px 3px 0 var(--ink);
-    }
-    h1 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 52px; line-height: 1.2; word-break: keep-all; }
-    .subtitle { margin: 0; font-size: 18px; color: var(--ink-soft); line-height: 1.6; word-break: keep-all; }
+    /* 위쪽 진한 머리띠 */
+    .topband { background: var(--ink); color: #fff6e5; padding: 22px 24px 28px; }
+    .topband-inner { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
+    .topband-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .brand { font-family: var(--font-title); font-size: 34px; color: var(--sun); }
+    .brand-sub { font-size: 16px; color: var(--cream); }
+    .tagline { margin: 0; font-size: 22px; line-height: 1.5; word-break: keep-all; }
+
+    .page { max-width: 1040px; margin: 0 auto; padding: 32px 24px 64px; display: flex; flex-direction: column; gap: 32px; }
 
     /* 모의 경기장 배너 */
     .mock-match-banner {
       display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap;
-      background: var(--sun); border: 3px solid var(--ink); border-radius: 28px;
-      padding: 30px 34px; box-shadow: 8px 8px 0 var(--ink);
-      transition: transform .15s, box-shadow .15s;
+      background: var(--card); border: 4px solid var(--ink); border-radius: 24px; padding: 28px 32px;
+      box-shadow: 8px 8px 0 var(--ink); transition: transform .15s, box-shadow .15s;
     }
     .mock-match-banner:hover { transform: translate(-2px, -2px); box-shadow: 10px 10px 0 var(--ink); }
     .mock-match-banner:active { transform: translate(4px, 4px); box-shadow: 4px 4px 0 var(--ink); }
     .banner-left { display: flex; flex-direction: column; gap: 10px; flex: 1 1 420px; min-width: 0; }
-    .banner-badge {
-      width: fit-content; background: var(--card); border: 2px solid var(--ink); border-radius: 999px;
-      padding: 3px 14px; font-size: 14px; font-weight: 700;
-    }
-    .banner-title { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 32px; line-height: 1.3; word-break: keep-all; }
-    .banner-desc { margin: 0; font-size: 16px; line-height: 1.65; word-break: keep-all; }
+    .banner-badge { width: fit-content; background: var(--red); color: #fff; border-radius: 8px; padding: 4px 14px; font-size: 15px; font-weight: 700; }
+    .banner-title { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 36px; line-height: 1.3; word-break: keep-all; }
+    .banner-desc { margin: 0; font-size: 18px; line-height: 1.65; word-break: keep-all; }
     .banner-action {
-      background: var(--card); border: 3px solid var(--ink); border-radius: 16px; padding: 14px 24px;
-      font-family: var(--font-title); font-size: 20px; min-height: 52px; display: flex; align-items: center;
+      background: var(--red); color: #fff; border-radius: 16px; padding: 16px 28px;
+      font-family: var(--font-title); font-size: 22px; min-height: 56px; display: flex; align-items: center;
     }
 
-    /* 허브 카드 */
+    /* 허브 카드: 진한 색 머리띠 + 흰 본문 */
     .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; }
     .hub-card {
-      background: var(--card); border: 3px solid var(--ink); border-radius: 24px; padding: 26px;
-      display: flex; flex-direction: column; gap: 12px; text-align: left; font-size: inherit;
-      box-shadow: 6px 6px 0 var(--ink); cursor: pointer; width: 100%;
-      transition: transform .15s, box-shadow .15s;
+      background: var(--card); border: 4px solid var(--ink); border-radius: 24px; overflow: hidden;
+      display: flex; flex-direction: column; padding: 0; text-align: left; font-size: inherit; width: 100%;
+      box-shadow: 6px 6px 0 var(--ink); cursor: pointer; transition: transform .15s, box-shadow .15s;
     }
     .hub-card:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 var(--ink); }
     .hub-card:active { transform: translate(3px, 3px); box-shadow: 3px 3px 0 var(--ink); }
-    .card-icon {
-      width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--ink);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .card-tag { width: fit-content; border: 2px solid var(--ink); border-radius: 999px; padding: 2px 12px; font-size: 13px; }
-    .card-title { font-family: var(--font-title); font-size: 26px; word-break: keep-all; }
-    .card-desc { font-size: 16px; color: var(--ink-soft); line-height: 1.65; word-break: keep-all; }
-    .btn-link { margin-top: auto; padding-top: 4px; font-family: var(--font-title); font-size: 18px; }
-    .theme-stacking .card-icon { background: var(--blue); }
-    .theme-stacking .card-tag { background: var(--blue-soft); }
-    .theme-play .card-icon { background: var(--orange); }
-    .theme-play .card-tag { background: var(--orange-soft); }
-    .theme-student .card-icon { background: var(--green); }
-    .theme-student .card-tag { background: var(--green-soft); }
+    .card-head { color: #fff; padding: 18px 24px; display: flex; align-items: center; gap: 14px; }
+    .card-tag { font-size: 16px; font-weight: 700; }
+    .card-body { padding: 22px 24px 24px; display: flex; flex-direction: column; gap: 12px; flex: 1; width: 100%; }
+    .card-title { font-family: var(--font-title); font-size: 30px; line-height: 1.25; word-break: keep-all; }
+    .card-desc { font-size: 17px; line-height: 1.65; word-break: keep-all; }
+    .btn-link { margin-top: auto; color: #fff; border-radius: 14px; padding: 12px 18px; font-family: var(--font-title); font-size: 19px; text-align: center; }
+    .theme-stacking .card-head, .theme-stacking .btn-link { background: var(--blue); }
+    .theme-stacking .card-title { color: var(--blue-text); }
+    .theme-play .card-head, .theme-play .btn-link { background: var(--orange); }
+    .theme-play .card-title { color: var(--orange-text); }
+    .theme-student .card-head, .theme-student .btn-link { background: var(--green); }
+    .theme-student .card-title { color: var(--green-text); }
 
-    .footer { text-align: center; font-size: 14px; color: var(--ink-soft); }
+    .footer { text-align: center; font-size: 15px; color: var(--ink); }
 
     /* 학교 코드 입력 팝업 */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(58, 42, 26, 0.55);
-      justify-content: center; align-items: center; z-index: 1000; padding: 16px;
-    }
-    .modal-card {
-      background: var(--card); border: 3px solid var(--ink); border-radius: 24px;
-      padding: 30px; width: 100%; max-width: 400px; text-align: center; box-shadow: 8px 8px 0 var(--ink);
-    }
-    .modal-icon {
-      width: 64px; height: 64px; margin: 0 auto 12px; border-radius: 50%; background: var(--green);
-      border: 3px solid var(--ink); display: flex; align-items: center; justify-content: center;
-    }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(43, 29, 16, 0.7); justify-content: center; align-items: center; z-index: 1000; padding: 16px; }
+    .modal-card { background: var(--card); border: 4px solid var(--ink); border-radius: 24px; padding: 30px; width: 100%; max-width: 400px; text-align: center; box-shadow: 8px 8px 0 var(--ink); }
+    .modal-icon { width: 64px; height: 64px; margin: 0 auto 12px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; }
     .modal-card h3 { margin: 0 0 8px; font-family: var(--font-title); font-weight: 400; font-size: 26px; }
-    .modal-card p { font-size: 15px; color: var(--ink-soft); margin: 0 0 20px; line-height: 1.6; }
-    .code-input {
-      width: 100%; padding: 12px; border: 3px solid var(--ink); border-radius: 14px;
-      font-size: 18px; text-align: center; letter-spacing: 2px; margin-bottom: 14px;
-      font-family: inherit; background: var(--paper); color: var(--ink);
-    }
-    .code-input:focus { outline: none; background: #fff; box-shadow: 0 0 0 4px var(--sun); }
+    .modal-card p { font-size: 16px; margin: 0 0 20px; line-height: 1.6; }
+    .code-input { width: 100%; padding: 12px; border: 3px solid var(--ink); border-radius: 14px; font-size: 18px; text-align: center; letter-spacing: 2px; margin-bottom: 14px; font-family: inherit; background: #fff; color: var(--ink); }
+    .code-input:focus { outline: none; box-shadow: 0 0 0 4px var(--sun); }
     .modal-btns { display: flex; gap: 10px; }
-    .btn-submit-code, .btn-cancel-code {
-      border: 3px solid var(--ink); border-radius: 14px; padding: 12px 16px; min-height: 50px;
-      font-family: var(--font-title); font-size: 18px; cursor: pointer; box-shadow: 3px 3px 0 var(--ink);
-    }
-    .btn-submit-code { flex: 1; background: var(--green); }
-    .btn-cancel-code { background: var(--card); }
+    .btn-submit-code, .btn-cancel-code { border: 3px solid var(--ink); border-radius: 14px; padding: 12px 16px; min-height: 50px; font-family: var(--font-title); font-size: 18px; cursor: pointer; box-shadow: 3px 3px 0 var(--ink); }
+    .btn-submit-code { flex: 1; background: var(--green); color: #fff; }
+    .btn-cancel-code { background: #fff; color: var(--ink); }
     .btn-submit-code:active, .btn-cancel-code:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
     .btn-submit-code:disabled { opacity: .6; cursor: wait; }
 
     @media (max-width: 600px) {
-      body { padding: 28px 16px 52px; }
-      .page { gap: 28px; }
-      h1 { font-size: 40px; }
-      .subtitle { font-size: 16px; }
-      .mock-match-banner { padding: 22px 20px; border-radius: 22px; box-shadow: 6px 6px 0 var(--ink); }
-      .banner-title { font-size: 25px; }
+      .topband { padding: 18px 16px 22px; }
+      .brand { font-size: 28px; }
+      .tagline { font-size: 19px; }
+      .page { padding: 24px 16px 52px; gap: 26px; }
+      .mock-match-banner { padding: 22px 20px; border-radius: 20px; box-shadow: 6px 6px 0 var(--ink); }
+      .banner-title { font-size: 27px; }
       .banner-action { width: 100%; justify-content: center; }
-      .card-grid { gap: 22px; }
-      .hub-card { padding: 22px 20px; }
-      .card-title { font-size: 23px; }
+      .card-grid { gap: 24px; }
+      .card-title { font-size: 26px; }
     }
     @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
   </style>
 </head>
 <body>
 
-  <div class="page">
-    <div class="header">
-      <span class="pill">우리 교실 놀이터</span>
-      <h1>KIMKO-EDU</h1>
-      <p class="subtitle">체육 시간도, 교실 놀이도 여기서 시작해요!</p>
+  <div class="topband">
+    <div class="topband-inner">
+      <div class="topband-row">
+        <span class="brand">KIMKO-EDU</span>
+        <span class="brand-sub">체육 수업 · 교실 놀이 도구 모음</span>
+      </div>
+      <p class="tagline">체육 시간도, 교실 놀이도 여기서 시작해요!</p>
     </div>
+  </div>
 
+  <div class="page">
     <!-- 스포츠스태킹 5세트 모의 경기장 배너 -->
     <a href="mock-match.html" class="mock-match-banner">
       <div class="banner-left">
@@ -161,29 +133,41 @@
     <div class="card-grid">
       <!-- 1. 스포츠스태킹 랭킹전 -->
       <a href="stacking.html" class="hub-card theme-stacking">
-        <span class="card-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3a2a1a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg></span>
-        <span class="card-tag">체육 수업용</span>
-        <span class="card-title">스포츠스태킹 랭킹전</span>
-        <span class="card-desc">3-3-3, 3-6-3, 사이클, 개인 종합 4개 종목의 학급 순위를 계산하고, 엑셀로 저장·인쇄까지 할 수 있어요.</span>
-        <span class="btn-link">수업 기록표 열기 →</span>
+        <span class="card-head">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg>
+          <span class="card-tag">체육 수업용</span>
+        </span>
+        <span class="card-body">
+          <span class="card-title">스포츠스태킹 랭킹전</span>
+          <span class="card-desc">3-3-3, 3-6-3, 사이클, 개인 종합 4개 종목의 학급 순위를 계산하고, 엑셀로 저장·인쇄까지 할 수 있어요.</span>
+          <span class="btn-link">수업 기록표 열기 →</span>
+        </span>
       </a>
 
       <!-- 2. 교실 놀이 수업실 -->
       <a href="play.html" class="hub-card theme-play">
-        <span class="card-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3a2a1a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1" fill="#3a2a1a"/><circle cx="15.5" cy="15.5" r="1" fill="#3a2a1a"/><circle cx="12" cy="12" r="1" fill="#3a2a1a"/></svg></span>
-        <span class="card-tag">교실 놀이</span>
-        <span class="card-title">교실 놀이 수업실</span>
-        <span class="card-desc">명화 경매, 결합 게임! TV 화면에 띄워 다 같이 즐기는 교실 놀이 모음이에요.</span>
-        <span class="btn-link">놀이 목록 보기 →</span>
+        <span class="card-head">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1" fill="#fff"/><circle cx="15.5" cy="15.5" r="1" fill="#fff"/><circle cx="12" cy="12" r="1" fill="#fff"/></svg>
+          <span class="card-tag">교실 놀이</span>
+        </span>
+        <span class="card-body">
+          <span class="card-title">교실 놀이 수업실</span>
+          <span class="card-desc">명화 경매, 결합 게임! TV 화면에 띄워 다 같이 즐기는 교실 놀이 모음이에요.</span>
+          <span class="btn-link">놀이 목록 보기 →</span>
+        </span>
       </a>
 
       <!-- 3. 학생 자율 기록실 (학교 코드 인증) -->
       <button type="button" class="hub-card theme-student" onclick="openCodeModal()">
-        <span class="card-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3a2a1a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2h5"/></svg></span>
-        <span class="card-tag">학교 코드 필요</span>
-        <span class="card-title">스포츠스태킹 자율기록실</span>
-        <span class="card-desc">내 최고 기록을 확인하고, 신기록이 나오면 직접 입력해서 선생님께 보내요.</span>
-        <span class="btn-link">코드 입력하고 입장 →</span>
+        <span class="card-head">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2h5"/></svg>
+          <span class="card-tag">학교 코드 필요</span>
+        </span>
+        <span class="card-body">
+          <span class="card-title">스포츠스태킹 자율기록실</span>
+          <span class="card-desc">내 최고 기록을 확인하고, 신기록이 나오면 직접 입력해서 선생님께 보내요.</span>
+          <span class="btn-link">코드 입력하고 입장 →</span>
+        </span>
       </button>
     </div>
 
@@ -193,7 +177,7 @@
   <!-- 학교 코드 입력 모달 -->
   <div class="modal-overlay" id="codeModal">
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="codeModalTitle">
-      <div class="modal-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3a2a1a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+      <div class="modal-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
       <h3 id="codeModalTitle">학교 코드 인증</h3>
       <p>우리 학교 학생만 이용할 수 있어요.<br>안내받은 학교 코드를 입력해 주세요.</p>
       <input type="password" id="schoolCodeInput" class="code-input" placeholder="학교 코드" aria-label="학교 코드" onkeypress="handleEnter(event)">

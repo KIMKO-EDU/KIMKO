@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>결합 게임</title>
 <style>
-  /* 레이아웃: 가로형 — 왼쪽 큰 3×3 나무 바둑판, 오른쪽 진행판(차례·버튼·조별 점수·찾은 합). 좁으면 위아래로 쌓임. 따뜻한 교실 테마(밝은 크림색) */
+  /* 레이아웃: 가로형 — 왼쪽 큰 3×3 나무 바둑판, 오른쪽 진행판(차례·버튼·조별 점수·찾은 합). 좁으면 위아래로 쌓임. 어두운 교실 테마 */
   :root {
     --bg: #1c1712;
     --panel: #2a221a;
@@ -181,74 +181,74 @@
   .modal-actions .btn { flex: 1; min-height: 3.125rem; font-size: 1.125rem; }
 
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
-  /* ===== 따뜻한 교실 테마 (밝은 크림색 화면) — 위 규칙의 색·글꼴·테두리만 덮어씀 ===== */
+  /* ===== 어두운 교실 테마 (F) — 위 규칙의 색·글꼴·테두리만 덮어씀 ===== */
   :root {
-    --bg: #fdf6e7;
-    --panel: #ffffff;
-    --panel-2: #fff7e6;
-    --line: #3a2a1a;
-    --ink: #3a2a1a;
-    --text: #3a2a1a;
-    --text-dim: #6b4f33;
+    --bg: #1f1610;
+    --panel: #2e2217;
+    --panel-2: #1f1610;
+    --line: #f5e6c8;
+    --ink: #f5e6c8;
+    --text: #fff6e5;
+    --text-dim: #f5e6c8;
     --gold: #fcd34d;
-    --accent-text: #c2410c;
-    --good: #15803d;
-    --bad: #dc2626;
+    --accent-text: #fcd34d;
+    --good: #86efac;
+    --bad: #fca5a5;
     --font-display: 'Jua', 'Gowun Dodum', sans-serif;
     --font-body: 'Gowun Dodum', 'Noto Sans KR', sans-serif;
-    color-scheme: light;
+    color-scheme: dark;
   }
-  button:focus-visible, input:focus-visible, select:focus-visible { outline-color: #2563eb; }
-  .brand { color: var(--ink); }
-  .brand small { color: var(--text-dim); }
-  .chip { background: #ffffff; color: var(--ink); border: 0.125rem solid var(--ink); box-shadow: 0.125rem 0.125rem 0 var(--ink); font-weight: 400; }
-  .chip:hover:not(:disabled) { color: var(--ink); border-color: var(--ink); background: var(--panel-2); }
-  .chip.on { background: var(--gold); color: var(--ink); border-color: var(--ink); }
-  .chip:active:not(:disabled) { transform: translate(0.125rem, 0.125rem); box-shadow: 0 0 0 var(--ink); }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline-color: #7dd3fc; }
+  .brand { color: var(--gold); font-weight: 400; }
+  .brand small { color: var(--text-dim); font-weight: 400; }
+  .chip { background: var(--panel); color: var(--text); border: 0.125rem solid var(--ink); font-weight: 400; box-shadow: none; }
+  .chip:hover:not(:disabled) { color: var(--text); border-color: var(--ink); background: #3a2b1c; }
+  .chip.on { background: var(--gold); color: #1f1610; }
 
-  .board-wrap { border-color: var(--ink); box-shadow: 0.5rem 0.5rem 0 var(--ink); }
-
-  .card { border: 0.1875rem solid var(--ink); border-radius: 1.25rem; box-shadow: 0.3125rem 0.3125rem 0 var(--ink); }
+  .board-wrap { border: 0.3125rem solid var(--ink); border-radius: 1.25rem; }
+  .card { background: var(--panel); border: 0.1875rem solid var(--ink); border-radius: 1.25rem; }
   .turn-label { color: var(--text-dim); font-weight: 400; }
-  .turn-name { color: var(--accent-text); }
-  .streak { color: var(--accent-text); }
-  .msg { font-weight: 400; font-family: var(--font-display); }
+  .turn-name { color: var(--gold); }
+  .streak { color: #fdba74; }
+  .msg { font-weight: 400; font-family: var(--font-display); color: var(--text); }
 
-  .btn { border: 0.1875rem solid var(--ink); box-shadow: 0.25rem 0.25rem 0 var(--ink); color: var(--ink); }
-  .btn:active:not(:disabled) { transform: translate(0.1875rem, 0.1875rem); box-shadow: 0.0625rem 0.0625rem 0 var(--ink); }
-  .btn:disabled { box-shadow: none; }
-  .btn-hap { background: var(--gold); color: var(--ink); }
-  .btn-gyeol { background: #bfdbfe; color: var(--ink); }
-  .btn-ok { background: #bbf7d0; color: var(--ink); font-family: var(--font-display); font-weight: 400; }
-  .btn-cancel { background: #ffffff; color: var(--ink); border: 0.1875rem solid var(--ink); font-family: var(--font-display); font-weight: 400; }
-  .btn-pass { background: transparent; color: var(--text-dim); border: 0.125rem dashed var(--ink); box-shadow: none; font-weight: 400; }
+  .btn { border: 0.1875rem solid var(--ink); box-shadow: 0.3125rem 0.3125rem 0 var(--ink); color: #1f1610; font-family: var(--font-display); font-weight: 400; }
+  .btn:active:not(:disabled) { transform: translate(0.25rem, 0.25rem); box-shadow: 0.0625rem 0.0625rem 0 var(--ink); }
+  .btn:disabled { box-shadow: none; opacity: .5; }
+  .btn-hap { background: var(--gold); color: #1f1610; }
+  .btn-gyeol { background: #7dd3fc; color: #1f1610; }
+  .btn-ok { background: #86efac; color: #1f1610; }
+  .btn-cancel { background: var(--panel); color: var(--text); border: 0.1875rem solid var(--ink); }
+  .btn-pass { background: transparent; color: var(--text-dim); border: 0.125rem dashed var(--ink); box-shadow: none; }
 
-  .score-row { background: var(--panel-2); border: 0.125rem solid #eadbbd; }
-  .score-row.turn { border-color: var(--ink); background: #fef3c7; }
+  .score-row { background: var(--panel-2); border: 0.125rem solid var(--ink); color: var(--text); }
+  .score-row.turn { border-color: var(--ink); background: var(--gold); color: #1f1610; }
+  .score-row.turn .rk, .score-row.turn .nm, .score-row.turn .pt { color: #1f1610; }
   .score-row .rk { color: var(--text-dim); font-weight: 400; }
   .score-row .nm { font-family: var(--font-display); font-weight: 400; }
   .card-title { color: var(--text-dim); font-weight: 400; }
 
-  .found .tag { background: var(--panel-2); border: 0.125rem solid var(--ink); font-weight: 400; }
+  .found .tag { background: var(--panel-2); border: 0.125rem solid var(--ink); color: var(--text); font-weight: 400; }
 
-  .timer { background: var(--panel-2); border: 0.125rem solid #eadbbd; }
-  .timer-bar { background: #efe2c6; }
-  .timer-bar span { background: #22c55e; }
-  .timer.select .timer-num { color: #b45309; }
-  .timer.select .timer-bar span { background: #f59e0b; }
-  .timer.warn .timer-bar span { background: var(--bad); }
-  .timer.over { background: #fee2e2; border-color: var(--bad); }
+  .timer { background: var(--panel-2); border: 0.125rem solid var(--ink); color: var(--text); }
+  .timer-bar { background: #4a3826; }
+  .timer-bar span { background: #4ade80; }
+  .timer.select .timer-num { color: #fdba74; }
+  .timer.select .timer-bar span { background: #fdba74; }
+  .timer.warn .timer-bar span { background: #f87171; }
+  .timer.over { background: #4a1d1d; border-color: #f87171; }
   .timer-label { color: var(--text-dim); font-weight: 400; }
-  .answer-box { color: #92400e; }
+  .answer-box { color: #fdba74; }
 
-  .setup h1 { color: var(--ink); }
-  .field select, .field input[type=text] { background: #ffffff; border: 0.125rem solid var(--ink); }
-  .result h1 { color: var(--accent-text); }
-  .podium .score-row.first { border-color: var(--ink); background: var(--gold); }
+  .setup h1 { color: var(--gold); font-weight: 400; }
+  .field select, .field input[type=text] { background: var(--panel); color: var(--text); border: 0.125rem solid var(--ink); }
+  .result h1 { color: var(--gold); }
+  .podium .score-row.first { border-color: var(--ink); background: var(--gold); color: #1f1610; }
 
-  .modal { background: rgba(58, 42, 26, 0.55); }
-  .modal-card { border: 0.1875rem solid var(--ink); border-radius: 1.25rem; box-shadow: 0.375rem 0.375rem 0 var(--ink); }
-  .modal-card h3 { font-family: var(--font-display); font-weight: 400; font-size: 1.5rem; }
+  .modal { background: rgba(10, 6, 2, 0.75); }
+  .modal-card { background: var(--panel); color: var(--text); border: 0.1875rem solid var(--ink); border-radius: 1.25rem; }
+  .modal-card h3 { font-family: var(--font-display); font-weight: 400; font-size: 1.5rem; color: var(--gold); }
+
   .rot-note { display: none; position: fixed; left: 0; right: 0; top: 0; z-index: 99; background: #f5c542; color: #2a1d00; text-align: center; font-weight: 900; padding: .5rem; font-size: 1rem; }
   html.portrait .rot-note { display: block; }
 </style>
