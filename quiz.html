@@ -78,12 +78,31 @@
 <script>
 /* ▼ 영상 목록: 여기만 고치면 돼요. id = 유튜브 주소 v= 뒤의 11글자, mins = 길이(분) */
 const VIDEOS = [
-  { id: '', title: '(예시) 횡단보도 안전하게 건너기', topic: '교통', mins: 5 },
-  { id: '', title: '(예시) 불이 났을 때 대피 방법', topic: '화재', mins: 5 },
-  { id: '', title: '(예시) 놀이터에서 다치지 않으려면', topic: '놀이터', mins: 5 },
-  { id: '', title: '(예시) 자전거 탈 때 꼭 지킬 것', topic: '교통', mins: 5 },
-  { id: '', title: '(예시) 소화기 사용법 따라 하기', topic: '화재', mins: 5 },
-  { id: '', title: '(예시) 낯선 사람이 말을 걸 때', topic: '생활', mins: 5 }
+  { id: 'g5cJ2P1Izrs', title: '겨울철 안전 교육 1', topic: '생활안전', mins: 5 },
+  { id: 'HC4waRLOCh8', title: '코로나19 안전 교육 1', topic: '생활안전', mins: 5 },
+  { id: '_F1pvLE3vQU', title: '코로나19 안전 교육 2', topic: '생활안전', mins: 5 },
+  { id: 'YNx6CLuMNag', title: '실종유괴예방 교육', topic: '폭력예방 및 신변보호', mins: 5 },
+  { id: 'vkPSl1gWAjw', title: '화재안전 교육 1', topic: '재난안전', mins: 5 },
+  { id: '4JMgtjLZ5TI', title: '화재안전 교육 2', topic: '재난안전', mins: 5 },
+  { id: '4MFE7_07GXY', title: '전동킥보드 안전 교육', topic: '교통안전', mins: 5 },
+  { id: 'HsTjtX4avvc', title: '아동학대예방 교육 1', topic: '폭력예방 및 신변보호', mins: 5 },
+  { id: 'qWETzz3QZCQ', title: '아동학대예방 교육 2', topic: '폭력예방 및 신변보호', mins: 5 },
+  { id: 'r3NjJKU4xg8', title: '봄철 안전 교육', topic: '생활안전', mins: 5 },
+  { id: 'c_XlNNHQP6U', title: '사이버 중독 예방 교육', topic: '약물 및 사이버 중독 예방', mins: 5 },
+  { id: 'fhGqFy_K9Xw', title: '개학하면 해야할 일', topic: '생활안전', mins: 5 },
+  { id: 'w1PFm3yZ4R8', title: '화장실 이용 예절 교육', topic: '생활안전', mins: 5 },
+  { id: 'fGz3KrK8-iQ', title: '급식실 이용 교육', topic: '생활안전', mins: 5 },
+  { id: 'YayJR1RYW-4', title: '여름철 물놀이 안전 교육', topic: '생활안전', mins: 5 },
+  { id: 'qiDusmvdfCY', title: '폭염 안전 교육', topic: '재난안전', mins: 5 },
+  { id: 'UyHTasoMp4Y', title: '태풍 대비 안전 교육', topic: '재난안전', mins: 5 },
+  { id: 'K31yPbgK0Xw', title: '캠핑 안전 교육', topic: '생활안전', mins: 5 },
+  { id: 'XTEQKrKrOn4', title: '학교폭력예방 교육', topic: '폭력예방 및 신변보호', mins: 5 },
+  { id: 'kWsI_ayyGEY', title: '생존수영 안전 교육', topic: '생활안전', mins: 5 },
+  { id: 'Ve-ME6Up1xc', title: '군중밀집지역 안전 교육', topic: '생활안전', mins: 5 },
+  { id: 'IBjV-zLK4Ss', title: '심폐소생술 안전 교육', topic: '응급처치', mins: 5 },
+  { id: 'uekcPysZ0NA', title: '공습 시 행동 요령 교육', topic: '재난안전', mins: 5 },
+  { id: 'KP0MBSbFEIY', title: '겨울철 안전 교육 2', topic: '생활안전', mins: 5 },
+  { id: '6M42jF9AddY', title: '지진 안전 교육', topic: '재난안전', mins: 5 }
 ];
 let topic = '전체';
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -96,7 +115,7 @@ function renderGrid() {
   const list = VIDEOS.map((v, i) => ({ v, i })).filter(o => topic === '전체' || o.v.topic === topic);
   document.getElementById('grid').innerHTML = list.length ? list.map(o => `
     <button class="vcard" onclick="openVideo(${o.i})">
-      <span class="thumb">${o.v.id ? `<img src="https://i.ytimg.com/vi/${o.v.id}/hqdefault.jpg" alt="" loading="lazy">` : ''}
+      <span class="thumb">${o.v.id ? `<img src="https://i.ytimg.com/vi/${o.v.id}/hqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">` : ''}
         <span class="play"><svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="#2b1d10"/></svg></span>
         <span class="dur">${o.v.mins}분</span></span>
       <span class="vbody"><span class="vtopic">${esc(o.v.topic)}</span><span class="vtitle">${esc(o.v.title)}</span></span>
