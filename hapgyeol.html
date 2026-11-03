@@ -800,7 +800,7 @@ function renderTopbar() {
   return `<div class="topbar">
     <div class="brand">결합 게임<small>${S.phase === 'over' ? '최종 결과' : `${S.boardNo}번째 판${S.totalBoards ? ` / ${S.totalBoards}판` : ''}`}</small></div>
     <div class="chips">
-      <a class="chip" href="play.html" style="text-decoration:none; display:inline-flex; align-items:center;">← 놀이 목록</a>
+      <a class="chip" href="index.html" style="text-decoration:none; display:inline-flex; align-items:center;">← 홈으로</a>
       <button class="chip ${sound.on ? '' : 'off'}" onclick="toggleSound()">${sound.on ? '🔊 효과음 켬' : '🔇 효과음 끔'}</button>
       <button class="chip" onclick="cycleVolume()" ${sound.on ? '' : 'disabled'}>음량: ${VOL_LEVELS[sound.level].name}</button>
       <button class="chip" onclick="undo()" ${history.length ? '' : 'disabled'}>↩️ 되돌리기</button>
@@ -906,7 +906,7 @@ function renderSetup() {
   const boardOpts = [[5,'5판'],[10,'10판'],[15,'15판'],[20,'20판'],[0,'제한 없음 (게임 끝내기 버튼으로 종료)']]
     .map(([v,l]) => `<option value="${v}" ${v === setupDraft.totalBoards ? 'selected' : ''}>${l}</option>`).join('');
   return `<div class="setup">
-    <a href="play.html" style="color:var(--text-dim); font-weight:700; text-decoration:none;">← 교실 놀이 수업실로</a>
+    <a href="index.html" style="color:var(--text-dim); font-weight:700; text-decoration:none;">← 홈으로</a>
     <h1>결합 게임</h1>
     <div style="margin:0.25rem 0 0.5rem"><button class="chip guide-btn" onclick="openGuide()">📖 사용법</button></div>
     <p class="lead">3×3 판에서 <b>모양·색·바탕색</b>이 각각 모두 같거나 모두 다른 타일 3장을 찾는 조별 게임입니다.</p>

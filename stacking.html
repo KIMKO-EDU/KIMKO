@@ -11,7 +11,7 @@
   <style>
     /* ===== 따뜻한 교실 테마 ===== */
     :root {
-      --paper: #e8d3a0;
+      --paper: #fff7e0;
       --ink: #2b1d10;
       --ink-soft: #4a3520;
       --card: #ffffff;
@@ -375,13 +375,19 @@
   .guide-btn-plain { min-height: 44px; padding: 8px 18px; border-radius: 999px; border: 3px solid #2b1d10; background: #fcd34d; color: #2b1d10; font-family: 'Jua', 'Gowun Dodum', sans-serif; font-size: 15px; cursor: pointer; box-shadow: 2px 2px 0 #2b1d10; }
   .guide-btn-plain:active { transform: translate(2px, 2px); box-shadow: none; }
 
+  
+    /* ===== 홈(C 디자인)과 통일: 밝은 크림 바탕 + 진한 갈색 + 노란 강조 ===== */
+    body { background: #fffdf8 !important; }
+    .header-nav, .top-bar, .top-nav { background: #2b1d10; border-radius: 18px; padding: 10px 14px; }
+    .header-nav .back-btn, .top-bar .back-btn, .top-nav .back-btn { background: #fcd34d; color: #2b1d10; border: 0; box-shadow: none; border-radius: 999px; padding: 8px 16px; min-height: 40px; display: inline-flex; align-items: center; font-size: 15px; font-weight: 700; text-decoration: none; }
+    .header-nav .page-label { color: #fcd34d; }
   </style>
 </head>
 <body>
 
   <!-- 상단 네비게이션 -->
   <div class="header-nav">
-    <a href="index.html" class="back-btn">← 메인 플랫폼으로 돌아가기</a>
+    <a href="index.html" class="back-btn">← 홈으로</a>
     <span class="page-label">스포츠스태킹 랭킹전</span>
     <button type="button" class="guide-btn-plain" onclick="openGuide()">📖 사용법</button>
   </div>

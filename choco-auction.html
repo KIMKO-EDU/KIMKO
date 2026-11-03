@@ -468,7 +468,7 @@
 
 <script>
 /* ===================== 0. 설정값 ===================== */
-const BACK_LINK = 'play.html';   // GitHub 버전에서는 'play.html'
+const BACK_LINK = 'index.html';   // GitHub 버전에서는 'play.html'
 const STORAGE_KEY = 'art_auction_v1';
 const ROUND_OPTIONS = [9, 12, 15, 18, 21, 24, 27, 30];
 const TIER_WEIGHTS = [27, 27, 26, 13, 7];   // 1~5점 확률(%)
@@ -819,7 +819,7 @@ function renderTopbar() {
   return `<div class="topbar">
     <div class="brand">무제한 명화 경매<small>${S.phase === 'over' ? '최종 결과' : `${S.round} / ${S.rounds.length} 라운드`}</small></div>
     <div class="chips">
-      ${BACK_LINK ? `<a class="chip" href="${BACK_LINK}">← 놀이 목록</a>` : ''}
+      ${BACK_LINK ? `<a class="chip" href="${BACK_LINK}">← 홈으로</a>` : ''}
       <button class="chip" onclick="toggleSound()">${sound.on ? '🔊 효과음 켬' : '🔇 효과음 끔'}</button>
       <button class="chip" onclick="cycleVolume()" ${sound.on ? '' : 'disabled'}>음량: ${VOL_LEVELS[sound.level].name}</button>
       ${S.phase === 'play' ? `<button class="chip hold peek-btn" id="hostBtn">🔒 진행자 기록 보기 (누르는 동안)</button>` : ''}
@@ -960,7 +960,7 @@ function renderSetup() {
   const countOpts = [3,4,5,6,7,8].map(k => `<option value="${k}" ${k === n ? 'selected' : ''}>${k}개 모둠</option>`).join('');
   const roundOpts = ROUND_OPTIONS.map(k => `<option value="${k}" ${k === setupDraft.totalRounds ? 'selected' : ''}>${k}라운드</option>`).join('');
   return `<div class="setup">
-    ${BACK_LINK ? `<a href="${BACK_LINK}" style="color:var(--text-dim); font-weight:700; text-decoration:none;">← 교실 놀이 수업실로</a>` : ''}
+    ${BACK_LINK ? `<a href="${BACK_LINK}" style="color:var(--text-dim); font-weight:700; text-decoration:none;">← 홈으로</a>` : ''}
     <h1>무제한 명화 경매</h1>
     <div style="margin:0.25rem 0 0.5rem"><button class="chip guide-btn" onclick="openGuide()">📖 사용법</button></div>
     <p class="lead">돈은 무제한! 하지만 마지막에 가장 많이 쓴 모둠은 파산합니다. 매 라운드 무작위로 나오는 작품(1~5점)을 비공개 입찰로 낙찰받으세요.</p>

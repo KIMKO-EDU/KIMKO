@@ -10,7 +10,7 @@
   <style>
     /* ===== 따뜻한 교실 테마 ===== */
     :root {
-      --paper: #e8d3a0;
+      --paper: #fff7e0;
       --ink: #2b1d10;
       --ink-soft: #4a3520;
       --card: #ffffff;
@@ -452,6 +452,12 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; }
     }
+  
+    /* ===== 홈(C 디자인)과 통일: 밝은 크림 바탕 + 진한 갈색 + 노란 강조 ===== */
+    body { background: #fffdf8 !important; }
+    .header-nav, .top-bar, .top-nav { background: #2b1d10; border-radius: 18px; padding: 10px 14px; }
+    .header-nav .back-btn, .top-bar .back-btn, .top-nav .back-btn { background: #fcd34d; color: #2b1d10; border: 0; box-shadow: none; border-radius: 999px; padding: 8px 16px; min-height: 40px; display: inline-flex; align-items: center; font-size: 15px; font-weight: 700; text-decoration: none; }
+    .header-nav .page-label { color: #fcd34d; }
   </style>
 </head>
 <body>
@@ -469,7 +475,7 @@
   <div id="mainApp" style="display:none;">
     
     <div class="top-nav">
-      <a href="index.html" class="back-btn">← 메인 플랫폼으로 돌아가기</a>
+      <a href="index.html" class="back-btn">← 홈으로</a>
       <button onclick="adminLogin()" class="admin-btn">👨‍🏫 관리자</button>
     </div>
 
