@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>스포츠스태킹 스코어보드</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#1c1712; --panel:#2a221a; --panel-2:#362c21; --line:#4a3d2e;
+    --text:#f6efe4; --dim:#b9a88f; --gold:#f5c542; --good:#3ecf8e; --bad:#f0605d;
+    --a:#3b82f6; --b:#ef4444;
+    --font-display:'Black Han Sans','Noto Sans KR',sans-serif; --font-body:'Noto Sans KR',system-ui,sans-serif;
+    color-scheme:dark;
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  [hidden] { display:none !important; }
+  html,body { height:100%; margin:0; background:var(--bg); }
+  body { color:var(--text); font-family:var(--font-body); overflow:hidden; user-select:none; -webkit-user-select:none; touch-action:manipulation; }
+  button { font-family:inherit; color:inherit; cursor:pointer; }
+  :focus-visible { outline:0.1875rem solid #7dd3fc; outline-offset:0.125rem; }
+
+  .app { height:100vh; height:100dvh; display:grid; gap:0.625rem;
+    padding:max(0.5rem,env(safe-area-inset-top,0)) max(0.625rem,env(safe-area-inset-right,0)) max(0.5rem,env(safe-area-inset-bottom,0)) max(0.625rem,env(safe-area-inset-left,0));
+    grid-template-columns:1fr minmax(9.5rem,14vw) 1fr; grid-template-rows:auto minmax(0,1fr);
+    grid-template-areas:"top top top" "a mid b"; }
+  .top { grid-area:top; display:flex; align-items:stretch; gap:0.5rem; }
+  .back, .gear { flex:none; display:flex; align-items:center; justify-content:center; min-width:3rem; padding:0 0.75rem;
+    background:var(--panel-2); border:0.0625rem solid var(--line); border-radius:0.75rem; color:var(--text); text-decoration:none; font-weight:700; font-size:0.9375rem; }
+  .gear { font-size:1.25rem; }
+  .tabs { flex:1; display:grid; grid-template-columns:repeat(5,1fr); gap:0.375rem; min-width:0; }
+  .tab { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.0625rem; padding:0.375rem 0.25rem; min-height:3.25rem;
+    background:var(--panel); border:0.125rem solid var(--line); border-radius:0.75rem; color:var(--dim); min-width:0; }
+  .tab b { font-size:clamp(0.875rem,1.5vw,1.25rem); color:var(--text); }
+  .tab small { font-size:clamp(0.6875rem,1.05vw,0.9375rem); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .tab .res { font-family:var(--font-display); font-size:clamp(0.75rem,1.1vw,1rem); color:var(--gold); min-height:1em; }
+  .tab[aria-current="true"] { background:var(--gold); border-color:var(--gold); }
+  .tab[aria-current="true"] b, .tab[aria-current="true"] small, .tab[aria-current="true"] .res { color:#2a1d00; }
+
+  .t0 { grid-area:a; --c:var(--a); } .t1 { grid-area:b; --c:var(--b); } .mid { grid-area:mid; }
+  .swap .t0 { grid-area:b; } .swap .t1 { grid-area:a; }
+
+  .team { display:flex; flex-direction:column; gap:0.5rem; min-height:0; min-width:0; background:var(--panel); border:0.0625rem solid var(--line); border-top:0.5rem solid var(--c); border-radius:1.25rem; padding:0.625rem; }
+  .tname { flex:none; }
+  .tname input { width:100%; text-align:center; background:transparent; border:0; border-bottom:0.125rem dashed transparent; color:var(--text);
+    font-family:var(--font-display); font-size:clamp(1.5rem,3.4vw,3rem); padding:0.125rem 0; user-select:text; -webkit-user-select:text; }
+  .tname input:hover, .tname input:focus { border-bottom-color:var(--line); outline:none; }
+
+  .zone { position:relative; display:flex; align-items:center; justify-content:center; background:var(--panel-2); border:0.125rem solid var(--line); border-radius:1rem; cursor:pointer; min-height:0;
+    transition:transform .08s, box-shadow .15s, border-color .15s; }
+  .zone:active { transform:scale(0.985); background:#40342a; }
+  .zone .lb { position:absolute; left:0.875rem; top:0.5rem; font-size:clamp(0.8125rem,1.4vw,1.25rem); font-weight:700; color:var(--dim); }
+  .zone .val { font-family:var(--font-display); line-height:1; color:var(--c); }
+  .zone.reached { border-color:var(--gold); box-shadow:0 0 0 0.25rem rgba(245,197,66,.35); }
+  .zone .tag { position:absolute; right:0.875rem; top:0.5rem; background:var(--gold); color:#2a1d00; font-weight:900; font-size:clamp(0.75rem,1.3vw,1.125rem); padding:0.125rem 0.625rem; border-radius:999px; }
+  .zone .minus { position:absolute; right:0.5rem; bottom:0.5rem; width:3rem; height:3rem; border-radius:0.75rem; background:rgba(0,0,0,.35); border:0.0625rem solid var(--line); font-size:1.5rem; line-height:1; color:var(--dim); display:flex; align-items:center; justify-content:center; }
+  .zone .minus:active { background:rgba(255,255,255,.2); }
+  .bump .val { animation:bump .28s ease-out; }
+  @keyframes bump { 0% { transform:scale(1); } 40% { transform:scale(1.22); } 100% { transform:scale(1); } }
+
+  .zset { flex:none; height:clamp(4.5rem,15vh,9rem); justify-content:center; }
+  .zset .val { font-size:clamp(2.5rem,10vh,6rem); }
+  .zset .star { margin-left:0.75rem; font-size:clamp(1.5rem,5vh,3rem); }
+  .zround { flex:1 1 0; overflow:hidden; container-type:size; }
+  .zround .val { font-size:clamp(5rem,min(42vh,24vw),30rem); font-size:min(74cqh,70cqw); }
+  .zgame { flex:none; height:clamp(4.5rem,15vh,9rem); }
+  .zgame .val { font-size:clamp(2.5rem,10vh,6rem); }
+
+  .mid { display:flex; flex-direction:column; justify-content:center; gap:0.625rem; text-align:center; min-height:0; }
+  .std { background:var(--panel); border:0.0625rem solid var(--line); border-radius:1rem; padding:0.625rem 0.5rem; }
+  .std .cur { font-family:var(--font-display); font-size:clamp(1.125rem,2vw,1.75rem); color:var(--gold); line-height:1.25; }
+  .std .rule { font-size:clamp(0.8125rem,1.3vw,1.125rem); color:var(--dim); margin-top:0.25rem; line-height:1.4; }
+  .vs { font-family:var(--font-display); font-size:clamp(1.5rem,3vw,2.5rem); color:var(--dim); }
+  .mbtn { min-height:3.5rem; padding:0.5rem 0.625rem; border-radius:0.875rem; border:0.125rem solid var(--line); background:var(--panel-2); font-weight:700; font-size:clamp(0.875rem,1.4vw,1.125rem); line-height:1.3; }
+  .mbtn:active { background:#40342a; }
+  .mbtn.undo { background:var(--gold); border-color:var(--gold); color:#2a1d00; font-family:var(--font-display); font-weight:400; font-size:clamp(1.25rem,2.2vw,1.75rem); min-height:4.5rem; }
+  .sm { font-weight:400; color:var(--dim); }
+  .mbtn:disabled { opacity:.35; cursor:default; }
+
+  .toast { position:fixed; left:50%; top:4.25rem; transform:translateX(-50%); background:rgba(0,0,0,.85); border:0.0625rem solid var(--line); color:var(--text); padding:0.5rem 1.125rem; border-radius:999px; font-size:1rem; z-index:30; pointer-events:none; }
+
+  .modal { position:fixed; inset:0; z-index:40; background:rgba(0,0,0,.72); display:flex; align-items:center; justify-content:center; padding:1rem; }
+  .sheet { width:100%; max-width:26rem; max-height:92vh; overflow:auto; background:var(--panel); border:0.125rem solid var(--line); border-radius:1.25rem; padding:1rem; display:flex; flex-direction:column; gap:0.625rem; }
+  .sheet h2 { margin:0 0 0.25rem; font-family:var(--font-display); font-weight:400; font-size:1.5rem; color:var(--gold); }
+  .sheet .row { display:flex; gap:0.5rem; }
+  .sheet .mbtn { flex:1; text-align:left; display:flex; align-items:center; gap:0.5rem; font-size:1rem; }
+  .sheet .mbtn.danger { border-color:var(--bad); color:var(--bad); }
+  .sheet .mbtn.danger.armed { background:var(--bad); color:#fff; }
+  .sheet .hint { font-size:0.875rem; color:var(--dim); line-height:1.5; margin:0; }
+
+  /* 세로 화면(스마트폰 세워서): 위아래로 쌓기 */
+  @media (orientation:portrait) {
+    .app { grid-template-columns:1fr; grid-template-rows:auto minmax(0,1fr) auto minmax(0,1fr); grid-template-areas:"top" "a" "mid" "b"; }
+    .mid { flex-direction:row; flex-wrap:wrap; align-items:stretch; justify-content:center; }
+    .mid .std { flex:1 1 100%; display:flex; gap:0.75rem; align-items:baseline; justify-content:center; padding:0.375rem 0.5rem; }
+    .mid .std .rule { margin:0; }
+    .mid .vs { display:none; }
+    .mid .mbtn { flex:1 1 0; min-height:3rem; }
+    .mid .mbtn.undo { min-height:3rem; font-size:1.125rem; }
+    .zround .val { font-size:min(74cqh,70cqw); }
+    .zset,.zgame { height:2.75rem; border-radius:0.75rem; }
+    .zset .val,.zgame .val { font-size:1.875rem; }
+    .zset .lb,.zgame .lb { top:50%; transform:translateY(-50%); }
+    .zset .minus,.zgame .minus { width:2.25rem; height:2.25rem; bottom:0.25rem; }
+    .team { gap:0.375rem; padding:0.5rem; }
+    .tname input { padding:0; }
+    .zset .tag,.zgame .tag { top:50%; transform:translateY(-50%); right:3.25rem; }
+    .zset .tag,.zgame .tag,.zround .tag { top:0.4rem; right:3.5rem; }
+    .tname input { font-size:1.5rem; }
+    .tab small { display:none; } .tab b { white-space:nowrap; font-size:0.875rem; } .tab { padding:0.25rem 0; }
+    .mbtn.undo { white-space:nowrap; }
+    .tab { min-height:2.75rem; }
+  }
+  /* 낮은 가로 화면(스마트폰 눕혀서) */
+  @media (orientation:landscape) and (max-height:480px) {
+    .app { gap:0.375rem; grid-template-columns:1fr 7.5rem 1fr; padding-top:0.375rem; padding-bottom:0.375rem; }
+    .tab { min-height:2.5rem; padding:0.125rem; } .tab .res { display:none; }
+    .team { padding:0.375rem; gap:0.375rem; border-top-width:0.375rem; }
+    .tname input { font-size:1.25rem; }
+    .zset,.zgame { height:3.25rem; } .zset .val,.zgame .val { font-size:2rem; }
+    .zround .val { font-size:min(74cqh,70cqw); }
+    .zset .tag,.zgame .tag { top:50%; transform:translateY(-50%); right:3.25rem; }
+    .sm { display:none; }
+    .std .rule { display:none; } .vs { display:none; }
+    .mbtn { min-height:2.75rem; font-size:0.8125rem; padding:0.25rem; } .mbtn.undo { min-height:3.5rem; font-size:1.125rem; }
+    .zone .minus { width:2.5rem; height:2.5rem; }
+  }
+  @media (prefers-reduced-motion:reduce) { * { animation:none !important; transition:none !important; } }
+
+  /* ===== 사용법 팝업 ===== */
+  .guide-btn { cursor: pointer; }
+  .guide-overlay { position: fixed; inset: 0; z-index: 2000; background: rgba(10,6,2,.78); display: none; align-items: center; justify-content: center; padding: 1rem; font-family: 'Gowun Dodum', 'Noto Sans KR', sans-serif; }
+  .guide-overlay.open { display: flex; }
+  .guide-card { background: #2e2217; color: #fff6e5; border: 0.25rem solid #f5e6c8; border-radius: 1.375rem;  width: 100%; max-width: 51.25rem; max-height: min(92vh, 47.5rem); display: flex; flex-direction: column; overflow: hidden; text-align: left; }
+  .guide-head { background: #1f1610; color: #fcd34d; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.875rem 1.25rem; }
+  .guide-head h2 { margin: 0; font-family: 'Jua', 'Gowun Dodum', sans-serif; font-weight: 400; font-size: 1.625rem; line-height: 1.25; }
+  .guide-x { min-width: 2.75rem; min-height: 2.75rem; border-radius: 50%; border: 0.125rem solid #f5e6c8; background: transparent; color: #fff6e5; font-size: 1.375rem; cursor: pointer; line-height: 1; }
+  .guide-tabs { display: flex; gap: 0.5rem; padding: 0.75rem 1.25rem 0; flex-wrap: wrap; }
+  .guide-tab { min-height: 2.75rem; padding: 0.375rem 1.125rem; border-radius: 999px; border: 0.125rem solid #f5e6c8; background: transparent; color: #fff6e5; font-family: 'Jua', 'Gowun Dodum', sans-serif; font-size: 1.0625rem; cursor: pointer; }
+  .guide-tab[aria-selected="true"] { background: #fcd34d; color: #1f1610; }
+  .guide-body { overflow-y: auto; padding: 0.5rem 1.5rem 1.125rem; font-size: 1.0625rem; line-height: 1.7; word-break: keep-all; flex: 1; }
+  .guide-panel { display: none; }
+  .guide-panel.on { display: block; }
+  .guide-body h4 { margin: 1rem 0 0.375rem; font-family: 'Jua', 'Gowun Dodum', sans-serif; font-weight: 400; font-size: 1.25rem; color: #fcd34d; }
+  .guide-body p { margin: 0.375rem 0; }
+  .guide-body ul, .guide-body ol { margin: 0.375rem 0; padding-left: 1.4em; }
+  .guide-body li { margin: 0.25rem 0; }
+  .guide-body b { color: #fff6e5; font-weight: 700; }
+  .g-note { background: #1f1610; border: 0.125rem dashed #f5e6c8; border-radius: 0.75rem; padding: 0.5rem 0.875rem; font-size: 1rem; }
+  .g-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 1rem; }
+  .g-table th, .g-table td { border: 0.125rem solid #f5e6c8; padding: 0.4375rem 0.75rem; text-align: left; }
+  .g-table th { background: #1f1610; }
+  .guide-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; padding: 0.75rem 1.25rem; border-top: 0.1875rem solid #f5e6c8; }
+  .guide-foot label { font-size: 0.9375rem; display: flex; align-items: center; gap: 0.5rem; min-height: 2.75rem; cursor: pointer; }
+  .guide-foot input { width: 1.25rem; height: 1.25rem; accent-color: #fcd34d; }
+  .guide-actions { display: flex; gap: 0.625rem; }
+  .guide-act { min-height: 2.75rem; padding: 0.5rem 1.25rem; border-radius: 0.875rem; border: 0.1875rem solid #f5e6c8; background: transparent; color: #fff6e5; font-family: 'Jua', 'Gowun Dodum', sans-serif; font-size: 1.0625rem; cursor: pointer; }
+  .guide-act.main { background: #fcd34d; color: #1f1610; }
+  .guide-overlay button:focus-visible { outline: 0.1875rem solid #7dd3fc; outline-offset: 0.125rem; }
+  @media (max-width: 600px) {
+    .guide-overlay { padding: 8px; }
+    .guide-head h2 { font-size: 1.3125rem; }
+    .guide-body { padding: 6px 16px 14px; font-size: 1rem; }
+    .guide-tab { padding: 6px 12px; font-size: 0.9375rem; }
+  }
+  body.guide-printing > *:not(.guide-overlay) { display: none !important; }
+  @media print {
+    body.guide-printing .guide-overlay { position: static !important; display: block !important; background: none !important; padding: 0 !important; }
+    body.guide-printing .guide-card { max-height: none !important; box-shadow: none !important; border: 1px solid #000 !important; background: #fff !important; color: #000 !important; }
+    body.guide-printing .guide-head { background: #fff !important; color: #000 !important; border-bottom: 2px solid #000; }
+    body.guide-printing .guide-body { overflow: visible !important; color: #000 !important; }
+    body.guide-printing .guide-body h4, body.guide-printing .guide-body b { color: #000 !important; }
+    body.guide-printing .guide-panel { display: block !important; page-break-inside: avoid; }
+    body.guide-printing .guide-tabs, body.guide-printing .guide-foot, body.guide-printing .guide-x { display: none !important; }
+    body.guide-printing .g-note, body.guide-printing .g-table th { background: #fff !important; }
+  }
+
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="top">
+    <a class="back" href="index.html">← 홈</a>
+    <nav class="tabs" id="tabs" aria-label="세트 선택"></nav>
+    <button class="gear guide-btn" type="button" onclick="openGuide()" aria-label="사용법">📖</button>
+    <button class="gear" id="gear" aria-label="설정">⚙️</button>
+  </header>
+  <section class="team t0" id="team0"></section>
+  <aside class="mid" id="mid"></aside>
+  <section class="team t1" id="team1"></section>
+</div>
+
+<div class="guide-overlay" id="guideModal" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
+  <div class="guide-card">
+    <div class="guide-head"><h2 id="guideTitle">📖 스포츠스태킹 스코어보드 사용법</h2><button type="button" class="guide-x" onclick="closeGuide()" aria-label="닫기">✕</button></div>
+    <div class="guide-tabs" role="tablist"><button type="button" class="guide-tab" role="tab" aria-selected="true" onclick="showGuideTab(0)">준비하기</button><button type="button" class="guide-tab" role="tab" aria-selected="false" onclick="showGuideTab(1)">점수 올리기</button><button type="button" class="guide-tab" role="tab" aria-selected="false" onclick="showGuideTab(2)">팁 · 문제 해결</button></div>
+    <div class="guide-body"><section class="guide-panel on" role="tabpanel"><h3 style="display:none">준비하기</h3><h4>이런 곳이에요</h4>
+<p>실제 스포츠스태킹 경기 중에 <b>점수만 터치로 올리는 전광판</b>이에요. TV·태블릿·스마트폰에 띄워 세워 두고 써요. 기록 측정이나 AI 대결은 없어요. AI와 연습하려면 <b>5세트 모의 경기장</b>을 쓰세요.</p>
+<h4>시작 전 설정</h4>
+<ul>
+<li><b>팀 이름</b>: 화면 위의 "우리 팀"·"상대 팀" 글자를 눌러 바로 고쳐요. (최대 10글자)</li>
+<li><b>⚙️ 설정</b>: 좌우 바꾸기, 전체 화면, 화면 켜두기, 모든 점수 처음부터.</li>
+<li>TV에 띄울 때는 <b>⛶ 전체 화면</b>을 켜면 숫자가 더 크게 보여요.</li>
+</ul>
+<h4>세트 구성 (기준)</h4>
+<table class="g-table">
+<tr><th>세트</th><th>종목</th><th>기준</th></tr>
+<tr><td>1세트</td><td>3-6-3 릴레이</td><td>5판 3선승</td></tr>
+<tr><td>2세트</td><td>개인 사이클</td><td>5판 3선승 (게임 3판 2선승)</td></tr>
+<tr><td>3세트</td><td>더블 사이클</td><td>5판 3선승 (게임 3판 2선승)</td></tr>
+<tr><td>4세트</td><td>시간 릴레이</td><td>1판 (승패만 입력)</td></tr>
+<tr><td>5세트</td><td>사이클 릴레이</td><td>3판 2선승</td></tr>
+</table></section><section class="guide-panel" role="tabpanel"><h3 style="display:none">점수 올리기</h3><h4>세 가지 점수</h4>
+<ul>
+<li><b>세트 점수</b>: 세트를 이긴 횟수. 3이 되면 🏆가 떠요.</li>
+<li><b>라운드 점수</b>: 지금 세트에서 이긴 판 수. 가장 크게 보여요.</li>
+<li><b>게임 점수</b>: 개인·더블 사이클에서 한 라운드 안의 1:1 승부. 2세트·3세트에서만 보여요.</li>
+</ul>
+<h4>조작</h4>
+<ol>
+<li>이긴 팀의 점수 칸을 <b>한 번 누르면 +1</b>이에요.</li>
+<li>잘못 눌렀으면 칸 구석의 <b>−</b> 버튼이나 가운데 <b>↩️ 되돌리기</b>를 눌러요.</li>
+<li>게임이 끝나 다음 주자로 넘어가면 <b>게임 초기화</b>를 눌러 게임 점수를 0 : 0으로 만들어요.</li>
+<li>세트가 끝나면 이긴 팀의 <b>세트 점수</b>를 누르고, 위쪽 <b>다음 세트 버튼</b>을 눌러 넘어가요.</li>
+</ol>
+<p class="g-note">점수가 기준(예: 3선승)에 닿아도 <b>자동으로 넘어가지 않아요.</b> 칸이 금색으로 빛나며 "선승 도달"만 표시돼요. 그래서 기준보다 더 많은 판을 연습할 수 있어요.</p></section><section class="guide-panel" role="tabpanel"><h3 style="display:none">팁 · 문제 해결</h3><ul>
+<li>점수는 <b>이 기기 브라우저에 자동 저장</b>돼요. 새로고침하거나 실수로 창을 닫아도 이어서 할 수 있어요. 학생 이름은 저장하지 않아요.</li>
+<li>위쪽 세트 버튼에 <b>각 세트의 라운드 점수</b>(예: 3 : 1)가 남아요. 지난 세트를 눌러 다시 볼 수도 있어요.</li>
+<li>같은 세트를 처음부터 다시 하려면 <b>라운드 초기화</b>(라운드·게임 점수가 0 : 0)를 눌러요.</li>
+<li>새 경기를 시작할 때는 <b>⚙️ → 모든 점수 처음부터</b>를 두 번 눌러요. 팀 이름은 남아요.</li>
+<li>팀이 화면 반대편에 앉았다면 <b>⚙️ → 좌우 바꾸기</b>.</li>
+<li>화면이 자꾸 꺼지면 <b>⚙️ → 화면 켜두기</b>가 켜져 있는지 확인하세요. 일부 기기에서는 기기 설정의 화면 꺼짐 시간도 늘려야 해요.</li>
+<li>스마트폰은 세로로 세우면 위아래, 눕히면 좌우 대결 화면이 돼요.</li>
+<li>키보드가 있으면 <b>Z</b> 키로도 되돌릴 수 있어요.</li>
+</ul></section></div>
+    <div class="guide-foot">
+      <label><input type="checkbox" id="guideNever"> 다음부터 자동으로 열지 않기</label>
+      <div class="guide-actions"><button type="button" class="guide-act" onclick="printGuide()">🖨️ 인쇄</button><button type="button" class="guide-act main" onclick="closeGuide()">닫기</button></div>
+    </div>
+  </div>
+</div>
+<div id="modalRoot"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function () {
+  'use strict';
+  var KEY = 'stk_board_v1';
+  var SETS = [
+    null,
+    { name: '3-6-3 릴레이',  rule: '5판 3선승', need: 3, game: false },
+    { name: '개인 사이클',   rule: '5판 3선승', need: 3, game: true },
+    { name: '더블 사이클',   rule: '5판 3선승', need: 3, game: true },
+    { name: '시간 릴레이',   rule: '1판 (기록 대결)', need: 1, game: false },
+    { name: '사이클 릴레이', rule: '3판 2선승', need: 2, game: false }
+  ];
+  var GAME_NEED = 2, SET_NEED = 3;
+  var TEAM_COLOR_NAME = ['파랑', '빨강'];
+
+  function fresh() {
+    var o = { names: ['우리 팀', '상대 팀'], swap: false, cur: 1, wake: true, sets: [0, 0], round: {}, game: {}, hist: [] };
+    for (var i = 1; i <= 5; i++) { o.round[i] = [0, 0]; o.game[i] = [0, 0]; }
+    return o;
+  }
+  var S = load();
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) { var o = JSON.parse(raw); if (o && o.round && o.names) return o; }
+    } catch (e) {}
+    return fresh();
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  function core() { return JSON.stringify({ names: S.names, swap: S.swap, cur: S.cur, sets: S.sets, round: S.round, game: S.game }); }
+  function push(label) { S.hist.push({ s: core(), label: label }); if (S.hist.length > 60) S.hist.shift(); }
+
+  var lastBump = null, toastTimer = null;
+  function toast(msg) {
+    var t = document.getElementById('toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, 2200);
+  }
+  function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function buzz() { try { if (navigator.vibrate) navigator.vibrate(18); } catch (e) {} }
+
+  function change(kind, team, d) {
+    var arr = kind === 'set' ? S.sets : (kind === 'round' ? S.round[S.cur] : S.game[S.cur]);
+    var nv = arr[team] + d;
+    if (nv < 0) return;
+    var kn = { set: '세트', round: '라운드', game: '게임' }[kind];
+    push(esc(S.names[team]) + ' ' + kn + (d > 0 ? ' +1' : ' −1'));
+    arr[team] = nv;
+    lastBump = { kind: kind, team: team };
+    buzz(); save(); render();
+    toast(S.names[team] + ' ' + kn + ' ' + (d > 0 ? '+1' : '−1') + ' → ' + nv);
+  }
+  function undo() {
+    var h = S.hist.pop(); if (!h) return;
+    var prev = JSON.parse(h.s);
+    S.names = prev.names; S.swap = prev.swap; S.cur = prev.cur; S.sets = prev.sets; S.round = prev.round; S.game = prev.game;
+    lastBump = null; save(); render(); toast('되돌렸어요: ' + h.label.replace(/&amp;/g, '&'));
+  }
+  function resetPart(kind) {
+    push(kind === 'game' ? '게임 점수 초기화' : '라운드 점수 초기화');
+    if (kind === 'game') S.game[S.cur] = [0, 0]; else { S.round[S.cur] = [0, 0]; S.game[S.cur] = [0, 0]; }
+    lastBump = null; save(); render();
+  }
+  function setCur(n) { if (n === S.cur) return; push('세트 이동'); S.cur = n; lastBump = null; save(); render(); }
+
+  function teamHTML(t) {
+    var m = SETS[S.cur], sc = S.sets[t], rd = S.round[S.cur][t], gm = S.game[S.cur][t];
+    var rReached = rd >= m.need, gReached = gm >= GAME_NEED, sReached = sc >= SET_NEED;
+    function bumpCls(k) { return lastBump && lastBump.kind === k && lastBump.team === t ? ' bump' : ''; }
+    var h = '';
+    h += '<div class="tname"><input type="text" maxlength="10" value="' + esc(S.names[t]) + '" aria-label="' + TEAM_COLOR_NAME[t] + ' 팀 이름" data-name="' + t + '"></div>';
+    h += '<div class="zone zset' + (sReached ? ' reached' : '') + bumpCls('set') + '" role="button" tabindex="0" data-k="set" data-t="' + t + '" aria-label="' + esc(S.names[t]) + ' 세트 점수 ' + sc + ', 누르면 1점 추가">' +
+         '<span class="lb">세트 점수</span><span class="val">' + sc + '</span>' + (sReached ? '<span class="star" aria-hidden="true">🏆</span>' : '') +
+         '<button class="minus" data-minus="set" data-t="' + t + '" aria-label="세트 점수 1 빼기">−</button></div>';
+    h += '<div class="zone zround' + (rReached ? ' reached' : '') + bumpCls('round') + '" role="button" tabindex="0" data-k="round" data-t="' + t + '" aria-label="' + esc(S.names[t]) + ' 라운드 점수 ' + rd + ', 누르면 1점 추가">' +
+         '<span class="lb">' + (m.need === 1 ? '이번 세트 점수' : '라운드 점수') + '</span>' + (rReached ? '<span class="tag">' + (m.need === 1 ? '승!' : m.need + '선승 도달') + '</span>' : '') +
+         '<span class="val">' + rd + '</span>' +
+         '<button class="minus" data-minus="round" data-t="' + t + '" aria-label="라운드 점수 1 빼기">−</button></div>';
+    if (m.game) {
+      h += '<div class="zone zgame' + (gReached ? ' reached' : '') + bumpCls('game') + '" role="button" tabindex="0" data-k="game" data-t="' + t + '" aria-label="' + esc(S.names[t]) + ' 게임 점수 ' + gm + ', 누르면 1점 추가">' +
+           '<span class="lb">게임 점수</span>' + (gReached ? '<span class="tag">2선승</span>' : '') + '<span class="val">' + gm + '</span>' +
+           '<button class="minus" data-minus="game" data-t="' + t + '" aria-label="게임 점수 1 빼기">−</button></div>';
+    }
+    return h;
+  }
+
+  function render() {
+    var m = SETS[S.cur];
+    document.getElementById('app').classList.toggle('swap', !!S.swap);
+    // 세트 탭
+    var th = '';
+    for (var i = 1; i <= 5; i++) {
+      var r = S.round[i], has = r[0] + r[1] > 0;
+      th += '<button class="tab" data-set="' + i + '"' + (i === S.cur ? ' aria-current="true"' : '') + '><b>' + i + '세트</b><small>' + SETS[i].name + '</small><span class="res">' + (has ? r[0] + ' : ' + r[1] : '') + '</span></button>';
+    }
+    document.getElementById('tabs').innerHTML = th;
+    // 팀
+    var active = document.activeElement && document.activeElement.getAttribute && document.activeElement.getAttribute('data-name');
+    if (active === null || active === undefined) {
+      document.getElementById('team0').innerHTML = teamHTML(0);
+      document.getElementById('team1').innerHTML = teamHTML(1);
+    } else {
+      // 이름 입력 중이면 이름 칸은 건드리지 않고 점수만 갱신
+      [0, 1].forEach(function (t) {
+        var box = document.getElementById('team' + t), cur = box.querySelector('input').value;
+        box.innerHTML = teamHTML(t); box.querySelector('input').value = cur;
+      });
+    }
+    // 가운데
+    var mh = '<div class="std"><div class="cur">' + S.cur + '세트<br>' + m.name + '</div><div class="rule">' + m.rule + (m.game ? '<br>게임 3판 2선승' : '') + '</div></div>';
+    mh += '<div class="vs" aria-hidden="true">VS</div>';
+    mh += '<button class="mbtn undo" id="undoBtn"' + (S.hist.length ? '' : ' disabled') + '>↩️ 되돌리기</button>';
+    if (m.game) mh += '<button class="mbtn" data-reset="game">게임 초기화<span class="sm"><br>0 : 0으로</span></button>';
+    mh += '<button class="mbtn" data-reset="round">라운드 초기화<span class="sm"><br>0 : 0으로</span></button>';
+    document.getElementById('mid').innerHTML = mh;
+    lastBump = null;
+  }
+
+  // 이벤트(위임)
+  document.addEventListener('click', function (e) {
+    var el = e.target;
+    var minus = el.closest && el.closest('[data-minus]');
+    if (minus) { e.stopPropagation(); change(minus.getAttribute('data-minus'), +minus.getAttribute('data-t'), -1); return; }
+    var zone = el.closest && el.closest('.zone[data-k]');
+    if (zone) { change(zone.getAttribute('data-k'), +zone.getAttribute('data-t'), +1); return; }
+    var tab = el.closest && el.closest('[data-set]');
+    if (tab) { setCur(+tab.getAttribute('data-set')); return; }
+    var rs = el.closest && el.closest('[data-reset]');
+    if (rs) { resetPart(rs.getAttribute('data-reset')); return; }
+    if (el.closest && el.closest('#undoBtn')) { undo(); return; }
+    if (el.closest && el.closest('#gear')) { openMenu(); return; }
+  });
+  document.addEventListener('keydown', function (e) {
+    var zone = e.target.closest && e.target.closest('.zone[data-k]');
+    if (zone && (e.key === 'Enter' || e.key === ' ') && !e.target.matches('.minus')) { e.preventDefault(); change(zone.getAttribute('data-k'), +zone.getAttribute('data-t'), +1); }
+    var gm = document.getElementById('guideModal'); if (gm && gm.className.indexOf('open') > -1) return;
+    if ((e.key === 'z' || e.key === 'Z') && !e.target.matches('input')) undo();
+    if (e.key === 'Escape') closeMenu();
+  });
+  document.addEventListener('input', function (e) {
+    var n = e.target.getAttribute && e.target.getAttribute('data-name');
+    if (n !== null && n !== undefined) { S.names[+n] = e.target.value || (n == 0 ? '우리 팀' : '상대 팀'); save(); }
+  });
+
+  // 설정
+  var armed = false;
+  function openMenu() {
+    armed = false;
+    var h = '<div class="modal" id="menu"><div class="sheet" role="dialog" aria-modal="true" aria-label="설정">' +
+      '<h2>설정</h2>' +
+      '<button class="mbtn" id="mGuide">📖 사용법 보기</button>' +
+      '<button class="mbtn" id="mSwap">↔️ 좌우 바꾸기 (팀 위치 교체)</button>' +
+      '<button class="mbtn" id="mFull">⛶ 전체 화면 켜기/끄기</button>' +
+      '<button class="mbtn" id="mWake">' + (S.wake ? '🔆 화면 켜두기: 켜짐' : '🌙 화면 켜두기: 꺼짐') + '</button>' +
+      '<button class="mbtn danger" id="mReset">🗑️ 모든 점수 처음부터 (누르면 한 번 더 확인)</button>' +
+      '<p class="hint">점수는 이 기기 브라우저에 자동 저장돼요. 새로고침해도 이어서 할 수 있어요. 학생 이름은 저장하지 않아요.</p>' +
+      '<button class="mbtn" id="mClose" style="justify-content:center">닫기</button></div></div>';
+    document.getElementById('modalRoot').innerHTML = h;
+    document.getElementById('mClose').focus();
+    document.getElementById('menu').addEventListener('click', function (e) { if (e.target.id === 'menu') closeMenu(); });
+    document.getElementById('mClose').onclick = closeMenu;
+    document.getElementById('mGuide').onclick = function () { closeMenu(); openGuide(); };
+    document.getElementById('mSwap').onclick = function () { push('좌우 바꾸기'); S.swap = !S.swap; save(); render(); closeMenu(); };
+    document.getElementById('mFull').onclick = function () {
+      try { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); } catch (e) {}
+      closeMenu();
+    };
+    document.getElementById('mWake').onclick = function () { S.wake = !S.wake; save(); if (S.wake) askWake(); else releaseWake(); openMenu(); };
+    document.getElementById('mReset').onclick = function () {
+      var b = document.getElementById('mReset');
+      if (!armed) { armed = true; b.classList.add('armed'); b.textContent = '정말 지울까요? 한 번 더 누르면 지워져요'; return; }
+      var names = S.names, swap = S.swap, wake = S.wake;
+      S = fresh(); S.names = names; S.swap = swap; S.wake = wake; save(); render(); closeMenu(); toast('점수를 모두 지웠어요');
+    };
+  }
+  function closeMenu() { document.getElementById('modalRoot').innerHTML = ''; }
+
+  // 화면 켜두기
+  var lock = null;
+  function askWake() { try { if (S.wake && navigator.wakeLock) navigator.wakeLock.request('screen').then(function (l) { lock = l; }, function () {}); } catch (e) {} }
+  function releaseWake() { try { if (lock) { lock.release(); lock = null; } } catch (e) {} }
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') askWake(); });
+  document.addEventListener('pointerdown', function once() { askWake(); document.removeEventListener('pointerdown', once); });
+
+  render();
+})();
+
+/* ===== 사용법 팝업 ===== */
+(function () {
+  var KEY = 'guide_seen_board';
+  var lastFocus = null;
+  function $(id) { return document.getElementById(id); }
+  window.showGuideTab = function (i) {
+    var tabs = document.querySelectorAll('#guideModal .guide-tab');
+    var panels = document.querySelectorAll('#guideModal .guide-panel');
+    for (var k = 0; k < tabs.length; k++) {
+      tabs[k].setAttribute('aria-selected', k === i ? 'true' : 'false');
+      panels[k].className = 'guide-panel' + (k === i ? ' on' : '');
+    }
+    var b = document.querySelector('#guideModal .guide-body'); if (b) b.scrollTop = 0;
+  };
+  window.openGuide = function () {
+    var m = $('guideModal'); if (!m) return;
+    lastFocus = document.activeElement;
+    try { var c = $('guideNever'); if (c) c.checked = localStorage.getItem(KEY) === '1'; } catch (e) {}
+    showGuideTab(0);
+    m.className = 'guide-overlay open';
+    var x = m.querySelector('.guide-x'); if (x) x.focus();
+  };
+  window.closeGuide = function () {
+    var m = $('guideModal'); if (!m) return;
+    m.className = 'guide-overlay';
+    try { var c = $('guideNever'); localStorage.setItem(KEY, (c && c.checked) ? '1' : '0.5'); } catch (e) {}
+    if (lastFocus && lastFocus.focus) { try { lastFocus.focus(); } catch (e) {} }
+  };
+  window.printGuide = function () {
+    document.body.classList.add('guide-printing');
+    var done = function () { document.body.classList.remove('guide-printing'); window.removeEventListener('afterprint', done); };
+    window.addEventListener('afterprint', done);
+    window.print();
+    setTimeout(done, 1500);
+  };
+  document.addEventListener('keydown', function (e) {
+    var m = $('guideModal');
+    if (e.key === 'Escape' && m && m.className.indexOf('open') > -1) { e.stopPropagation(); closeGuide(); }
+  }, true);
+  document.addEventListener('click', function (e) {
+    if (e.target && e.target.id === 'guideModal') closeGuide();
+  });
+  function autoOpen() {
+    var seen = null;
+    try { seen = localStorage.getItem(KEY); } catch (e) {}
+    var force = /[?&]guide=1/.test(location.search);
+    if (force || seen === null) setTimeout(openGuide, 400);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', autoOpen); else autoOpen();
+})();
+</script>
+</body>
+</html>
