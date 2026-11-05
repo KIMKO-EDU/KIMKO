@@ -184,6 +184,8 @@
         if (res && res.success) {
           sessionStorage.setItem('school_code', inputCode);
           window.location.href = 'student-record.html';
+        } else if (res && res.error === 'locked') {
+          alert('🔒 잠시 잠겼습니다. 틀린 시도가 너무 많아 10분 동안 입장할 수 없어요.');
         } else {
           alert('❌ 잘못된 학교 코드입니다. 지도 선생님께 문의하세요.');
           input.value = '';

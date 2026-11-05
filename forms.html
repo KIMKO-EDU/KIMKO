@@ -366,7 +366,7 @@ function renderViewer() {
   pages.innerHTML = t.pages.map((p, i) => `
     <div class="holder" data-hold="${i}">
       <div class="plabel">${esc(p.label || (i + 1) + '쪽')}${p.optional ? ' (필요할 때만 인쇄)' : ''}</div>
-      <div class="scaler"><div class="page" data-page="${i}" style="height:calc(210mm * ${t.pageH / t.pageW})"><img class="bg" src="${p.bg}" alt="" draggable="false"></div></div>
+      <div class="scaler"><div class="page" data-page="${i}" style="height:calc(210mm * ${t.pageH / t.pageW})"><img class="bg" src="${esc(p.bg)}" alt="" draggable="false"></div></div>
     </div>`).join('');
   t.boxes.forEach(b => {
     const pg = pages.querySelector(`.page[data-page="${b.page}"]`); if (!pg) return;
@@ -667,7 +667,7 @@ async function pagesFromFiles(files) {
   for (const f of files) {
     if (/pdf$/i.test(f.type) || /\.pdf$/i.test(f.name)) {
       if (!pdfLib) { try { pdfLib = await import(PDFJS); pdfLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER; } catch (e) { throw new Error('load'); } }
-      const pdf = await pdfLib.getDocument({ data: new Uint8Array(await readAs(f, 'readAsArrayBuffer')) }).promise;
+      const pdf = await pdfLib.getDocument({ data: new Uint8Array(await readAs(f, 'readAsArrayBuffer')), isEvalSupported: false }).promise;
       for (let i = 1; i <= pdf.numPages; i++) {
         const pg = await pdf.getPage(i), vp1 = pg.getViewport({ scale: 1 });
         if (!out.length) { pageW = vp1.width; pageH = vp1.height; }
@@ -719,12 +719,46 @@ function exportTemplate(t) {
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `양식-${t.name}.json`; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
+// 다른 사람이 준 양식 파일은 믿지 않고, 필요한 값만 정해진 형태로 다시 만들어 씀 (악성 코드 차단)
+function cleanTemplate(t) {
+  if (!t || typeof t !== 'object' || !Array.isArray(t.pages) || !Array.isArray(t.boxes) || !Array.isArray(t.vars)) return null;
+  if (!t.pages.length || t.pages.length > 20 || t.boxes.length > 500 || t.vars.length > 200) return null;
+  const str = (v, n) => String(v == null ? '' : v).slice(0, n || 200);
+  const num = (v, d, lo, hi) => { const x = Number(v); return isFinite(x) ? Math.min(hi, Math.max(lo, x)) : d; };
+  const IMG = /^data:image\/(png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+\/=]+$/;
+  if (!t.pages.every(p => p && typeof p.bg === 'string' && IMG.test(p.bg))) return null;
+  const TYPES = ['text', 'longtext', 'date', 'time', 'number', 'days', 'hours', 'choice', 'check'];
+  const ALIGN = ['left', 'center', 'right'];
+  const cond = w => (w && typeof w === 'object') ? { key: str(w.key), eq: str(w.eq) } : undefined;
+  const pageW = num(t.pageW, 595, 100, 5000), pageH = num(t.pageH, 841, 100, 5000);
+  const out = { name: str(t.name, 60) || '불러온 양식', emoji: str(t.emoji, 8) || '📄', pageW, pageH,
+    pages: t.pages.map(p => ({ bg: p.bg, label: str(p.label, 40), ...(p.optional ? { optional: true } : {}) })),
+    vars: t.vars.filter(v => v && v.key).map(v => {
+      const o = { key: str(v.key, 40), type: TYPES.includes(v.type) ? v.type : 'text' };
+      ['group', 'hint', 'label', 'from', 'to', 'default'].forEach(k => { if (v[k] != null) o[k] = str(v[k]); });
+      if (Array.isArray(v.options)) o.options = v.options.slice(0, 30).map(x => str(x, 40));
+      if (v.keep) o.keep = true; if (typeof v.weekdays === 'boolean') o.weekdays = v.weekdays;
+      if (v.when) o.when = cond(v.when);
+      return o;
+    }),
+    boxes: t.boxes.filter(b => b && b.id).map(b => {
+      const o = { id: str(b.id, 40), page: Math.round(num(b.page, 0, 0, t.pages.length - 1)),
+        x: num(b.x, 0, 0, pageW), y: num(b.y, 0, 0, pageH), w: num(b.w, 50, 1, pageW), h: num(b.h, 14, 1, pageH),
+        align: ALIGN.includes(b.align) ? b.align : 'left', size: num(b.size, 11, 4, 72) };
+      if (b.key != null) o.key = str(b.key, 40); if (b.fmt != null) o.fmt = str(b.fmt, 120);
+      if (b.multi) o.multi = true; if (b.lh != null) o.lh = num(b.lh, 16, 4, 120);
+      if (b.next != null) o.next = str(b.next, 40); if (b.when) o.when = cond(b.when);
+      return o;
+    })
+  };
+  return out;
+}
 function importTemplate() {
   const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'application/json,.json';
   inp.onchange = async () => {
     try {
-      const j = JSON.parse(await readAs(inp.files[0], 'readAsText')), t = j && j.template;
-      if (!t || !Array.isArray(t.pages) || !Array.isArray(t.boxes) || !Array.isArray(t.vars) || !t.pages.every(p => /^data:image\//.test(p.bg))) throw new Error('bad');
+      const j = JSON.parse(await readAs(inp.files[0], 'readAsText')), t = cleanTemplate(j && j.template);
+      if (!t) throw new Error('bad');
       t.id = uid('t'); t.builtin = false; t.created = Date.now(); delete t.modified;
       if (templates.some(x => x.name === t.name)) t.name += ' (불러옴)';
       if (!await dbPut(t)) return;
