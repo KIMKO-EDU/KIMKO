@@ -49,10 +49,70 @@
     .soon { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff6e5; font-size:20px; text-align:center; padding:20px; }
     .mfoot { padding:12px 18px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center; }
     .yt { min-height:44px; display:inline-flex; align-items:center; padding:6px 16px; border:3px solid var(--ink); border-radius:12px; background:var(--sun); font-family:var(--font-title); font-size:16px; }
+    .vmeta { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+    .vsheet { width:fit-content; background:#fef3c7; color:#92400e; border:2px solid var(--ink); border-radius:999px; padding:1px 10px; font-size:14px; font-weight:700; }
+    .sheetbar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; padding:12px 18px; background:#fff7e0; border-top:3px solid var(--ink); }
+    .sheetbar .lbl { font-family:var(--font-title); font-size:18px; margin-right:4px; }
+    .ws { min-height:48px; display:inline-flex; align-items:center; gap:6px; padding:6px 18px; border:3px solid var(--ink); border-radius:12px; background:var(--teal); color:#fff; font-family:var(--font-title); font-size:18px; box-shadow:2px 2px 0 var(--ink); }
+    .ws.ans { background:#fff; color:var(--ink); font-size:15px; min-height:44px; padding:4px 14px; }
+    .ws:active { transform:translate(2px,2px); box-shadow:none; }
+    .sheetbar[hidden] { display:none; }
+    .mcard { max-width:min(960px, calc((100vh - 300px) * 16 / 9)); min-width:min(100%, 560px); max-height:calc(100vh - 32px); overflow:auto; }
+    .sheetbar .tip { flex-basis:100%; font-size:13px; color:#6b5238; }
+    .guide-top { width:fit-content; min-height:44px; padding:6px 16px; border-radius:999px; border:2px solid var(--cream); background:transparent; color:#fff6e5; font-size:15px; cursor:pointer; }
     @media (max-width:900px) { .grid { grid-template-columns:repeat(2, minmax(0,1fr)); } }
     @media (max-width:600px) { .topband { padding:14px 16px 20px; } h1 { font-size:32px; } .small { font-size:17px; } .subtitle { font-size:16px; }
       .page { padding:22px 16px 52px; } .grid { grid-template-columns:1fr; gap:22px; } .vtitle { font-size:20px; } }
     @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+  
+  /* ===== 사용법 팝업 ===== */
+  .guide-btn { cursor: pointer; }
+  .guide-overlay { position: fixed; inset: 0; z-index: 2000; background: rgba(43,29,16,.72); display: none; align-items: center; justify-content: center; padding: 16px; font-family: 'Gowun Dodum', 'Noto Sans KR', sans-serif; }
+  .guide-overlay.open { display: flex; }
+  .guide-card { background: #ffffff; color: #2b1d10; border: 4px solid #2b1d10; border-radius: 22px; box-shadow: 6px 6px 0 #2b1d10; width: 100%; max-width: 820px; max-height: min(92vh, 760px); display: flex; flex-direction: column; overflow: hidden; text-align: left; }
+  .guide-head { background: #2b1d10; color: #fcd34d; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; }
+  .guide-head h2 { margin: 0; font-family: 'Jua', 'Gowun Dodum', sans-serif; font-weight: 400; font-size: 26px; line-height: 1.25; }
+  .guide-x { min-width: 44px; min-height: 44px; border-radius: 50%; border: 2px solid #f5e6c8; background: transparent; color: #fff6e5; font-size: 22px; cursor: pointer; line-height: 1; }
+  .guide-tabs { display: flex; gap: 8px; padding: 12px 20px 0; flex-wrap: wrap; }
+  .guide-tab { min-height: 44px; padding: 6px 18px; border-radius: 999px; border: 2px solid #2b1d10; background: transparent; color: #2b1d10; font-family: 'Jua', 'Gowun Dodum', sans-serif; font-size: 17px; cursor: pointer; }
+  .guide-tab[aria-selected="true"] { background: #c2410c; color: #ffffff; }
+  .guide-body { overflow-y: auto; padding: 8px 24px 18px; font-size: 17px; line-height: 1.7; word-break: keep-all; flex: 1; }
+  .guide-panel { display: none; }
+  .guide-panel.on { display: block; }
+  .guide-body h4 { margin: 16px 0 6px; font-family: 'Jua', 'Gowun Dodum', sans-serif; font-weight: 400; font-size: 20px; color: #9a3412; }
+  .guide-body p { margin: 6px 0; }
+  .guide-body ul, .guide-body ol { margin: 6px 0; padding-left: 1.4em; }
+  .guide-body li { margin: 4px 0; }
+  .guide-body b { color: #2b1d10; font-weight: 700; }
+  .g-note { background: #fff4d6; border: 2px dashed #2b1d10; border-radius: 12px; padding: 8px 14px; font-size: 16px; }
+  .g-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 16px; }
+  .g-table th, .g-table td { border: 2px solid #2b1d10; padding: 7px 12px; text-align: left; }
+  .g-table th { background: #f6ecd2; }
+  .guide-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 12px 20px; border-top: 3px solid #2b1d10; }
+  .guide-foot label { font-size: 15px; display: flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer; }
+  .guide-foot input { width: 20px; height: 20px; accent-color: #c2410c; }
+  .guide-actions { display: flex; gap: 10px; }
+  .guide-act { min-height: 44px; padding: 8px 20px; border-radius: 14px; border: 3px solid #2b1d10; background: transparent; color: #2b1d10; font-family: 'Jua', 'Gowun Dodum', sans-serif; font-size: 17px; cursor: pointer; }
+  .guide-act.main { background: #c2410c; color: #ffffff; }
+  .guide-overlay button:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+  @media (max-width: 600px) {
+    .guide-overlay { padding: 8px; }
+    .guide-head h2 { font-size: 21px; }
+    .guide-body { padding: 6px 16px 14px; font-size: 16px; }
+    .guide-tab { padding: 6px 12px; font-size: 15px; }
+  }
+  body.guide-printing > *:not(.guide-overlay) { display: none !important; }
+  @media print {
+    body.guide-printing .guide-overlay { position: static !important; display: block !important; background: none !important; padding: 0 !important; }
+    body.guide-printing .guide-card { max-height: none !important; box-shadow: none !important; border: 1px solid #000 !important; background: #fff !important; color: #000 !important; }
+    body.guide-printing .guide-head { background: #fff !important; color: #000 !important; border-bottom: 2px solid #000; }
+    body.guide-printing .guide-body { overflow: visible !important; color: #000 !important; }
+    body.guide-printing .guide-body h4, body.guide-printing .guide-body b { color: #000 !important; }
+    body.guide-printing .guide-panel { display: block !important; page-break-inside: avoid; }
+    body.guide-printing .guide-tabs, body.guide-printing .guide-foot, body.guide-printing .guide-x { display: none !important; }
+    body.guide-printing .g-note, body.guide-printing .g-table th { background: #fff !important; }
+  }
+
   </style>
 </head>
 <body>
@@ -60,6 +120,7 @@
     <a href="index.html" class="back-btn">← 홈으로</a>
     <div><span class="small">너무 쉬워서 🐥✨</span><h1>누구나 맞힐 수 있는 퀴즈</h1></div>
     <p class="subtitle">5분 안전교육 영상을 보고, 퀴즈를 풀어 봐요!</p>
+    <button type="button" class="guide-top" onclick="openGuide()">📖 선생님 사용법</button>
   </div></div>
 
   <div class="page">
@@ -71,14 +132,95 @@
     <div class="mcard">
       <div class="mhead"><h2 id="mtitle"></h2><button class="mx" onclick="closeVideo()" aria-label="닫기">✕</button></div>
       <div class="frame" id="frame"></div>
+      <div class="sheetbar" id="sheetbar" hidden></div>
       <div class="mfoot"><span style="font-size:15px">영상이 끝나면 퀴즈를 같이 풀어 보세요!</span><a class="yt" id="ytLink" href="#" target="_blank" rel="noopener">유튜브에서 보기 ↗</a></div>
     </div>
   </div>
 
+
+<div class="guide-overlay" id="guideModal" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
+  <div class="guide-card">
+    <div class="guide-head"><h2 id="guideTitle">📖 누구나 맞힐 수 있는 퀴즈 사용법</h2><button type="button" class="guide-x" onclick="closeGuide()" aria-label="닫기">✕</button></div>
+    <div class="guide-tabs" role="tablist"><button type="button" class="guide-tab" role="tab" aria-selected="true" onclick="showGuideTab(0)">수업하기</button><button type="button" class="guide-tab" role="tab" aria-selected="false" onclick="showGuideTab(1)">인쇄 · 문제 해결</button></div>
+    <div class="guide-body"><section class="guide-panel on" role="tabpanel"><h3 style="display:none">수업하기</h3><h4>이런 곳이에요</h4>
+<p>5분 안팎의 <b>안전교육 영상</b>을 보고 학습지로 퀴즈를 풀어 보는 곳이에요. 교실 TV에 띄워 쓰기 좋아요.</p>
+<h4>수업 순서</h4>
+<ol>
+<li>위쪽 <b>주제 버튼</b>(생활안전, 재난안전 등)으로 영상을 골라요.</li>
+<li>영상 카드를 누르면 이 화면 안에서 바로 재생돼요. 전체 화면은 영상 오른쪽 아래 버튼을 눌러요.</li>
+<li><b>📄 학습지 있음</b> 표시가 있는 영상은 재생 창 아래에 <b>🖨️ 학습지 인쇄</b>와 <b>✅ 정답지 (교사용)</b> 버튼이 나와요.</li>
+<li>영상을 본 뒤 학습지를 풀고, 정답지로 함께 확인해요.</li>
+</ol>
+<p class="g-note">학습지는 수업 전에 미리 인쇄해 두면 편해요. 재생 창을 열고 학습지만 인쇄한 뒤 닫아도 돼요.</p></section><section class="guide-panel" role="tabpanel"><h3 style="display:none">인쇄 · 문제 해결</h3><ul>
+<li>학습지 버튼을 누르면 <b>새 탭에 A4 PDF</b>가 열려요. 인쇄 버튼(🖨️ 또는 <b>Ctrl+P</b>)을 누르고 부수를 정하세요.</li>
+<li>인쇄 크기가 이상하면 인쇄 창에서 배율을 <b>"실제 크기"</b> 또는 <b>"페이지에 맞춤"</b>으로 바꿔 보세요.</li>
+<li>정답지는 <b>교사용</b>이에요. TV에 띄운 상태에서 누르면 학생들에게 보이니 주의하세요.</li>
+<li>영상이 안 나오면 <b>유튜브에서 보기 ↗</b>를 눌러 유튜브에서 직접 열어 보세요. 학교망에서 유튜브가 막혀 있을 수 있어요.</li>
+<li>재생 창을 닫으면(✕ 또는 Esc) 영상 소리도 함께 멈춰요.</li>
+</ul></section></div>
+    <div class="guide-foot">
+      <label><input type="checkbox" id="guideNever"> 다음부터 자동으로 열지 않기</label>
+      <div class="guide-actions"><button type="button" class="guide-act" onclick="printGuide()">🖨️ 인쇄</button><button type="button" class="guide-act main" onclick="closeGuide()">닫기</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== 사용법 팝업 ===== */
+(function () {
+  var KEY = 'guide_seen_quiz';
+  var lastFocus = null;
+  function $(id) { return document.getElementById(id); }
+  window.showGuideTab = function (i) {
+    var tabs = document.querySelectorAll('#guideModal .guide-tab');
+    var panels = document.querySelectorAll('#guideModal .guide-panel');
+    for (var k = 0; k < tabs.length; k++) {
+      tabs[k].setAttribute('aria-selected', k === i ? 'true' : 'false');
+      panels[k].className = 'guide-panel' + (k === i ? ' on' : '');
+    }
+    var b = document.querySelector('#guideModal .guide-body'); if (b) b.scrollTop = 0;
+  };
+  window.openGuide = function () {
+    var m = $('guideModal'); if (!m) return;
+    lastFocus = document.activeElement;
+    try { var c = $('guideNever'); if (c) c.checked = localStorage.getItem(KEY) === '1'; } catch (e) {}
+    showGuideTab(0);
+    m.className = 'guide-overlay open';
+    var x = m.querySelector('.guide-x'); if (x) x.focus();
+  };
+  window.closeGuide = function () {
+    var m = $('guideModal'); if (!m) return;
+    m.className = 'guide-overlay';
+    try { var c = $('guideNever'); localStorage.setItem(KEY, (c && c.checked) ? '1' : '0.5'); } catch (e) {}
+    if (lastFocus && lastFocus.focus) { try { lastFocus.focus(); } catch (e) {} }
+  };
+  window.printGuide = function () {
+    document.body.classList.add('guide-printing');
+    var done = function () { document.body.classList.remove('guide-printing'); window.removeEventListener('afterprint', done); };
+    window.addEventListener('afterprint', done);
+    window.print();
+    setTimeout(done, 1500);
+  };
+  document.addEventListener('keydown', function (e) {
+    var m = $('guideModal');
+    if (e.key === 'Escape' && m && m.className.indexOf('open') > -1) { e.stopPropagation(); closeGuide(); }
+  }, true);
+  document.addEventListener('click', function (e) {
+    if (e.target && e.target.id === 'guideModal') closeGuide();
+  });
+  function autoOpen() {
+    var seen = null;
+    try { seen = localStorage.getItem(KEY); } catch (e) {}
+    var force = /[?&]guide=1/.test(location.search);
+    if (force || seen === null) setTimeout(openGuide, 400);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', autoOpen); else autoOpen();
+})();
+</script>
 <script>
 /* ▼ 영상 목록: 여기만 고치면 돼요. id = 유튜브 주소 v= 뒤의 11글자, mins = 길이(분) */
 const VIDEOS = [
-  { id: 'g5cJ2P1Izrs', title: '겨울철 안전 교육 1', topic: '생활안전', mins: 5 },
+  { id: 'g5cJ2P1Izrs', title: '겨울철 안전 교육 1', topic: '생활안전', mins: 5, sheet: 'worksheets/winter-1.pdf', answer: 'worksheets/winter-1-answer.pdf' },
   { id: 'HC4waRLOCh8', title: '코로나19 안전 교육 1', topic: '생활안전', mins: 5 },
   { id: '_F1pvLE3vQU', title: '코로나19 안전 교육 2', topic: '생활안전', mins: 5 },
   { id: 'YNx6CLuMNag', title: '실종유괴예방 교육', topic: '폭력예방 및 신변보호', mins: 5 },
@@ -118,7 +260,7 @@ function renderGrid() {
       <span class="thumb">${o.v.id ? `<img src="https://i.ytimg.com/vi/${o.v.id}/hqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">` : ''}
         <span class="play"><svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="#2b1d10"/></svg></span>
         <span class="dur">${o.v.mins}분</span></span>
-      <span class="vbody"><span class="vtopic">${esc(o.v.topic)}</span><span class="vtitle">${esc(o.v.title)}</span></span>
+      <span class="vbody"><span class="vmeta"><span class="vtopic">${esc(o.v.topic)}</span>${o.v.sheet ? '<span class="vsheet">📄 학습지 있음</span>' : ''}</span><span class="vtitle">${esc(o.v.title)}</span></span>
     </button>`).join('') : '<div class="empty">이 주제의 영상은 아직 없어요.</div>';
 }
 let lastFocus = null;
@@ -128,6 +270,14 @@ function openVideo(i) {
   document.getElementById('frame').innerHTML = v.id
     ? `<iframe src="https://www.youtube-nocookie.com/embed/${v.id}?autoplay=1&rel=0" title="${esc(v.title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`
     : '<div class="soon">영상 주소를 넣으면 여기에서 재생돼요.</div>';
+  const sb = document.getElementById('sheetbar');
+  if (v.sheet || v.answer) {
+    sb.innerHTML = '<span class="lbl">📄 이 영상의 학습지</span>'
+      + (v.sheet ? `<a class="ws" href="${esc(v.sheet)}" target="_blank" rel="noopener">🖨️ 학습지 인쇄</a>` : '')
+      + (v.answer ? `<a class="ws ans" href="${esc(v.answer)}" target="_blank" rel="noopener">✅ 정답지 (교사용)</a>` : '')
+      + '<span class="tip">새 탭에 A4 학습지가 열려요. 인쇄 버튼(🖨️ 또는 Ctrl+P)을 누르고, 필요한 부수를 정해 인쇄하세요.</span>';
+    sb.hidden = false;
+  } else { sb.innerHTML = ''; sb.hidden = true; }
   document.getElementById('ytLink').href = v.id ? 'https://www.youtube.com/watch?v=' + v.id : '#';
   document.getElementById('modal').className = 'modal open';
   document.querySelector('#modal .mx').focus();
