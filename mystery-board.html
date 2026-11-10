@@ -84,6 +84,11 @@
     </div>
   </div>
 
+  <!-- 게임 진행 방법 슬라이드 -->
+  <div id="vSlides" class="hidden" style="flex:1; display:flex; align-items:center; justify-content:center; min-height:0;">
+    <div id="slideBox" style="width:min(100%, calc((100vh - 4.4vh) * 16 / 9));"></div>
+  </div>
+
   <!-- 진행 중 -->
   <div id="vPlay" class="body hidden">
     <div class="left">
@@ -115,6 +120,8 @@ import {
   elapsedSec, remainSec, rankTeams, nextHintIn, ANSWERS,
   doc, collection, onSnapshot
 } from './mystery-firebase.js';
+import { slideHtml, injectSlideCss } from './mystery-slides.js';
+injectSlideCss();
 
 const $ = (id) => document.getElementById(id);
 const code = new URLSearchParams(location.search).get('room');
@@ -122,7 +129,13 @@ let room = null, teams = [], lastHints = 0, qrDone = false;
 
 $('fsBtn').onclick = () => { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => {}); };
 
-function view(v) { ['vMsg', 'vLobby', 'vPlay', 'vEnd'].forEach(x => $(x).classList.toggle('hidden', x !== v)); }
+function view(v) {
+  ['vMsg', 'vLobby', 'vSlides', 'vPlay', 'vEnd'].forEach(x => $(x).classList.toggle('hidden', x !== v));
+  // 슬라이드 중에는 위쪽 제목·타이머를 숨겨 화면을 크게 씀
+  const full = v === 'vSlides';
+  document.querySelector('.head').classList.toggle('hidden', full);
+  $('barWrap').classList.toggle('hidden', full);
+}
 function msg(t) { $('vMsg').textContent = t; view('vMsg'); }
 
 if (!code || !/^\d{6}$/.test(code)) { msg('주소에 방 코드가 없습니다. 진행자 화면의 [점수판 열기]로 열어 주세요.'); throw new Error('no room'); }
@@ -142,7 +155,8 @@ function render() {
   $('kicker').textContent = `🔍 미스터리 타임 · 사건 #${room.no} · 방 ${code}`;
   $('title').textContent = room.title;
   renderTimer();
-  if (room.status === 'lobby') renderLobby();
+  if (room.status === 'lobby' && room.tutorial && room.tutorial.on) renderSlides();
+  else if (room.status === 'lobby') renderLobby();
   else if (room.status === 'playing') renderPlay();
   else renderEnd();
 }
@@ -159,6 +173,7 @@ function renderTimer() {
 // ---------- 대기실 ----------
 function renderLobby() {
   view('vLobby');
+  shownSlide = null;
   const url = pageUrl('mystery.html', { room: code });
   $('lUrl').textContent = pageUrl('mystery.html');
   $('lCode').textContent = code.slice(0, 3) + ' ' + code.slice(3);
@@ -171,6 +186,17 @@ function renderLobby() {
   const ids = s.teamMode === 'fixed' ? Array.from({ length: s.teamCount }, (_, i) => String(i + 1)) : teams.map(t => t.id).sort((a, b) => a - b);
   $('lTeams').innerHTML = ids.map(id => { const t = teams.find(x => x.id === id); const on = t && t.uid; return `<span class="${on ? 'on' : ''}">${on ? '✅' : '⬜'} ${id}모둠${on && t.name ? ' · ' + esc(t.name) : ''}</span>`; }).join('')
     || '<span>학생 기기를 기다리는 중…</span>';
+}
+
+// ---------- 게임 진행 방법 슬라이드 ----------
+let shownSlide = null;
+function renderSlides() {
+  view('vSlides');
+  const n = room.tutorial.slide || 0;
+  if (shownSlide !== n) {
+    $('slideBox').innerHTML = `<div class="ms-wrap">${slideHtml(n, room, code)}</div>`;
+    shownSlide = n;
+  }
 }
 
 // ---------- 진행 중 ----------

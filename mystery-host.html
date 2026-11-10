@@ -91,6 +91,8 @@
     table.t th { font-size: 11.5px; color: #78716c; border-top: 0; }
     .hint-li { font-size: 13px; padding: 5px 0; border-top: 1px solid #f5f5f4; display: flex; gap: 6px; align-items: flex-start; }
     .blurred { filter: blur(6px); user-select: none; }
+    .tut-bar { margin-bottom: 16px; border-color: #fde68a; background: #fffbeb; }
+    .tut-bar.on { border-color: #f59e0b; box-shadow: 0 0 0 2px #fbbf24; }
 
     /* 모달 */
     .modal-bg { position: fixed; inset: 0; background: rgba(28,25,23,.55); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
@@ -181,6 +183,31 @@
 
 <!-- ③ 대기실 -->
 <div id="vLobby" class="main hidden">
+  <!-- 게임 진행 방법 (슬라이드) -->
+  <div class="card tut-bar" id="tutBar">
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <span style="font-size:22px;">📖</span>
+      <div><b style="font-size:16px;">게임 진행 방법 설명하기</b><div class="muted" style="font-size:13px;">점수판(프로젝터) 화면에 규칙 슬라이드 7장이 나와요. 이 화면에서 넘기세요. (약 5분)</div></div>
+      <span style="flex:1"></span>
+      <button class="btn amb" id="tutStart">📖 게임 진행 방법 보기</button>
+    </div>
+    <div id="tutPanel" class="hidden" style="margin-top:12px;">
+      <div style="display:grid; grid-template-columns:minmax(0, 560px) 1fr; gap:16px; align-items:start;">
+        <div id="tutPreview"></div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="font-size:15px;"><b id="tutPage">1 / 7</b> <span class="muted" style="font-size:13px;">점수판에 지금 이 슬라이드가 보이고 있어요</span></div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn ghost big" id="tutPrev" style="flex:1;">◀ 이전</button>
+            <button class="btn big" id="tutNext" style="flex:2;">다음 ▶</button>
+          </div>
+          <div class="muted" style="font-size:12.5px;">키보드 ← → 로도 넘길 수 있어요.</div>
+          <button class="btn ghost" id="tutFull">⛶ 이 화면에서 전체 화면으로 보기 <span class="muted" style="font-weight:500;">(복제 모드용)</span></button>
+          <button class="btn red" id="tutEnd">설명 끝내기 (점수판 → QR 화면)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="lobby">
     <div class="card" style="text-align:center;">
       <div class="label">방 코드</div>
@@ -248,6 +275,14 @@
   </div>
 </div>
 
+<!-- 슬라이드 전체 화면 (복제 모드용) -->
+<div id="tutFs" class="hidden" style="position:fixed; inset:0; background:#000; z-index:200; display:flex; align-items:center; justify-content:center;">
+  <div id="tutFsSlide" style="width:min(100vw, calc(100vh * 16 / 9));"></div>
+  <div style="position:fixed; bottom:14px; right:14px; display:flex; gap:8px; opacity:.75;">
+    <button class="btn ghost-d" id="tutFsPrev">◀</button><button class="btn ghost-d" id="tutFsNext">▶</button><button class="btn ghost-d" id="tutFsClose">✕ 닫기 (Esc)</button>
+  </div>
+</div>
+
 <!-- 모달: 교사 인증 -->
 <div id="mAuth" class="modal-bg hidden">
   <div class="modal">
@@ -277,9 +312,11 @@ import {
   doc, getDoc, getDocs, setDoc, updateDoc, collection, query, orderBy, onSnapshot,
   writeBatch, runTransaction, serverTimestamp, increment, Timestamp
 } from './mystery-firebase.js';
+import { SLIDE_COUNT, slideHtml, injectSlideCss } from './mystery-slides.js';
+injectSlideCss();
 
 const $ = (id) => document.getElementById(id);
-const views = ['vLoading', 'vGallery', 'vDetail', 'vLobby', 'vGame'];
+const views =['vLoading', 'vGallery', 'vDetail', 'vLobby', 'vGame'];
 function show(v) { views.forEach(x => $(x).classList.toggle('hidden', x !== v)); window.scrollTo(0, 0); }
 function bar(info, rightHtml) { $('barInfo').innerHTML = info; $('barRight').innerHTML = rightHtml || ''; }
 
@@ -477,7 +514,7 @@ $('createBtn').onclick = async () => {
         hostUid: uid, problemId: cur.id, no: cur.no, title: cur.title, story: cur.story, imageUrl: cur.imageUrl,
         mainCount: (curSecret.mainKeywords || []).length, hintCount: (curSecret.hints || []).length,
         settings, status: 'lobby', startedAt: null, endedAt: null,
-        hintsRevealed: [], hintSlotsApplied: 0, hintLog: [], reveal: null, featured: [],
+        hintsRevealed: [], hintSlotsApplied: 0, hintLog: [], reveal: null, featured: [], tutorial: { on: false, slide: 0 },
         createdAt: serverTimestamp(), expireAt: Timestamp.fromMillis(Date.now() + 7 * 24 * 3600 * 1000)
       });
       b.set(doc(db, 'rooms', c, 'secret', 'hostKey'), { pin });
@@ -610,7 +647,59 @@ function renderLobby() {
   bindFree($('lSeats'));
   $('lStartInfo').textContent = `누르면 ${fmt(s.limitSec)} 타이머가 모든 화면에서 동시에 시작됩니다`;
   $('startBtn').disabled = seated.length === 0;
+  renderTut();
 }
+
+// ---------- 게임 진행 방법 슬라이드 (점수판에 띄우고 여기서 넘김) ----------
+let fsOpen = false;
+function tut() { return (room && room.tutorial) || { on: false, slide: 0 }; }
+function renderTut() {
+  const t = tut();
+  $('tutBar').classList.toggle('on', !!t.on);
+  $('tutPanel').classList.toggle('hidden', !t.on);
+  $('tutStart').textContent = t.on ? '📖 설명 중…' : '📖 게임 진행 방법 보기';
+  $('tutStart').disabled = !!t.on;
+  if (t.on) {
+    const html = `<div class="ms-wrap">${slideHtml(t.slide, room, roomCode)}</div>`;
+    if ($('tutPreview').dataset.k !== String(t.slide)) { $('tutPreview').innerHTML = html; $('tutPreview').dataset.k = String(t.slide); }
+    $('tutPage').textContent = `${t.slide + 1} / ${SLIDE_COUNT}`;
+    $('tutPrev').disabled = t.slide <= 0;
+    $('tutNext').textContent = t.slide >= SLIDE_COUNT - 1 ? '설명 끝내기 ✓' : '다음 ▶';
+  } else { $('tutPreview').dataset.k = ''; }
+  if (fsOpen) $('tutFsSlide').innerHTML = `<div class="ms-wrap" style="border-radius:0;">${slideHtml(t.slide, room, roomCode)}</div>`;
+}
+async function setTut(on, slide) {
+  try { await updateDoc(doc(db, 'rooms', roomCode), { tutorial: { on, slide } }); }
+  catch (e) { toast(explainError(e), 'error'); }
+}
+function tutGo(d) {
+  const t = tut();
+  if (!t.on) return;
+  const n = t.slide + d;
+  if (n >= SLIDE_COUNT) { endTut(); return; }
+  if (n < 0) return;
+  setTut(true, n);
+}
+function endTut() { closeFs(); setTut(false, 0); }
+function openFs() { fsOpen = true; $('tutFs').classList.remove('hidden'); document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {}); renderTut(); }
+function closeFs() { if (!fsOpen) return; fsOpen = false; $('tutFs').classList.add('hidden'); if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); }
+$('tutStart').onclick = () => setTut(true, 0);
+$('tutPrev').onclick = () => tutGo(-1);
+$('tutNext').onclick = () => tutGo(1);
+$('tutEnd').onclick = endTut;
+$('tutFull').onclick = openFs;
+$('tutFsPrev').onclick = () => tutGo(-1);
+$('tutFsNext').onclick = () => tutGo(1);
+$('tutFsClose').onclick = closeFs;
+$('tutFsSlide').onclick = () => tutGo(1);
+document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && fsOpen) { fsOpen = false; $('tutFs').classList.add('hidden'); } });
+document.addEventListener('keydown', (e) => {
+  if (!room || room.status !== 'lobby' || !tut().on) return;
+  if (['INPUT', 'TEXTAREA'].includes((e.target.tagName || ''))) return;
+  if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); tutGo(1); }
+  else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); tutGo(-1); }
+  else if (e.key === 'Escape') closeFs();
+});
 function bindFree(root) {
   root.querySelectorAll('[data-free]').forEach(b => b.onclick = () => confirmClick(b, '정말 비울까요?', async () => {
     try { await updateDoc(doc(db, 'rooms', roomCode, 'teams', b.dataset.free), { uid: '', waiting: false }); toast(`${b.dataset.free}모둠 자리를 비웠습니다. 새 기기가 이어받을 수 있어요.`); }
@@ -620,7 +709,8 @@ function bindFree(root) {
 $('lPinBtn').onclick = () => $('lPin').classList.toggle('blurred');
 $('startBtn').onclick = async () => {
   $('startBtn').disabled = true;
-  try { await updateDoc(doc(db, 'rooms', roomCode), { status: 'playing', startedAt: serverTimestamp() }); }
+  closeFs();
+  try { await updateDoc(doc(db, 'rooms', roomCode), { status: 'playing', startedAt: serverTimestamp(), tutorial: { on: false, slide: 0 } }); }
   catch (e) { toast(explainError(e), 'error'); $('startBtn').disabled = false; }
 };
 
