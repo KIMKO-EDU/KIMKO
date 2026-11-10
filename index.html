@@ -72,6 +72,16 @@
     .btn-submit-code:disabled { opacity: .6; cursor: wait; }
 
 
+    .pick-list { display:flex; flex-direction:column; gap:12px; margin-bottom:14px; }
+    .pick { display:flex; align-items:center; gap:14px; text-align:left; border:3px solid var(--ink); border-radius:18px; padding:14px 16px; background:#fff; box-shadow:3px 3px 0 var(--ink); color:var(--ink); }
+    .pick:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink); }
+    .pick .pe { font-size:30px; width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; flex:none; }
+    .pick b { display:block; font-family:var(--font-title); font-weight:400; font-size:21px; }
+    .pick span.pd { display:block; font-size:14px; color:#4a3520; line-height:1.45; word-break:keep-all; }
+    .pick.host { background:#fff7ed; } .pick.host .pe { background:#c2410c; }
+    .pick.stu .pe { background:var(--sun); }
+    .pick:hover { transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--ink); }
+    .pick-close { width:100%; }
     @media (max-width:800px) {
       .shell { grid-template-columns:1fr; }
       .side { position:static; height:auto; flex-direction:row; align-items:center; overflow-x:auto; padding:10px 12px; gap:8px; flex-wrap:nowrap; }
@@ -97,7 +107,7 @@
   <div class="shell">
     <aside class="side">
       <div class="brand">KIMKO-EDU</div>
-      <button type="button" class="nav on" data-cat="all" aria-pressed="true"><span class="ne">🏠</span><span class="nt">전체</span><span class="c">7</span></button><button type="button" class="nav" data-cat="safe" aria-pressed="false"><span class="ne">🛟</span><span class="nt">안전교육</span><span class="c">1</span></button><button type="button" class="nav" data-cat="pe" aria-pressed="false"><span class="ne">🏃</span><span class="nt">체육 수업</span><span class="c">3</span></button><button type="button" class="nav" data-cat="play" aria-pressed="false"><span class="ne">🎲</span><span class="nt">교실 놀이</span><span class="c">2</span></button><button type="button" class="nav" data-cat="work" aria-pressed="false"><span class="ne">🗂️</span><span class="nt">교사 업무</span><span class="c">1</span></button>
+      <button type="button" class="nav on" data-cat="all" aria-pressed="true"><span class="ne">🏠</span><span class="nt">전체</span><span class="c">8</span></button><button type="button" class="nav" data-cat="safe" aria-pressed="false"><span class="ne">🛟</span><span class="nt">안전교육</span><span class="c">1</span></button><button type="button" class="nav" data-cat="pe" aria-pressed="false"><span class="ne">🏃</span><span class="nt">체육 수업</span><span class="c">3</span></button><button type="button" class="nav" data-cat="play" aria-pressed="false"><span class="ne">🎲</span><span class="nt">교실 놀이</span><span class="c">3</span></button><button type="button" class="nav" data-cat="work" aria-pressed="false"><span class="ne">🗂️</span><span class="nt">교사 업무</span><span class="c">1</span></button>
       <div class="sp"></div>
       <button type="button" class="rec" onclick="openCodeModal()" aria-label="스포츠스태킹 자율기록실 (학교 코드 필요)">🔒 자율기록실</button>
     </aside>
@@ -120,9 +130,22 @@
           </div>
         </div>
       </div>
-      <section class="cat" data-cat="safe" style="--c:#0f766e;--s:#ccfbf1"><h2 class="lab">🛟 안전교육</h2><div class="rows"><a class="row hero" href="quiz.html"><span class="e">🐥</span><span class="t"><span class="sm">너무 쉬워서 🐥✨</span><b>누구나 맞힐 수 있는 퀴즈</b><span class="d">5분 안전교육 영상을 보고 퀴즈를 풀어 봐요.</span></span><i class="g">영상 5분</i><span class="go" aria-hidden="true">→</span></a></div></section><section class="cat" data-cat="pe" style="--c:#1e40af;--s:#dbeafe"><h2 class="lab">🏃 체육 수업</h2><div class="rows"><a class="row" href="stacking.html"><span class="e">⚡</span><span class="t"><b>스포츠스태킹 랭킹전</b><span class="d">3-3-3, 3-6-3, 사이클 순위를 자동 계산하고 엑셀·인쇄까지 해요.</span></span><i class="g">수업용</i><span class="go" aria-hidden="true">→</span></a><a class="row" href="mock-match.html"><span class="e">🥇</span><span class="t"><b>5세트 모의 경기장</b><span class="d">AI 팀과 중계·효과음으로 겨루는 학교스포츠클럽 대회 연습장이에요.</span></span><i class="g">모바일 가능</i><span class="go" aria-hidden="true">→</span></a><a class="row" href="stacking-board.html"><span class="e">🏆</span><span class="t"><b>스포츠스태킹 스코어보드</b><span class="d">터치 한 번으로 세트·라운드·게임 점수를 올리는 경기용 전광판이에요. TV·태블릿·스마트폰에 세워 쓰세요.</span></span><i class="g">경기용</i><span class="go" aria-hidden="true">→</span></a></div></section><section class="cat" data-cat="play" style="--c:#c2410c;--s:#ffedd5"><h2 class="lab">🎲 교실 놀이</h2><div class="rows"><a class="row" href="choco-auction.html"><span class="e">🖼️</span><span class="t"><b>무제한 명화 경매</b><span class="d">비공개 입찰로 명화를 낙찰받는 심리 눈치 게임이에요.</span></span><i class="g">3~8모둠</i><span class="go" aria-hidden="true">→</span></a><a class="row" href="hapgyeol.html"><span class="e">🔺</span><span class="t"><b>결합 게임 (합! 결!)</b><span class="d">3×3 판에서 합을 찾는 관찰력 게임이에요.</span></span><i class="g">2~8조</i><span class="go" aria-hidden="true">→</span></a></div></section><section class="cat" data-cat="work" style="--c:#6d28d9;--s:#ede9fe"><h2 class="lab">🗂️ 교사 업무</h2><div class="rows"><a class="row" href="forms.html"><span class="e">📄</span><span class="t"><b>서류 출력실</b><span class="d">결석신고서·체험학습 신청서·보고서를 빈칸만 입력해서 학교 양식 그대로 인쇄해요.</span></span><i class="g">교사용</i><span class="go" aria-hidden="true">→</span></a></div></section>
+      <section class="cat" data-cat="safe" style="--c:#0f766e;--s:#ccfbf1"><h2 class="lab">🛟 안전교육</h2><div class="rows"><a class="row hero" href="quiz.html"><span class="e">🐥</span><span class="t"><span class="sm">너무 쉬워서 🐥✨</span><b>누구나 맞힐 수 있는 퀴즈</b><span class="d">5분 안전교육 영상을 보고 퀴즈를 풀어 봐요.</span></span><i class="g">영상 5분</i><span class="go" aria-hidden="true">→</span></a></div></section><section class="cat" data-cat="pe" style="--c:#1e40af;--s:#dbeafe"><h2 class="lab">🏃 체육 수업</h2><div class="rows"><a class="row" href="stacking.html"><span class="e">⚡</span><span class="t"><b>스포츠스태킹 랭킹전</b><span class="d">3-3-3, 3-6-3, 사이클 순위를 자동 계산하고 엑셀·인쇄까지 해요.</span></span><i class="g">수업용</i><span class="go" aria-hidden="true">→</span></a><a class="row" href="mock-match.html"><span class="e">🥇</span><span class="t"><b>5세트 모의 경기장</b><span class="d">AI 팀과 중계·효과음으로 겨루는 학교스포츠클럽 대회 연습장이에요.</span></span><i class="g">모바일 가능</i><span class="go" aria-hidden="true">→</span></a><a class="row" href="stacking-board.html"><span class="e">🏆</span><span class="t"><b>스포츠스태킹 스코어보드</b><span class="d">터치 한 번으로 세트·라운드·게임 점수를 올리는 경기용 전광판이에요. TV·태블릿·스마트폰에 세워 쓰세요.</span></span><i class="g">경기용</i><span class="go" aria-hidden="true">→</span></a></div></section><section class="cat" data-cat="play" style="--c:#c2410c;--s:#ffedd5"><h2 class="lab">🎲 교실 놀이</h2><div class="rows"><a class="row" href="choco-auction.html"><span class="e">🖼️</span><span class="t"><b>무제한 명화 경매</b><span class="d">비공개 입찰로 명화를 낙찰받는 심리 눈치 게임이에요.</span></span><i class="g">3~8모둠</i><span class="go" aria-hidden="true">→</span></a><a class="row" href="hapgyeol.html"><span class="e">🔺</span><span class="t"><b>결합 게임 (합! 결!)</b><span class="d">3×3 판에서 합을 찾는 관찰력 게임이에요.</span></span><i class="g">2~8조</i><span class="go" aria-hidden="true">→</span></a><a class="row" href="mystery.html" data-choose="mystery" aria-haspopup="dialog"><span class="e">🔍</span><span class="t"><b>미스터리 타임</b><span class="d">사건 그림과 짧은 이야기만 보고 원인과 결과를 추리하는 실시간 모둠 대결이에요.</span></span><i class="g">실시간 모둠전</i><span class="go" aria-hidden="true">→</span></a></div></section><section class="cat" data-cat="work" style="--c:#6d28d9;--s:#ede9fe"><h2 class="lab">🗂️ 교사 업무</h2><div class="rows"><a class="row" href="forms.html"><span class="e">📄</span><span class="t"><b>서류 출력실</b><span class="d">결석신고서·체험학습 신청서·보고서를 빈칸만 입력해서 학교 양식 그대로 인쇄해요.</span></span><i class="g">교사용</i><span class="go" aria-hidden="true">→</span></a></div></section>
       <div class="foot">KIMKO-EDU · 체육 수업과 교실 활동을 위한 도구 모음</div>
     </main>
+  </div>
+
+  <div class="modal-overlay" id="mysteryModal">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="mysteryTitle">
+      <div style="font-size:44px; line-height:1; margin-bottom:8px;" aria-hidden="true">🔍</div>
+      <h3 id="mysteryTitle">미스터리 타임</h3>
+      <p>누가 들어가나요?</p>
+      <div class="pick-list">
+        <a class="pick host" href="mystery-host.html"><span class="pe" aria-hidden="true">🧑‍🏫</span><span><b>선생님 · 게임 진행</b><span class="pd">사건을 고르고 방을 만들어 질문에 답해요.</span></span></a>
+        <a class="pick stu" href="mystery.html"><span class="pe" aria-hidden="true">🕵️</span><span><b>학생 · 방 코드 입장</b><span class="pd">선생님 화면의 방 코드 6자리를 넣어요.</span></span></a>
+      </div>
+      <button type="button" class="btn-cancel-code pick-close" id="mysteryClose">닫기</button>
+    </div>
   </div>
 
   <!-- 학교 코드 입력 모달 -->
@@ -216,7 +239,13 @@
   function closeMenu() { gm.hidden = true; gb.setAttribute('aria-expanded', 'false'); }
   gb.addEventListener('click', function (e) { e.stopPropagation(); var open = gm.hidden; gm.hidden = !open; gb.setAttribute('aria-expanded', open ? 'true' : 'false'); });
   document.addEventListener('click', function (e) { if (!gm.contains(e.target)) closeMenu(); });
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeMenu(); gb.focus(); } });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { if (mm.style.display === 'flex') closeChoose(); else { closeMenu(); gb.focus(); } } });
+  var mm = document.getElementById('mysteryModal'), lastRow = null;
+  function closeChoose() { mm.style.display = 'none'; if (lastRow) lastRow.focus(); }
+  var ch = document.querySelectorAll('[data-choose]');
+  for (var k = 0; k < ch.length; k++) ch[k].addEventListener('click', function (e) { e.preventDefault(); lastRow = this; mm.style.display = 'flex'; mm.querySelector('.pick').focus(); });
+  document.getElementById('mysteryClose').addEventListener('click', closeChoose);
+  mm.addEventListener('click', function (e) { if (e.target === mm) closeChoose(); });
 })();
 </script>
 </body>
