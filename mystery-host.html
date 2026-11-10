@@ -114,6 +114,7 @@
 
 <header class="appbar">
   <span class="logo">🔍 미스터리 타임</span>
+  <span id="barNav" style="display:flex; gap:6px; align-items:center;"></span>
   <span id="barInfo" style="opacity:.75; font-size:14px;">진행자</span>
   <span class="sp"></span>
   <span id="barRight" style="display:flex; gap:8px; align-items:center;"></span>
@@ -318,7 +319,28 @@ injectSlideCss();
 const $ = (id) => document.getElementById(id);
 const views =['vLoading', 'vGallery', 'vDetail', 'vLobby', 'vGame'];
 function show(v) { views.forEach(x => $(x).classList.toggle('hidden', x !== v)); window.scrollTo(0, 0); }
-function bar(info, rightHtml) { $('barInfo').innerHTML = info; $('barRight').innerHTML = rightHtml || ''; }
+function bar(info, rightHtml) { $('barInfo').innerHTML = info; $('barRight').innerHTML = rightHtml || ''; renderNav(); }
+
+// ---------- 🏠 홈 / ‹ 갤러리 버튼 ----------
+// 게임 진행 중에 나가면 자동 힌트·시간 종료가 멈추므로 한 번 더 누르게 함
+let navMode = null;
+function renderNav() {
+  const mode = (typeof room !== 'undefined' && room) ? room.status : (!$('vDetail').classList.contains('hidden') ? 'detail' : 'gallery');
+  if (mode === navMode) return;
+  navMode = mode;
+  const inRoom = ['lobby', 'playing', 'ended'].includes(mode);
+  const showGallery = inRoom || mode === 'detail';
+  $('barNav').innerHTML =
+    `<button class="btn ghost-d sm" id="navHome" title="교실 놀이 수업실로">🏠 교실 놀이</button>` +
+    (showGallery ? `<button class="btn ghost-d sm" id="navGallery">‹ 갤러리</button>` : '');
+  const leave = (btn, go) => {
+    if (navMode !== 'playing') { go(); return; }
+    if (!btn.dataset.armed) toast('⚠️ 게임 중에 나가면 자동 힌트와 시간 종료가 멈춰요. 나가려면 한 번 더 누르세요. (최근 만든 방에서 이어서 할 수 있어요)', 'error');
+    confirmClick(btn, '정말 나갈까요?', go);
+  };
+  $('navHome').onclick = () => leave($('navHome'), () => { location.href = 'play.html'; });
+  if ($('navGallery')) $('navGallery').onclick = () => leave($('navGallery'), () => openGallery());
+}
 
 // 두 번 눌러야 실행되는 버튼 (실수 방지)
 function confirmClick(btn, label, fn) {
@@ -449,8 +471,8 @@ function openDetail(pid) {
   $('sPin').value = String(Math.floor(1000 + Math.random() * 9000));
   $('createErr').textContent = '';
   updateSummary();
-  bar(`사건 #${esc(cur.no)} ${esc(cur.title)}`);
   show('vDetail');
+  bar(`사건 #${esc(cur.no)} ${esc(cur.title)}`);
 }
 function secretHtml(s) {
   return `<div class="label">사건의 전말</div><div class="secret">${esc(s.answer)}</div>
