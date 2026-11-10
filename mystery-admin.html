@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>미스터리 타임 관리자 | KIMKO-EDU</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 24px 16px 60px; font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; background: #f5f3ef; color: #1c1917; }
+    .wrap { max-width: 760px; margin: 0 auto; }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    .sub { color: #78716c; font-size: 14px; margin-bottom: 18px; }
+    .card { background: #fff; border: 1px solid #e7e5e4; border-radius: 14px; padding: 18px; margin-bottom: 14px; }
+    .card h2 { font-size: 17px; margin: 0 0 8px; }
+    .muted { color: #78716c; font-size: 13px; line-height: 1.6; }
+    .uid { font-family: ui-monospace, Menlo, Consolas, monospace; background: #f5f5f4; border: 1px solid #e7e5e4; padding: 8px 10px; border-radius: 8px; font-size: 14px; word-break: break-all; display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+    input, textarea { width: 100%; font: inherit; padding: 10px 12px; border: 1px solid #d6d3d1; border-radius: 10px; }
+    textarea { min-height: 220px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px; }
+    button { font: inherit; font-weight: 700; padding: 10px 16px; border-radius: 10px; border: 0; background: #4338ca; color: #fff; cursor: pointer; }
+    button.sm { padding: 6px 10px; font-size: 13px; }
+    button.ghost { background: #fff; color: #3730a3; border: 1px solid #c7d2fe; }
+    button:disabled { background: #a8a29e; cursor: default; }
+    .row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .ok { background: #dcfce7; color: #15803d; }
+    .no { background: #fee2e2; color: #b91c1c; }
+    .msg { margin-top: 8px; font-size: 14px; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    td, th { padding: 8px 6px; border-top: 1px solid #f5f5f4; text-align: left; }
+    #locked { display: none; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🛠️ 미스터리 타임 관리자</h1>
+  <div class="sub">교사 코드 설정 · 사건 등록 (관리자 기기 전용)</div>
+
+  <div class="card">
+    <h2>1. 이 기기의 관리자 상태 <span id="adminBadge" class="badge">확인 중…</span></h2>
+    <div class="muted">아래 번호(UID)를 Firebase 콘솔 → Firestore → <b>admins</b> 컬렉션에 문서 ID로 추가하면 이 기기가 관리자가 됩니다. 추가한 뒤 새로고침하세요.</div>
+    <div class="uid"><span id="uid" style="flex:1">불러오는 중…</span><button class="sm ghost" id="copyUid">복사</button></div>
+  </div>
+
+  <div id="locked">
+    <div class="card">
+      <h2>2. 교사 코드</h2>
+      <div class="muted">선생님들이 진행자 화면에 처음 한 번 입력하는 코드입니다. <b>코드를 바꾸면 이전 코드로 인증된 기기는 모두 다시 인증해야 합니다.</b></div>
+      <div class="row"><input id="teacherCode" placeholder="예: kimko-mystery" value="kimko-mystery" autocomplete="off"><button id="saveCode">저장</button></div>
+      <div class="msg" id="codeMsg"></div>
+    </div>
+
+    <div class="card">
+      <h2>3. 사건 등록 / 고치기</h2>
+      <div class="muted">사건 JSON 파일 내용을 그대로 붙여넣고 [등록]을 누르세요. 같은 id면 내용이 바뀝니다.<br>⚠️ 사건 JSON 파일에는 정답이 들어 있으니 <b>깃허브에 올리지 마세요.</b> 그림 파일만 올립니다.</div>
+      <textarea id="caseJson" placeholder='{ "id": "case01", "public": {...}, "secret": {...} }'></textarea>
+      <div class="row"><button id="saveCase">등록</button></div>
+      <div class="msg" id="caseMsg"></div>
+    </div>
+
+    <div class="card">
+      <h2>4. 등록된 사건</h2>
+      <table><thead><tr><th>번호</th><th>id</th><th>제목</th><th>갤러리</th><th></th></tr></thead><tbody id="caseList"><tr><td colspan="5" class="muted">불러오는 중…</td></tr></tbody></table>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { db, ready, esc, explainError, doc, getDoc, setDoc, updateDoc, writeBatch, collection, getDocs, serverTimestamp } from './mystery-firebase.js';
+
+  const $ = (id) => document.getElementById(id);
+  let uid;
+
+  try {
+    uid = await ready();
+  } catch (e) {
+    $('uid').textContent = '로그인 실패: ' + explainError(e);
+    throw e;
+  }
+  $('uid').textContent = uid;
+  $('copyUid').onclick = () => navigator.clipboard.writeText(uid).then(() => { $('copyUid').textContent = '복사됨'; });
+
+  const isAdmin = (await getDoc(doc(db, 'admins', uid))).exists();
+  $('adminBadge').textContent = isAdmin ? '관리자 ✓' : '관리자 아님';
+  $('adminBadge').className = 'badge ' + (isAdmin ? 'ok' : 'no');
+  if (!isAdmin) throw new Error('not admin');
+  $('locked').style.display = 'block';
+
+  // ---------- 교사 코드 ----------
+  $('saveCode').onclick = async () => {
+    const code = $('teacherCode').value.trim();
+    if (code.length < 6) { $('codeMsg').textContent = '6자 이상으로 정해 주세요.'; return; }
+    try {
+      await setDoc(doc(db, 'config', 'teacherKey'), { code, updatedAt: serverTimestamp() });
+      $('codeMsg').textContent = `✅ 교사 코드를 "${code}"(으)로 저장했습니다.`;
+    } catch (e) { $('codeMsg').textContent = '❌ ' + explainError(e); }
+  };
+
+  // ---------- 사건 등록 ----------
+  function checkCase(c) {
+    const p = c.public, s = c.secret;
+    if (!c.id || !/^[a-z0-9_-]{2,30}$/i.test(c.id)) return 'id가 없거나 형식이 맞지 않습니다 (영문·숫자).';
+    if (!p || !s) return 'public / secret 두 부분이 모두 있어야 합니다.';
+    for (const k of ['no', 'title', 'story', 'imageUrl']) if (p[k] == null || p[k] === '') return `public.${k}가 비어 있습니다.`;
+    if (!s.answer) return 'secret.answer(정답)가 비어 있습니다.';
+    if (!Array.isArray(s.mainKeywords) || !s.mainKeywords.length) return 'secret.mainKeywords가 없습니다.';
+    if (!Array.isArray(s.hints)) return 'secret.hints가 없습니다.';
+    return null;
+  }
+  $('saveCase').onclick = async () => {
+    let c;
+    try { c = JSON.parse($('caseJson').value); } catch (e) { $('caseMsg').textContent = '❌ JSON 형식이 올바르지 않습니다: ' + e.message; return; }
+    const err = checkCase(c);
+    if (err) { $('caseMsg').textContent = '❌ ' + err; return; }
+    const pub = {
+      ...c.public,
+      mainCount: c.secret.mainKeywords.length,
+      extraCount: (c.secret.extraKeywords || []).length,
+      hintCount: c.secret.hints.length,
+      published: c.public.published !== false,
+      updatedAt: serverTimestamp()
+    };
+    try {
+      const b = writeBatch(db);
+      b.set(doc(db, 'problems', c.id), pub);
+      b.set(doc(db, 'problemSecrets', c.id), { ...c.secret, updatedAt: serverTimestamp() });
+      await b.commit();
+      $('caseMsg').textContent = `✅ 사건 #${pub.no} 「${pub.title}」을(를) 등록했습니다.`;
+      loadList();
+    } catch (e) { $('caseMsg').textContent = '❌ ' + explainError(e); }
+  };
+
+  // ---------- 목록 ----------
+  async function loadList() {
+    const snap = await getDocs(collection(db, 'problems'));
+    const rows = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.no || 0) - (b.no || 0));
+    $('caseList').innerHTML = rows.length ? rows.map(r => `
+      <tr><td>#${esc(r.no)}</td><td>${esc(r.id)}</td><td>${esc(r.title)}</td>
+      <td>${r.published ? '<span class="badge ok">보임</span>' : '<span class="badge no">숨김</span>'}</td>
+      <td><button class="sm ghost" data-id="${esc(r.id)}" data-pub="${r.published ? 1 : 0}">${r.published ? '숨기기' : '보이기'}</button></td></tr>`).join('')
+      : '<tr><td colspan="5" class="muted">아직 등록된 사건이 없습니다.</td></tr>';
+    $('caseList').querySelectorAll('button').forEach(btn => btn.onclick = async () => {
+      await updateDoc(doc(db, 'problems', btn.dataset.id), { published: btn.dataset.pub !== '1' });
+      loadList();
+    });
+  }
+  loadList();
+</script>
+</body>
+</html>

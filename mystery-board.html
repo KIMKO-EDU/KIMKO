@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>미스터리 타임 · 점수판 | KIMKO-EDU</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body { font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif; background: #0f172a; color: #fff; overflow: hidden; }
+    .hidden { display: none !important; }
+    .mono { font-variant-numeric: tabular-nums; }
+    .wrap { height: 100vh; padding: 2.2vh 2.4vw; display: flex; flex-direction: column; gap: 1.6vh; }
+    .head { display: flex; align-items: center; gap: 2vw; }
+    .kicker { font-size: 1.6vh; color: #94a3b8; font-weight: 700; }
+    .title { font-size: 3.6vh; font-weight: 900; }
+    .timer-l { font-size: 1.6vh; color: #94a3b8; font-weight: 700; text-align: right; }
+    .timer { font-size: 8vh; font-weight: 900; color: #fbbf24; line-height: 1; text-align: right; }
+    .timer.low { color: #f87171; animation: pulse 1s infinite; }
+    @keyframes pulse { 50% { opacity: .55; } }
+    .bar { height: 1.1vh; border-radius: 1vh; background: #1e293b; overflow: hidden; }
+    .bar > div { height: 100%; background: linear-gradient(90deg, #f59e0b, #fbbf24); transition: width .5s linear; }
+    .body { flex: 1; display: flex; gap: 2vw; min-height: 0; }
+    .left { flex: 0 0 34%; display: flex; flex-direction: column; gap: 1.4vh; min-height: 0; }
+    .left img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 1.4vh; display: block; }
+    .story { font-size: 2.1vh; line-height: 1.6; color: #e2e8f0; white-space: pre-line; }
+    .hints { background: #1e293b; border-radius: 1.4vh; padding: 1.4vh 1.4vw; flex: 1; overflow: hidden; }
+    .hints .h { font-size: 1.8vh; color: #fbbf24; font-weight: 800; margin-bottom: .6vh; }
+    .hints ol { margin: 0; padding-left: 1.4em; font-size: 2vh; line-height: 1.6; color: #e2e8f0; }
+    .hints li.new { animation: flash 1.2s 3; color: #fde68a; }
+    @keyframes flash { 50% { background: rgba(251,191,36,.25); } }
+    .panel { flex: 1; background: #1e293b; border-radius: 1.6vh; padding: 1.6vh 1.4vw; min-height: 0; display: flex; flex-direction: column; }
+    table { width: 100%; border-collapse: collapse; font-size: 2.3vh; }
+    th { color: #94a3b8; font-size: 1.6vh; text-align: left; padding: .6vh .5vw; font-weight: 700; }
+    td { padding: 1.1vh .5vw; border-top: 1px solid #334155; }
+    tr.solved { background: rgba(34,197,94,.12); }
+    .rank { font-weight: 900; font-size: 2.8vh; }
+    .r1 { color: #fbbf24; }
+    .dot { display: inline-block; width: 1.3vh; height: 1.3vh; border-radius: 50%; margin-right: .3vw; border: 2px solid #475569; vertical-align: middle; }
+    .dot.on { background: #fbbf24; border-color: #fbbf24; }
+    .dot.ok { background: #86efac; border-color: #86efac; }
+    .foot { font-size: 1.4vh; color: #64748b; margin-top: auto; padding-top: 1vh; }
+    /* 대기 */
+    .lobby { flex: 1; display: flex; align-items: center; justify-content: center; gap: 5vw; }
+    .code { font-size: 13vh; font-weight: 900; letter-spacing: .08em; color: #fbbf24; line-height: 1; }
+    #qr { background: #fff; padding: 1.6vh; border-radius: 2vh; width: 40vh; height: 40vh; }
+    #qr img, #qr canvas { width: 100% !important; height: 100% !important; }
+    .teams-in { display: flex; flex-wrap: wrap; gap: 1vh; margin-top: 3vh; max-width: 46vw; }
+    .teams-in span { background: #1e293b; border-radius: 1vh; padding: 1vh 1.4vw; font-size: 2.2vh; font-weight: 800; }
+    .teams-in span.on { background: #166534; }
+    /* 종료 */
+    .ans { font-size: 2.2vh; line-height: 1.8; color: #e2e8f0; background: #1e293b; border-radius: 1.4vh; padding: 1.6vh 1.4vw; white-space: pre-line; }
+    mark.m { background: #fbbf24; color: #1c1917; border-radius: .4vh; padding: 0 .3vw; font-weight: 800; }
+    mark.x { background: rgba(148,163,184,.3); color: #e2e8f0; border-radius: .4vh; padding: 0 .3vw; font-weight: 800; }
+    .podium { display: flex; align-items: flex-end; justify-content: center; gap: 1.2vw; height: 30vh; }
+    .podium > div { text-align: center; width: 9vw; min-width: 90px; }
+    .podium .blk { margin-top: .6vh; border-radius: 1.2vh 1.2vh 0 0; display: flex; justify-content: center; padding-top: 1vh; font-size: 4vh; font-weight: 900; }
+    .feat { font-size: 1.9vh; line-height: 1.7; color: #e2e8f0; }
+    .feat .a { color: #fbbf24; font-weight: 700; }
+    .msg { margin: auto; font-size: 3vh; color: #94a3b8; text-align: center; }
+    .fs { position: fixed; right: 1vw; bottom: 1vh; background: rgba(255,255,255,.08); color: #94a3b8; border: 0; border-radius: 1vh; padding: .8vh 1vw; font: inherit; font-size: 1.4vh; cursor: pointer; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div><div class="kicker" id="kicker">🔍 미스터리 타임</div><div class="title" id="title">점수판</div></div>
+    <span style="flex:1"></span>
+    <div id="timerBox"><div class="timer-l" id="timerLabel">남은 시간</div><div class="timer mono" id="timer">--:--</div></div>
+  </div>
+  <div class="bar" id="barWrap"><div id="bar" style="width:0%"></div></div>
+
+  <div id="vMsg" class="msg">불러오는 중…</div>
+
+  <!-- 대기실 -->
+  <div id="vLobby" class="lobby hidden">
+    <div id="qr"></div>
+    <div>
+      <div style="font-size:2.6vh; color:#94a3b8; font-weight:700;">QR을 찍거나, 아래 주소에서 방 코드를 입력하세요</div>
+      <div style="font-size:2.4vh; color:#c7d2fe; margin-top:1vh;" id="lUrl"></div>
+      <div class="code mono" id="lCode" style="margin-top:2vh;"></div>
+      <div class="teams-in" id="lTeams"></div>
+    </div>
+  </div>
+
+  <!-- 진행 중 -->
+  <div id="vPlay" class="body hidden">
+    <div class="left">
+      <img id="pImg" alt="">
+      <div class="story" id="pStory"></div>
+      <div class="hints"><div class="h" id="hHead"></div><ol id="hList"></ol></div>
+    </div>
+    <div class="panel">
+      <table id="rankTable"></table>
+      <div class="foot" id="foot"></div>
+    </div>
+  </div>
+
+  <!-- 종료 -->
+  <div id="vEnd" class="body hidden">
+    <div class="left" style="flex-basis:40%;" id="endLeft"></div>
+    <div class="panel" style="gap:1.4vh;">
+      <div style="font-size:1.8vh; color:#fbbf24; font-weight:800;">🏆 최종 순위</div>
+      <div class="podium" id="podium"></div>
+      <table id="restTable"></table>
+    </div>
+  </div>
+</div>
+<button class="fs" id="fsBtn">⛶ 전체 화면</button>
+
+<script type="module">
+import {
+  db, ready, esc, fmt, explainError, pageUrl, EST,
+  elapsedSec, remainSec, rankTeams, nextHintIn, ANSWERS,
+  doc, collection, onSnapshot
+} from './mystery-firebase.js';
+
+const $ = (id) => document.getElementById(id);
+const code = new URLSearchParams(location.search).get('room');
+let room = null, teams = [], lastHints = 0, qrDone = false;
+
+$('fsBtn').onclick = () => { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => {}); };
+
+function view(v) { ['vMsg', 'vLobby', 'vPlay', 'vEnd'].forEach(x => $(x).classList.toggle('hidden', x !== v)); }
+function msg(t) { $('vMsg').textContent = t; view('vMsg'); }
+
+if (!code || !/^\d{6}$/.test(code)) { msg('주소에 방 코드가 없습니다. 진행자 화면의 [점수판 열기]로 열어 주세요.'); throw new Error('no room'); }
+try { await ready(); } catch (e) { msg('연결 실패: ' + explainError(e)); throw e; }
+
+onSnapshot(doc(db, 'rooms', code), (s) => {
+  if (!s.exists()) { msg('방을 찾을 수 없습니다.'); return; }
+  room = s.data(EST); render();
+}, (e) => msg('연결 실패: ' + explainError(e)));
+onSnapshot(collection(db, 'rooms', code, 'teams'), (s) => {
+  teams = s.docs.map(d => ({ id: d.id, ...d.data(EST) })); render();
+});
+setInterval(() => { if (room && room.status === 'playing') { renderTimer(); renderTable(); renderHintHead(); } }, 500);
+
+function render() {
+  if (!room) return;
+  $('kicker').textContent = `🔍 미스터리 타임 · 사건 #${room.no} · 방 ${code}`;
+  $('title').textContent = room.title;
+  renderTimer();
+  if (room.status === 'lobby') renderLobby();
+  else if (room.status === 'playing') renderPlay();
+  else renderEnd();
+}
+
+function renderTimer() {
+  const s = room.settings;
+  const r = remainSec(room);
+  $('timer').textContent = room.status === 'ended' ? '종료' : fmt(r);
+  $('timer').classList.toggle('low', room.status === 'playing' && r <= 60);
+  $('timerLabel').textContent = room.status === 'lobby' ? '제한 시간' : room.status === 'ended' ? '' : '남은 시간';
+  $('bar').style.width = (room.status === 'lobby' ? 0 : Math.min(100, elapsedSec(room) / s.limitSec * 100)) + '%';
+}
+
+// ---------- 대기실 ----------
+function renderLobby() {
+  view('vLobby');
+  const url = pageUrl('mystery.html', { room: code });
+  $('lUrl').textContent = pageUrl('mystery.html');
+  $('lCode').textContent = code.slice(0, 3) + ' ' + code.slice(3);
+  if (!qrDone) {
+    if (window.QRCode) new window.QRCode($('qr'), { text: url, width: 400, height: 400, colorDark: '#1e1b4b', colorLight: '#ffffff' });
+    else $('qr').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(url)}" alt="QR">`;
+    qrDone = true;
+  }
+  const s = room.settings;
+  const ids = s.teamMode === 'fixed' ? Array.from({ length: s.teamCount }, (_, i) => String(i + 1)) : teams.map(t => t.id).sort((a, b) => a - b);
+  $('lTeams').innerHTML = ids.map(id => { const t = teams.find(x => x.id === id); const on = t && t.uid; return `<span class="${on ? 'on' : ''}">${on ? '✅' : '⬜'} ${id}모둠${on && t.name ? ' · ' + esc(t.name) : ''}</span>`; }).join('')
+    || '<span>학생 기기를 기다리는 중…</span>';
+}
+
+// ---------- 진행 중 ----------
+function renderPlay() {
+  view('vPlay');
+  if ($('pImg').getAttribute('src') !== room.imageUrl) $('pImg').src = room.imageUrl;
+  $('pStory').textContent = room.story;
+  const hs = room.hintsRevealed || [];
+  if (hs.length !== lastHints || !$('hList').innerHTML) {
+    const fresh = hs.length > lastHints && lastHints > 0;
+    $('hList').innerHTML = hs.map((h, i) => `<li class="${fresh && i === hs.length - 1 ? 'new' : ''}">${esc(h)}</li>`).join('')
+      || '<li style="list-style:none; margin-left:-1.4em; color:#64748b;">아직 공개된 힌트가 없어요</li>';
+    if (fresh) beep();
+    lastHints = hs.length;
+  }
+  renderHintHead(); renderTable();
+}
+function renderHintHead() {
+  const hs = room.hintsRevealed || [];
+  const n = nextHintIn(room, elapsedSec(room));
+  $('hHead').textContent = `💡 공개된 힌트 ${hs.length} / ${room.hintCount}` + (n != null ? ` · 다음 힌트 ${fmt(n)} 후` : '');
+}
+function dots(t) {
+  const n = t.bestKeys || 0, tot = room.mainCount || 4;
+  if (!t.solved && !n && !(t.wrong > 0)) return '<span style="color:#475569; font-size:1.7vh;">제출 전</span>';
+  return Array.from({ length: tot }, (_, i) => `<span class="dot ${i < n ? (t.solved ? 'ok' : 'on') : ''}"></span>`).join('') + `<span style="color:#94a3b8; font-size:1.6vh;">${n}/${tot}</span>`;
+}
+function renderTable() {
+  const list = rankTeams(teams, room);
+  const s = room.settings;
+  $('rankTable').innerHTML = `<tr><th>순위</th><th>모둠</th><th>기록</th><th>질문</th><th>오답</th><th>🔑 키워드</th><th>상태</th></tr>` +
+    list.map(t => `<tr class="${t.solved ? 'solved' : ''}">
+      <td class="rank ${t.rank === 1 ? 'r1' : ''}">${t.rank}</td>
+      <td style="font-weight:800;">${t.id}모둠${t.name ? `<div style="font-size:1.5vh; color:#94a3b8; font-weight:500;">${esc(t.name)}</div>` : ''}</td>
+      <td class="mono" style="font-weight:800; ${t.solved ? 'color:#86efac;' : ''}">${fmt(t.score)}</td>
+      <td class="mono">${t.questions || 0}</td><td class="mono">${t.wrong || 0}</td>
+      <td>${dots(t)}</td>
+      <td style="${t.solved ? 'color:#86efac; font-weight:800;' : 'color:#94a3b8;'}">${t.solved ? '🎉 정답!' : t.uid ? '추리 중…' : '자리 빔'}</td></tr>`).join('');
+  $('foot').textContent = `기록 = 지난 시간 + 질문 1개당 +${fmt(s.qPenaltySec)} + 오답 +${fmt(s.wrongPenaltySec)} · 정답 모둠은 기록이 멈춤 · 🔑 = 찾은 메인 키워드 개수`;
+}
+
+// ---------- 종료 ----------
+function highlight(text, main, extra) {
+  let h = esc(text);
+  const words = [...main.map(w => [w, 'm']), ...extra.map(w => [w, 'x'])].sort((a, b) => b[0].length - a[0].length);
+  words.forEach(([w, c]) => { const e = esc(w); if (e) h = h.split(e).join(`\u0000${c}${e}\u0001`); });
+  return h.replace(/\u0000([mx])/g, '<mark class="$1">').replace(/\u0001/g, '</mark>');
+}
+function renderEnd() {
+  view('vEnd');
+  const r = room.reveal;
+  const feat = room.featured || [];
+  $('endLeft').innerHTML = r ? `
+      <div style="font-size:1.8vh; color:#fbbf24; font-weight:800;">🔓 사건의 전말</div>
+      <div class="ans">${highlight(r.answer, r.main || [], r.extra || [])}</div>
+      <div style="font-size:1.6vh; color:#94a3b8;"><mark class="m">메인</mark> ${(r.main || []).map(esc).join(' · ')} &nbsp; <mark class="x">추가</mark> ${(r.extra || []).map(esc).join(' · ')}</div>
+      ${feat.length ? `<div class="hints" style="flex:none;"><div class="h">⭐ 결정적 질문</div><div class="feat">${feat.map(f => `${f.team}모둠: ${esc(f.q)} → <span class="a">${f.a && ANSWERS[f.a] ? ANSWERS[f.a].long : ''}</span>`).join('<br>')}</div></div>` : ''}`
+    : `<img src="${esc(room.imageUrl)}" alt="">
+      <div style="font-size:3.4vh; font-weight:900; margin-top:1vh;">🏁 게임 종료!</div>
+      <div class="story">사건의 전말은 무엇이었을까요?<br>선생님이 정답을 공개할 때까지 잠시 기다려 주세요.</div>`;
+  const list = rankTeams(teams, room);
+  const top = [list[1], list[0], list[2]];
+  const hgt = ['17vh', '23vh', '13vh'], bg = ['#475569', 'linear-gradient(180deg,#f59e0b,#b45309)', '#334155'];
+  $('podium').innerHTML = top.map((t, i) => t ? `<div>
+      ${i === 1 ? '<div style="font-size:3.6vh;">👑</div>' : ''}
+      <div style="font-weight:900; font-size:${i === 1 ? '2.8vh' : '2.3vh'}; ${i === 1 ? 'color:#fbbf24;' : ''}">${t.id}모둠</div>
+      <div class="mono" style="color:#cbd5e1; font-size:1.9vh;">${fmt(t.score)}${t.solved ? '' : ' (미해결)'}</div>
+      <div class="blk" style="height:${hgt[i]}; background:${bg[i]};">${t.rank}</div></div>` : '<div></div>').join('');
+  const rest = list.slice(3);
+  $('restTable').innerHTML = rest.length ? `<tr><th>순위</th><th>모둠</th><th>기록</th><th>질문</th><th>오답</th><th>🔑</th><th>결과</th></tr>` +
+    rest.map(t => `<tr><td class="rank">${t.rank}</td><td style="font-weight:800;">${t.id}모둠</td><td class="mono">${fmt(t.score)}</td><td class="mono">${t.questions || 0}</td><td class="mono">${t.wrong || 0}</td><td>${dots(t)}</td>
+      <td style="color:${t.solved ? '#86efac' : '#fca5a5'};">${t.solved ? '정답' : '미해결'}</td></tr>`).join('') : '';
+}
+
+// 힌트가 열릴 때 짧은 효과음
+function beep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [660, 880].forEach((f, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.frequency.value = f; o.connect(g); g.connect(ctx.destination);
+      g.gain.setValueAtTime(.15, ctx.currentTime + i * .15);
+      g.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + i * .15 + .3);
+      o.start(ctx.currentTime + i * .15); o.stop(ctx.currentTime + i * .15 + .3);
+    });
+  } catch (e) {}
+}
+</script>
+</body>
+</html>

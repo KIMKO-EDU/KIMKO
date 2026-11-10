@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>미스터리 타임 · 진행자 | KIMKO-EDU</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body { font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif; background: #faf9f7; color: #1c1917; font-size: 15px; }
+    button { font: inherit; cursor: pointer; }
+    input, select, textarea { font: inherit; }
+    .hidden { display: none !important; }
+    .mono { font-variant-numeric: tabular-nums; }
+    .muted { color: #78716c; }
+
+    /* 상단 바 */
+    .appbar { height: 54px; display: flex; align-items: center; gap: 10px; padding: 0 18px; background: #1e1b4b; color: #fff; position: sticky; top: 0; z-index: 20; }
+    .appbar .logo { font-weight: 800; font-size: 17px; white-space: nowrap; }
+    .appbar .sp { flex: 1; }
+    .pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 14px; border-radius: 10px; font-size: 14px; font-weight: 700; white-space: nowrap; border: 1px solid transparent; background: #4338ca; color: #fff; }
+    .btn:disabled { background: #e7e5e4 !important; color: #a8a29e !important; border-color: transparent !important; cursor: default; }
+    .btn.amb { background: #f59e0b; color: #1c1917; }
+    .btn.ghost { background: #fff; color: #3730a3; border-color: #c7d2fe; }
+    .btn.ghost-d { background: rgba(255,255,255,.1); color: #fff; border-color: rgba(255,255,255,.25); }
+    .btn.red { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+    .btn.dred { background: #7f1d1d; color: #fff; }
+    .btn.green { background: #16a34a; color: #fff; }
+    .btn.big { padding: 12px 20px; font-size: 16px; border-radius: 12px; }
+    .btn.sm { padding: 4px 9px; font-size: 12.5px; border-radius: 8px; }
+    .a-yes { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .a-no  { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+    .a-may { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .a-nul { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+    .ans { padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 700; }
+    .ans.sel { outline: 3px solid currentColor; outline-offset: 1px; }
+    .card { background: #fff; border: 1px solid #e7e5e4; border-radius: 14px; padding: 14px 16px; }
+    .label { font-size: 12px; font-weight: 700; color: #78716c; letter-spacing: .02em; }
+    .chip { display: inline-block; padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; background: #fff; border: 1px solid #e7e5e4; color: #44403c; cursor: pointer; }
+    .chip.on { background: #1e1b4b; color: #fff; border-color: #1e1b4b; }
+    .main { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+    /* 갤러리 */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+    .case { background: #fff; border-radius: 14px; overflow: hidden; border: 1px solid #e7e5e4; cursor: pointer; transition: transform .12s, box-shadow .12s; }
+    .case:hover { transform: translateY(-2px); box-shadow: 0 0 0 2px #4338ca, 0 8px 20px rgba(67,56,202,.18); }
+    .case img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: #e7e5e4; }
+    .case .b { padding: 12px 14px 14px; }
+    .tag { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; margin: 6px 4px 0 0; }
+
+    /* 설정 */
+    .detail { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .detail img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 14px; display: block; }
+    .story { white-space: pre-line; background: #fff; border: 1px solid #e7e5e4; border-radius: 12px; padding: 12px 14px; line-height: 1.6; margin-top: 10px; }
+    .f2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field input, .field select { width: 100%; margin-top: 5px; padding: 9px 11px; border: 1px solid #d6d3d1; border-radius: 10px; background: #fff; }
+    .seg { display: flex; gap: 6px; margin-top: 5px; }
+    .seg button { flex: 1; padding: 9px; border-radius: 10px; border: 1px solid #c7d2fe; background: #fff; color: #3730a3; font-weight: 700; }
+    .seg button.on { background: #4338ca; color: #fff; border-color: #4338ca; }
+    .note-box { font-size: 13px; background: #f5f5f4; border-radius: 10px; padding: 9px 12px; color: #44403c; line-height: 1.6; }
+    .secret { white-space: pre-line; font-size: 13.5px; line-height: 1.6; }
+    .kw { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; margin: 3px 3px 0 0; }
+    .kw.m { background: #1e1b4b; color: #fff; }
+    .kw.x { background: #e7e5e4; color: #44403c; }
+
+    /* 대기실 */
+    .lobby { display: grid; grid-template-columns: 340px 1fr; gap: 18px; }
+    .code-big { font-size: 52px; font-weight: 900; letter-spacing: .06em; color: #1e1b4b; line-height: 1.1; }
+    #qr { width: 200px; height: 200px; margin: 14px auto 10px; display: flex; align-items: center; justify-content: center; }
+    #qr img, #qr canvas { width: 200px !important; height: 200px !important; }
+    .seats { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
+    .seat { border-radius: 14px; padding: 12px 14px; background: #fff; border: 1px solid #bbf7d0; }
+    .seat.empty { border-style: dashed; border-color: #d6d3d1; background: #fafaf9; color: #a8a29e; }
+    .seat .n { font-size: 18px; font-weight: 800; }
+
+    /* 진행 */
+    .game { display: grid; grid-template-columns: 1fr 330px; gap: 14px; padding: 14px; max-width: 1400px; margin: 0 auto; }
+    .q-row { display: flex; align-items: center; gap: 6px; padding: 7px 0; border-top: 1px solid #f5f5f4; flex-wrap: wrap; }
+    .q-row .t { flex: 1 1 260px; font-size: 15px; }
+    .msg-card { margin-bottom: 10px; }
+    .msg-card.guess { border-color: #fbbf24; background: #fffbeb; }
+    .guess-text { background: #fff; border: 1px solid #fde68a; border-radius: 10px; padding: 10px 12px; font-size: 15px; line-height: 1.55; white-space: pre-wrap; }
+    .stepper { display: inline-flex; align-items: center; gap: 4px; background: #fff; border: 1px solid #fde68a; border-radius: 9px; padding: 2px 4px; font-weight: 800; }
+    .stepper button { border: 0; background: #fef3c7; color: #92400e; width: 26px; height: 26px; border-radius: 7px; font-weight: 900; }
+    .empty-q { text-align: center; padding: 40px 20px; color: #a8a29e; border: 2px dashed #e7e5e4; border-radius: 14px; }
+    table.t { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    table.t td, table.t th { padding: 6px 4px; text-align: left; border-top: 1px solid #f5f5f4; }
+    table.t th { font-size: 11.5px; color: #78716c; border-top: 0; }
+    .hint-li { font-size: 13px; padding: 5px 0; border-top: 1px solid #f5f5f4; display: flex; gap: 6px; align-items: flex-start; }
+    .blurred { filter: blur(6px); user-select: none; }
+
+    /* 모달 */
+    .modal-bg { position: fixed; inset: 0; background: rgba(28,25,23,.55); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+    .modal { width: 380px; max-width: 100%; background: #fff; border-radius: 18px; padding: 22px; }
+    .modal h3 { margin: 0 0 6px; font-size: 20px; }
+    .modal input { width: 100%; margin-top: 10px; padding: 11px 12px; border: 1px solid #d6d3d1; border-radius: 10px; font-size: 16px; }
+    .err { color: #b91c1c; font-size: 13.5px; font-weight: 700; margin-top: 8px; min-height: 18px; }
+    .hist-team { margin-top: 10px; }
+    .hist-item { font-size: 13.5px; padding: 4px 0; display: flex; gap: 8px; align-items: center; border-top: 1px solid #f5f5f4; }
+    .star { border: 0; background: none; font-size: 17px; color: #d6d3d1; padding: 0 2px; }
+    .star.on { color: #f59e0b; }
+
+    @media (max-width: 900px) {
+      .detail, .lobby, .game { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="appbar">
+  <span class="logo">🔍 미스터리 타임</span>
+  <span id="barInfo" style="opacity:.75; font-size:14px;">진행자</span>
+  <span class="sp"></span>
+  <span id="barRight" style="display:flex; gap:8px; align-items:center;"></span>
+</header>
+
+<!-- 불러오는 중 -->
+<div id="vLoading" class="main"><div class="muted" style="padding:40px; text-align:center;">불러오는 중…</div></div>
+
+<!-- ① 갤러리 -->
+<div id="vGallery" class="main hidden">
+  <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+    <span style="font-size:21px; font-weight:800;">사건 고르기</span>
+    <span class="muted" style="font-size:14px;">수업에서 쓸 사건을 눌러 주세요</span>
+    <span style="flex:1"></span>
+    <span id="filters" style="display:flex; gap:6px; flex-wrap:wrap;"></span>
+  </div>
+  <div id="caseGrid" class="grid"></div>
+
+  <div class="card" style="margin-top:22px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+    <b>진행 중인 방 이어서 하기</b><span class="muted" style="font-size:13px;">다른 기기에서 만든 방이라면 방 코드와 진행자 PIN이 필요해요</span>
+    <span style="flex:1"></span>
+    <input id="resumeCode" inputmode="numeric" maxlength="6" placeholder="방 코드 6자리" style="width:150px; padding:8px 10px; border:1px solid #d6d3d1; border-radius:10px;">
+    <button class="btn ghost" id="resumeBtn">이어서 하기</button>
+  </div>
+  <div id="recentBox" class="muted" style="margin-top:10px; font-size:13.5px;"></div>
+</div>
+
+<!-- ② 사건 미리보기 · 방 설정 -->
+<div id="vDetail" class="main hidden">
+  <button class="btn ghost sm" id="backGallery" style="margin-bottom:12px;">‹ 갤러리로</button>
+  <div class="detail">
+    <div>
+      <img id="dImg" alt="">
+      <div style="margin-top:12px; font-size:12.5px; font-weight:700; color:#4338ca;" id="dMeta"></div>
+      <div style="font-size:23px; font-weight:800;" id="dTitle"></div>
+      <div class="story" id="dStory"></div>
+      <div class="card" style="margin-top:12px;">
+        <div style="display:flex; align-items:center;"><b>🔒 정답 · 키워드 · 힌트</b><span style="flex:1"></span><button class="btn ghost sm" id="dSecretBtn">펼치기 ▾</button></div>
+        <div id="dSecret" class="hidden" style="margin-top:10px;"></div>
+      </div>
+    </div>
+    <div class="card" style="display:flex; flex-direction:column; gap:14px;">
+      <div style="font-size:18px; font-weight:800;">⚙️ 방 설정 <span class="muted" style="font-size:13px; font-weight:500;">기본값 = 40분 수업용</span></div>
+      <div class="field"><div class="label">모둠 수</div>
+        <div class="seg" id="teamModeSeg"><button data-v="auto">자동 (접속한 기기 수)</button><button data-v="fixed" class="on">직접 정하기</button></div>
+        <div id="teamCountWrap" style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+          <input id="sTeamCount" type="number" min="2" max="12" value="6" style="width:90px; padding:8px 10px; border:1px solid #d6d3d1; border-radius:10px;"> <span>모둠 (2~12)</span>
+        </div>
+      </div>
+      <div class="f2">
+        <div class="field"><div class="label">제한 시간 (분)</div><input id="sLimit" type="number" min="5" max="60" value="23"></div>
+        <div class="field"><div class="label">첫 힌트 (분)</div><input id="sHintFirst" type="number" min="1" max="60" value="6"></div>
+        <div class="field"><div class="label">힌트 간격 (분)</div><input id="sHintEvery" type="number" min="1" max="30" value="3"></div>
+        <div class="field"><div class="label">질문 1개 벌칙 (초)</div><input id="sQPen" type="number" min="0" max="300" value="30"></div>
+        <div class="field"><div class="label">오답 벌칙 (분)</div><input id="sWrongPen" type="number" min="0" max="20" value="2"></div>
+        <div class="field"><div class="label">못 맞힘 추가 (분)</div><input id="sUnsolved" type="number" min="0" max="60" value="5"></div>
+      </div>
+      <div class="note-box" id="ruleSummary"></div>
+      <div class="field"><div class="label">진행자 PIN (숫자 4~6자리)</div>
+        <div style="display:flex; gap:8px; align-items:center;"><input id="sPin" inputmode="numeric" maxlength="6" style="width:140px; letter-spacing:.2em;"><span class="muted" style="font-size:13px;">다른 기기에서 이어서 진행할 때 필요해요. 꼭 기억해 두세요.</span></div>
+      </div>
+      <div class="err" id="createErr"></div>
+      <div style="display:flex; justify-content:flex-end;"><button class="btn amb big" id="createBtn">이 사건으로 방 만들기 →</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 대기실 -->
+<div id="vLobby" class="main hidden">
+  <div class="lobby">
+    <div class="card" style="text-align:center;">
+      <div class="label">방 코드</div>
+      <div class="code-big mono" id="lCode"></div>
+      <div id="qr"></div>
+      <div class="muted" style="font-size:13px; line-height:1.5;" id="lUrl"></div>
+      <div style="margin-top:12px; font-size:13px;">진행자 PIN <b id="lPin" class="blurred mono">0000</b> <button class="btn ghost sm" id="lPinBtn">보기</button></div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; align-items:center; gap:8px;"><span style="font-weight:800; font-size:18px;">모둠 자리</span><span class="pill a-yes" id="lCount"></span></div>
+      <div class="seats" id="lSeats"></div>
+      <div class="note-box">💡 노트북을 프로젝터에 <b>"확장" 모드</b>로 연결하고 [📺 점수판 열기]로 연 창을 프로젝터 화면으로 옮기세요. 점수판에도 QR이 크게 나와요. (윈도우: <b>Win + P</b> → 확장)</div>
+      <div style="display:flex; align-items:center; gap:10px; justify-content:flex-end; margin-top:auto;">
+        <span class="muted" style="font-size:13.5px;" id="lStartInfo"></span>
+        <button class="btn amb big" id="startBtn">▶ 게임 시작</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ④ 진행 / ⑤ 종료 -->
+<div id="vGame" class="hidden">
+  <div class="game">
+    <div>
+      <!-- 진행 중: 답변 대기 -->
+      <div id="queueWrap">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+          <span style="font-weight:800; font-size:17px;">답변 대기</span><span class="pill" style="background:#4338ca; color:#fff;" id="qCount">0</span>
+          <span class="muted" style="font-size:13px;">먼저 온 순서</span>
+        </div>
+        <div id="queue"></div>
+      </div>
+      <!-- 종료 -->
+      <div id="endWrap" class="hidden">
+        <div class="card" style="margin-bottom:12px;">
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <span style="font-size:20px; font-weight:900;">🏁 게임 종료</span><span style="flex:1"></span>
+            <button class="btn amb" id="revealBtn">🔓 점수판에 정답 공개</button>
+            <button class="btn ghost" id="copyBtn">📋 결과 복사</button>
+            <button class="btn ghost" id="newBtn">새 게임 (갤러리)</button>
+          </div>
+          <table class="t mono" style="margin-top:12px;" id="finalTable"></table>
+        </div>
+        <div class="card">
+          <div style="display:flex; align-items:center; gap:8px;"><b>모둠별 질문 기록</b><span class="muted" style="font-size:13px;">⭐을 누르면 점수판 정답 공개 화면에 "결정적 질문"으로 나와요</span></div>
+          <div id="history"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div class="card">
+        <div style="display:flex; align-items:center;"><b>🔒 정답</b><span style="flex:1"></span><button class="btn ghost sm" id="ansToggle">가리기</button></div>
+        <div id="ansBox" style="margin-top:6px;"></div>
+      </div>
+      <div class="card">
+        <b>💡 힌트</b>
+        <div id="hintList" style="margin-top:6px;"></div>
+      </div>
+      <div class="card">
+        <b>모둠 현황</b>
+        <table class="t mono" id="teamTable" style="margin-top:4px;"></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 모달: 교사 인증 -->
+<div id="mAuth" class="modal-bg hidden">
+  <div class="modal">
+    <h3>🔐 교사 인증</h3>
+    <div class="muted" style="font-size:14px;" id="mAuthMsg">이 기기에서 처음 한 번만 입력하면 됩니다.</div>
+    <input id="tCode" type="password" placeholder="교사 코드" autocomplete="off">
+    <div class="err" id="tErr"></div>
+    <button class="btn" style="width:100%; margin-top:6px; padding:11px;" id="tBtn">이 기기 인증하기</button>
+  </div>
+</div>
+
+<!-- 모달: 진행자 PIN -->
+<div id="mPin" class="modal-bg hidden">
+  <div class="modal">
+    <h3>🔑 진행자 PIN</h3>
+    <div class="muted" style="font-size:14px;">방 <b id="mPinCode"></b>을(를) 만들 때 정한 PIN을 입력하세요.</div>
+    <input id="pinIn" type="password" inputmode="numeric" maxlength="6" placeholder="숫자 4~6자리">
+    <div class="err" id="pinErr"></div>
+    <div style="display:flex; gap:8px; margin-top:6px;"><button class="btn ghost" style="flex:1;" id="pinCancel">취소</button><button class="btn" style="flex:2;" id="pinBtn">진행 권한 받기</button></div>
+  </div>
+</div>
+
+<script type="module">
+import {
+  db, ready, now, esc, fmt, toast, explainError, pageUrl, EST, ANSWERS, DEFAULT_SETTINGS,
+  elapsedSec, remainSec, teamScore, rankTeams, hintSlotTimes, slotsDue, findKeywords, ms,
+  doc, getDoc, getDocs, setDoc, updateDoc, collection, query, orderBy, onSnapshot,
+  writeBatch, runTransaction, serverTimestamp, increment, Timestamp
+} from './mystery-firebase.js';
+
+const $ = (id) => document.getElementById(id);
+const views = ['vLoading', 'vGallery', 'vDetail', 'vLobby', 'vGame'];
+function show(v) { views.forEach(x => $(x).classList.toggle('hidden', x !== v)); window.scrollTo(0, 0); }
+function bar(info, rightHtml) { $('barInfo').innerHTML = info; $('barRight').innerHTML = rightHtml || ''; }
+
+// 두 번 눌러야 실행되는 버튼 (실수 방지)
+function confirmClick(btn, label, fn) {
+  if (btn.dataset.armed) { delete btn.dataset.armed; fn(); return; }
+  const old = btn.textContent;
+  btn.dataset.armed = '1'; btn.textContent = label;
+  setTimeout(() => { if (btn.dataset.armed) { delete btn.dataset.armed; btn.textContent = old; } }, 3000);
+}
+
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+
+let uid;
+try { uid = await ready(); }
+catch (e) { $('vLoading').innerHTML = `<div class="card" style="margin:40px auto; max-width:480px;">❌ 연결 실패: ${esc(explainError(e))}</div>`; throw e; }
+
+// ============================================================
+// 교사 인증
+// ============================================================
+let isTeacher = (await getDoc(doc(db, 'teachers', uid))).exists();
+let authResolve = null;
+function askTeacher(msg) {
+  $('mAuthMsg').textContent = msg || '이 기기에서 처음 한 번만 입력하면 됩니다.';
+  $('mAuth').classList.remove('hidden');
+  $('tCode').value = ''; $('tErr').textContent = '';
+  setTimeout(() => $('tCode').focus(), 50);
+  return new Promise(r => { authResolve = r; });
+}
+async function submitTeacher() {
+  const code = $('tCode').value.trim();
+  if (!code) return;
+  $('tBtn').disabled = true;
+  try {
+    await setDoc(doc(db, 'teachers', uid), { code, createdAt: serverTimestamp() });
+    isTeacher = true;
+    $('mAuth').classList.add('hidden');
+    toast('✅ 이 기기가 교사 기기로 등록되었습니다.', 'ok');
+    authResolve && authResolve(true);
+  } catch (e) {
+    $('tErr').textContent = (e.code || '').includes('permission') ? '코드가 맞지 않습니다.' : explainError(e);
+  }
+  $('tBtn').disabled = false;
+}
+$('tBtn').onclick = submitTeacher;
+$('tCode').onkeydown = (e) => { if (e.key === 'Enter') submitTeacher(); };
+
+// 정답 읽기: 권한이 없으면(코드가 바뀐 경우 등) 다시 인증
+async function readSecret(pid) {
+  for (let i = 0; i < 2; i++) {
+    try {
+      const s = await getDoc(doc(db, 'problemSecrets', pid));
+      return s.exists() ? s.data() : null;
+    } catch (e) {
+      if (!(e.code || '').includes('permission')) throw e;
+      await askTeacher(isTeacher ? '교사 코드가 바뀌었습니다. 새 코드를 입력해 주세요.' : '이 기기에서 처음 한 번만 입력하면 됩니다.');
+    }
+  }
+  return null;
+}
+
+// ============================================================
+// ① 갤러리
+// ============================================================
+let problems = [];
+let filter = { level: '전체', theme: '전체' };
+
+async function openGallery() {
+  stopRoom();
+  history.replaceState(null, '', location.pathname);
+  bar('진행자', isTeacher ? '<span class="pill" style="background:rgba(34,197,94,.18); color:#86efac;">✓ 교사 인증된 기기</span>' : '');
+  show('vGallery');
+  if (!isTeacher) await askTeacher();
+  bar('진행자', '<span class="pill" style="background:rgba(34,197,94,.18); color:#86efac;">✓ 교사 인증된 기기</span>');
+  try {
+    const snap = await getDocs(collection(db, 'problems'));
+    problems = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => p.published !== false).sort((a, b) => (a.no || 0) - (b.no || 0));
+  } catch (e) { toast('사건 목록을 못 불러왔습니다: ' + explainError(e), 'error'); }
+  renderFilters(); renderGrid(); renderRecent();
+}
+
+function renderFilters() {
+  const levels = ['전체', '저학년', '고학년'];
+  const themes = ['전체', ...new Set(problems.map(p => p.theme).filter(Boolean))];
+  $('filters').innerHTML =
+    levels.map(l => `<span class="chip ${filter.level === l ? 'on' : ''}" data-k="level" data-v="${esc(l)}">${esc(l)}</span>`).join('') +
+    '<span style="width:8px"></span>' +
+    themes.map(t => `<span class="chip ${filter.theme === t ? 'on' : ''}" data-k="theme" data-v="${esc(t)}">${t === '전체' ? '모든 주제' : esc(t)}</span>`).join('');
+  $('filters').querySelectorAll('.chip').forEach(c => c.onclick = () => { filter[c.dataset.k] = c.dataset.v; renderFilters(); renderGrid(); });
+}
+function renderGrid() {
+  const list = problems.filter(p => (filter.level === '전체' || p.level === filter.level || p.level === '전학년') && (filter.theme === '전체' || p.theme === filter.theme));
+  $('caseGrid').innerHTML = list.length ? list.map(p => `
+    <div class="case" data-id="${esc(p.id)}">
+      <img src="${esc(p.imageUrl)}" alt="" loading="lazy">
+      <div class="b">
+        <div style="font-size:12px; font-weight:700; color:#4338ca;">사건 #${esc(p.no)}</div>
+        <div style="font-size:18px; font-weight:800;">${esc(p.title)}</div>
+        <span class="tag" style="background:#eef2ff; color:#3730a3;">${esc(p.grade || '')}</span><span class="tag" style="background:#fef3c7; color:#92400e;">${esc(p.theme || '')}</span><span class="tag" style="background:#f5f5f4; color:#57534e;">키워드 ${p.mainCount || 0}+${p.extraCount || 0} · 힌트 ${p.hintCount || 0}</span>
+      </div>
+    </div>`).join('') : '<div class="empty-q">조건에 맞는 사건이 없습니다.</div>';
+  $('caseGrid').querySelectorAll('.case').forEach(c => c.onclick = () => openDetail(c.dataset.id));
+}
+function renderRecent() {
+  const r = store.get('mysteryRecentRooms') || [];
+  $('recentBox').innerHTML = r.length ? '최근 만든 방: ' + r.slice(0, 5).map(x => `<a href="?room=${esc(x.code)}" style="color:#4338ca; font-weight:700; margin-right:10px;">${esc(x.code)} · ${esc(x.title)}</a>`).join('') : '';
+}
+$('resumeBtn').onclick = () => {
+  const c = $('resumeCode').value.trim();
+  if (!/^\d{6}$/.test(c)) { toast('방 코드 6자리를 입력하세요.', 'error'); return; }
+  openRoom(c);
+};
+
+// ============================================================
+// ② 미리보기 · 방 설정
+// ============================================================
+let cur = null, curSecret = null, teamMode = 'fixed';
+$('backGallery').onclick = openGallery;
+
+function openDetail(pid) {
+  cur = problems.find(p => p.id === pid); curSecret = null;
+  $('dImg').src = cur.imageUrl;
+  $('dMeta').textContent = `사건 #${cur.no} · ${cur.grade || ''} · ${cur.theme || ''}`;
+  $('dTitle').textContent = cur.title;
+  $('dStory').textContent = cur.story;
+  $('dSecret').classList.add('hidden'); $('dSecretBtn').textContent = '펼치기 ▾';
+  $('sPin').value = String(Math.floor(1000 + Math.random() * 9000));
+  $('createErr').textContent = '';
+  updateSummary();
+  bar(`사건 #${esc(cur.no)} ${esc(cur.title)}`);
+  show('vDetail');
+}
+function secretHtml(s) {
+  return `<div class="label">사건의 전말</div><div class="secret">${esc(s.answer)}</div>
+    <div class="label" style="margin-top:8px;">메인 키워드</div>${(s.mainKeywords || []).map(k => `<span class="kw m">${esc(k.label)}</span>`).join('')}
+    <div class="label" style="margin-top:8px;">추가 키워드</div>${(s.extraKeywords || []).map(k => `<span class="kw x">${esc(k.label)}</span>`).join('') || '<span class="muted">없음</span>'}
+    <div class="label" style="margin-top:8px;">힌트</div><ol style="margin:4px 0 0; padding-left:20px; font-size:13.5px; line-height:1.6;">${(s.hints || []).map(h => `<li>${esc(h)}</li>`).join('')}</ol>`;
+}
+$('dSecretBtn').onclick = async () => {
+  const box = $('dSecret');
+  if (!box.classList.contains('hidden')) { box.classList.add('hidden'); $('dSecretBtn').textContent = '펼치기 ▾'; return; }
+  if (!curSecret) curSecret = await readSecret(cur.id);
+  box.innerHTML = curSecret ? secretHtml(curSecret) : '정답 정보를 찾을 수 없습니다.';
+  box.classList.remove('hidden'); $('dSecretBtn').textContent = '접기 ▴';
+};
+$('teamModeSeg').querySelectorAll('button').forEach(b => b.onclick = () => {
+  teamMode = b.dataset.v;
+  $('teamModeSeg').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+  $('teamCountWrap').classList.toggle('hidden', teamMode === 'auto');
+  updateSummary();
+});
+['sLimit', 'sHintFirst', 'sHintEvery', 'sQPen', 'sWrongPen', 'sUnsolved', 'sTeamCount'].forEach(id => $(id).oninput = updateSummary);
+
+function readSettings() {
+  const n = (id, min, max) => Math.min(max, Math.max(min, Math.round(Number($(id).value) || 0)));
+  const s = { ...DEFAULT_SETTINGS };
+  s.teamMode = teamMode;
+  s.teamCount = n('sTeamCount', 2, 12);
+  s.maxTeams = teamMode === 'auto' ? 12 : s.teamCount;
+  s.limitSec = n('sLimit', 5, 60) * 60;
+  s.hintFirstSec = n('sHintFirst', 1, 60) * 60;
+  s.hintEverySec = n('sHintEvery', 1, 30) * 60;
+  s.qPenaltySec = n('sQPen', 0, 300);
+  s.wrongPenaltySec = n('sWrongPen', 0, 20) * 60;
+  s.unsolvedExtraSec = n('sUnsolved', 0, 60) * 60;
+  return s;
+}
+function updateSummary() {
+  if (!cur) return;
+  const s = readSettings();
+  const slots = [];
+  for (let i = 0; i < (cur.hintCount || 0); i++) { const t = s.hintFirstSec + i * s.hintEverySec; if (t < s.limitSec) slots.push(t / 60 + '분'); }
+  $('ruleSummary').innerHTML = `
+    힌트 자동 공개: <b>${slots.join(' · ') || '없음'}</b> + 정답 모둠이 나오면 즉시 하나 더<br>
+    못 맞힌 모둠 기록 = <b>${(s.limitSec + s.unsolvedExtraSec) / 60}분</b>(제한 시간 + ${s.unsolvedExtraSec / 60}분) + 벌칙<br>
+    종료: 모든 모둠 정답 · ${s.limitSec / 60}분 경과 · 선생님 [게임 종료]`;
+}
+
+$('createBtn').onclick = async () => {
+  const pin = $('sPin').value.trim();
+  if (!/^\d{4,6}$/.test(pin)) { $('createErr').textContent = '진행자 PIN은 숫자 4~6자리로 정해 주세요.'; return; }
+  $('createBtn').disabled = true; $('createErr').textContent = '';
+  try {
+    if (!curSecret) curSecret = await readSecret(cur.id);
+    if (!curSecret) throw new Error('정답 정보를 읽을 수 없습니다.');
+    const settings = readSettings();
+    let code = null, lastErr = null;
+    for (let i = 0; i < 6 && !code; i++) {
+      const c = String(Math.floor(100000 + Math.random() * 900000));
+      const b = writeBatch(db);
+      b.set(doc(db, 'rooms', c), {
+        hostUid: uid, problemId: cur.id, no: cur.no, title: cur.title, story: cur.story, imageUrl: cur.imageUrl,
+        mainCount: (curSecret.mainKeywords || []).length, hintCount: (curSecret.hints || []).length,
+        settings, status: 'lobby', startedAt: null, endedAt: null,
+        hintsRevealed: [], hintSlotsApplied: 0, hintLog: [], reveal: null, featured: [],
+        createdAt: serverTimestamp(), expireAt: Timestamp.fromMillis(Date.now() + 7 * 24 * 3600 * 1000)
+      });
+      b.set(doc(db, 'rooms', c, 'secret', 'hostKey'), { pin });
+      b.set(doc(db, 'rooms', c, 'secret', 'answer'), {
+        answer: curSecret.answer, mainKeywords: curSecret.mainKeywords || [], extraKeywords: curSecret.extraKeywords || [], hints: curSecret.hints || []
+      });
+      b.set(doc(db, 'rooms', c, 'hosts', uid), { pin, createdAt: serverTimestamp() });
+      try { await b.commit(); code = c; } catch (e) { lastErr = e; if (!(e.code || '').includes('permission')) break; }
+    }
+    if (!code) throw lastErr || new Error('방을 만들지 못했습니다.');
+    const recent = (store.get('mysteryRecentRooms') || []).filter(x => x.code !== code);
+    recent.unshift({ code, title: cur.title, at: Date.now() });
+    store.set('mysteryRecentRooms', recent.slice(0, 8));
+    openRoom(code);
+  } catch (e) {
+    $('createErr').textContent = '❌ ' + explainError(e);
+  }
+  $('createBtn').disabled = false;
+};
+
+// ============================================================
+// 방 열기 (진행자 권한 확인 → 실시간 구독)
+// ============================================================
+let roomCode = null, room = null, teams = [], messages = [], secret = null, hostPin = '';
+let unsubs = [];
+const sel = {};   // 질문 답변 선택: sel[msgId][i] = 'yes'|'no'|'maybe'|'nul'
+const adj = {};   // 정답 제출 키워드 개수 조정: adj[msgId] = 숫자
+let ansHidden = !!store.get('mysteryAnsHidden');
+let tickTimer = null;
+
+function stopRoom() {
+  unsubs.forEach(u => u()); unsubs = [];
+  clearInterval(tickTimer); tickTimer = null;
+  roomCode = null; room = null; teams = []; messages = []; secret = null;
+}
+
+async function openRoom(code) {
+  stopRoom();
+  show('vLoading');
+  const rs = await getDoc(doc(db, 'rooms', code)).catch(() => null);
+  if (!rs || !rs.exists()) { toast('그 방을 찾을 수 없습니다.', 'error'); openGallery(); return; }
+  const hs = await getDoc(doc(db, 'rooms', code, 'hosts', uid)).catch(() => null);
+  if (!hs || !hs.exists()) {
+    const ok = await askPin(code);
+    if (!ok) { openGallery(); return; }
+  }
+  roomCode = code;
+  history.replaceState(null, '', '?room=' + code);
+  try {
+    const [ans, key] = await Promise.all([
+      getDoc(doc(db, 'rooms', code, 'secret', 'answer')),
+      getDoc(doc(db, 'rooms', code, 'secret', 'hostKey'))
+    ]);
+    secret = ans.data(); hostPin = key.data().pin;
+  } catch (e) { toast('정답 정보를 못 불러왔습니다: ' + explainError(e), 'error'); }
+
+  unsubs.push(onSnapshot(doc(db, 'rooms', code), (s) => {
+    if (!s.exists()) { toast('방이 삭제되었습니다.', 'error'); openGallery(); return; }
+    room = s.data(EST); render();
+  }));
+  unsubs.push(onSnapshot(collection(db, 'rooms', code, 'teams'), (s) => {
+    teams = s.docs.map(d => ({ id: d.id, ...d.data(EST) })); render();
+  }));
+  unsubs.push(onSnapshot(query(collection(db, 'rooms', code, 'messages'), orderBy('createdAt')), (s) => {
+    messages = s.docs.map(d => ({ id: d.id, ...d.data(EST) })); render();
+  }));
+  tickTimer = setInterval(tick, 500);
+}
+
+function askPin(code) {
+  return new Promise((resolve) => {
+    $('mPinCode').textContent = code; $('pinIn').value = ''; $('pinErr').textContent = '';
+    $('mPin').classList.remove('hidden');
+    setTimeout(() => $('pinIn').focus(), 50);
+    const done = (v) => { $('mPin').classList.add('hidden'); resolve(v); };
+    $('pinCancel').onclick = () => done(false);
+    const go = async () => {
+      const pin = $('pinIn').value.trim();
+      try { await setDoc(doc(db, 'rooms', code, 'hosts', uid), { pin, createdAt: serverTimestamp() }); done(true); }
+      catch (e) { $('pinErr').textContent = (e.code || '').includes('permission') ? 'PIN이 맞지 않습니다.' : explainError(e); }
+    };
+    $('pinBtn').onclick = go;
+    $('pinIn').onkeydown = (e) => { if (e.key === 'Enter') go(); };
+  });
+}
+
+// ============================================================
+// 그리기
+// ============================================================
+function render() {
+  if (!room) return;
+  if (room.status === 'lobby') renderLobby(); else renderGame();
+}
+
+function boardUrl() { return pageUrl('mystery-board.html', { room: roomCode }); }
+function studentUrl() { return pageUrl('mystery.html', { room: roomCode }); }
+function openBoard() { window.open(boardUrl(), 'mysteryBoard', 'popup,width=1280,height=760'); }
+
+function topRight(extra = '') {
+  return `${extra}<button class="btn ghost-d" id="boardBtn">📺 점수판 열기 ↗</button>`;
+}
+function bindTop() { const b = $('boardBtn'); if (b) b.onclick = openBoard; }
+
+// ---------- 대기실 ----------
+let qrDrawn = null;
+function renderLobby() {
+  if ($('vLobby').classList.contains('hidden')) show('vLobby');
+  bar(`방 ${roomCode} · 사건 #${esc(room.no)} ${esc(room.title)}`, topRight()); bindTop();
+  $('lCode').textContent = roomCode.slice(0, 3) + ' ' + roomCode.slice(3);
+  $('lUrl').innerHTML = `${esc(pageUrl('mystery.html'))}<br>접속 후 방 코드 입력 (QR은 코드 자동 입력)`;
+  $('lPin').textContent = hostPin || '----';
+  if (qrDrawn !== roomCode) {
+    $('qr').innerHTML = '';
+    if (window.QRCode) new window.QRCode($('qr'), { text: studentUrl(), width: 200, height: 200, colorDark: '#1e1b4b', colorLight: '#ffffff' });
+    else $('qr').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(studentUrl())}" alt="QR">`;
+    qrDrawn = roomCode;
+  }
+  const s = room.settings;
+  const seated = teams.filter(t => t.uid);
+  const n = s.teamMode === 'fixed' ? s.teamCount : Math.max(seated.length, 1);
+  $('lCount').textContent = s.teamMode === 'fixed' ? `${seated.length} / ${s.teamCount} 접속` : `${seated.length}모둠 접속 (자동)`;
+  const slots = s.teamMode === 'fixed'
+    ? Array.from({ length: s.teamCount }, (_, i) => String(i + 1))
+    : teams.map(t => t.id).sort((a, b) => a - b);
+  $('lSeats').innerHTML = slots.length ? slots.map(id => {
+    const t = teams.find(x => x.id === id);
+    if (t && t.uid) return `<div class="seat"><div class="n">${id}모둠</div><div style="font-size:13px; color:#44403c; min-height:18px;">${esc(t.name || '')}</div><div style="font-size:12.5px; color:#15803d; margin:2px 0 8px;">● 접속 중</div><button class="btn red sm" data-free="${id}">자리 비우기</button></div>`;
+    return `<div class="seat empty"><div class="n">${id}모둠</div><div style="font-size:12.5px; margin-top:4px;">○ 빈자리 · 기다리는 중</div></div>`;
+  }).join('') : '<div class="empty-q" style="grid-column:1/-1;">학생 기기가 들어오면 모둠이 자동으로 생깁니다.</div>';
+  bindFree($('lSeats'));
+  $('lStartInfo').textContent = `누르면 ${fmt(s.limitSec)} 타이머가 모든 화면에서 동시에 시작됩니다`;
+  $('startBtn').disabled = seated.length === 0;
+}
+function bindFree(root) {
+  root.querySelectorAll('[data-free]').forEach(b => b.onclick = () => confirmClick(b, '정말 비울까요?', async () => {
+    try { await updateDoc(doc(db, 'rooms', roomCode, 'teams', b.dataset.free), { uid: '', waiting: false }); toast(`${b.dataset.free}모둠 자리를 비웠습니다. 새 기기가 이어받을 수 있어요.`); }
+    catch (e) { toast(explainError(e), 'error'); }
+  }));
+}
+$('lPinBtn').onclick = () => $('lPin').classList.toggle('blurred');
+$('startBtn').onclick = async () => {
+  $('startBtn').disabled = true;
+  try { await updateDoc(doc(db, 'rooms', roomCode), { status: 'playing', startedAt: serverTimestamp() }); }
+  catch (e) { toast(explainError(e), 'error'); $('startBtn').disabled = false; }
+};
+
+// ---------- 진행 / 종료 ----------
+function teamLabel(id) {
+  const t = teams.find(x => x.id === id);
+  return `${id}모둠${t && t.name ? ' · ' + esc(t.name) : ''}`;
+}
+function msgElapsed(m) {
+  const a = ms(m.createdAt), b = ms(room.startedAt);
+  return a && b ? Math.max(0, Math.min(room.settings.limitSec, (a - b) / 1000)) : 0;
+}
+
+function renderGame() {
+  if ($('vGame').classList.contains('hidden')) show('vGame');
+  const ended = room.status === 'ended';
+  const timer = ended ? '<span class="pill" style="background:#e7e5e4; color:#1c1917;">🏁 종료</span>'
+    : `<span class="pill mono" id="barTimer" style="background:#fbbf24; color:#1c1917; font-size:15px;">⏱ ${fmt(remainSec(room))} 남음</span>`;
+  const left = (secret && (room.hintsRevealed || []).length < (secret.hints || []).length && !ended)
+    ? `<button class="btn ghost-d" id="hintNowBtn">💡 힌트 ${(room.hintsRevealed || []).length + 1} 지금 공개</button>` : '';
+  const endBtn = ended ? '' : '<button class="btn dred" id="endBtn">게임 종료</button>';
+  bar(`<b class="mono">${roomCode}</b> · ${esc(room.title)}`, `${timer}${left}<button class="btn ghost-d" id="boardBtn">📺 점수판</button>${endBtn}`);
+  bindTop();
+  if ($('hintNowBtn')) $('hintNowBtn').onclick = () => revealHint('manual');
+  if ($('endBtn')) $('endBtn').onclick = () => confirmClick($('endBtn'), '정말 종료?', () => endGame());
+
+  $('queueWrap').classList.toggle('hidden', ended);
+  $('endWrap').classList.toggle('hidden', !ended);
+  if (ended) renderEnd(); else renderQueue();
+  renderAnswer(); renderHints(); renderTeamTable();
+}
+
+function renderQueue() {
+  const pend = messages.filter(m => m.status === 'pending');
+  $('qCount').textContent = pend.length;
+  if (!pend.length) { $('queue').innerHTML = '<div class="empty-q">새 질문을 기다리는 중입니다 🕵️</div>'; return; }
+  $('queue').innerHTML = pend.map(m => m.kind === 'question' ? questionCard(m) : guessCard(m)).join('');
+  // 답변 버튼
+  $('queue').querySelectorAll('[data-ans]').forEach(b => b.onclick = () => {
+    const [id, i, v] = b.dataset.ans.split('|');
+    sel[id] = sel[id] || []; sel[id][Number(i)] = v; renderQueue();
+  });
+  $('queue').querySelectorAll('[data-send]').forEach(b => b.onclick = () => sendAnswers(b.dataset.send, b));
+  $('queue').querySelectorAll('[data-adj]').forEach(b => b.onclick = () => {
+    const [id, d] = b.dataset.adj.split('|');
+    const m = messages.find(x => x.id === id);
+    adj[id] = Math.max(0, Math.min(room.mainCount, keyCount(m) + Number(d))); renderQueue();
+  });
+  $('queue').querySelectorAll('[data-judge]').forEach(b => b.onclick = () => { const [id, v] = b.dataset.judge.split('|'); judge(id, v === 'ok', b); });
+}
+
+function questionCard(m) {
+  const s = sel[m.id] || [];
+  const all = m.questions.every((_, i) => s[i]);
+  const rows = m.questions.map((q, i) => `
+    <div class="q-row"><div class="t">${['①', '②', '③'][i]} ${esc(q)}</div>
+      ${Object.entries(ANSWERS).map(([k, a]) => `<button class="ans ${a.cls} ${s[i] === k ? 'sel' : ''}" data-ans="${m.id}|${i}|${k}">${a.short}</button>`).join('')}
+    </div>`).join('');
+  return `<div class="card msg-card">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;"><b style="font-size:16px;">${teamLabel(m.teamNo)}</b><span class="pill a-nul">질문 ${m.questions.length}개</span><span class="muted mono" style="margin-left:auto; font-size:13px;">${fmt(msgElapsed(m))}</span></div>
+    ${rows}
+    <div style="display:flex; justify-content:flex-end; margin-top:6px;"><button class="btn" data-send="${m.id}" ${all ? '' : 'disabled'}>답변 보내기${all ? '' : ` (${s.filter(Boolean).length}/${m.questions.length} 선택)`}</button></div>
+  </div>`;
+}
+
+function autoKeys(m) { return secret ? findKeywords(m.guess, secret.mainKeywords) : []; }
+function keyCount(m) { return adj[m.id] != null ? adj[m.id] : autoKeys(m).filter(Boolean).length; }
+
+function guessCard(m) {
+  const hits = autoKeys(m);
+  const chips = (secret ? secret.mainKeywords : []).map((k, i) => `<span class="pill ${hits[i] ? 'a-yes' : 'a-no'}">${esc(k.label)} ${hits[i] ? '✓' : '✗'}</span>`).join(' ');
+  return `<div class="card msg-card guess">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;"><b style="font-size:16px;">${teamLabel(m.teamNo)}</b><span class="pill" style="background:#f59e0b; color:#1c1917;">🎯 정답 제출</span><span class="muted mono" style="margin-left:auto; font-size:13px;">${fmt(msgElapsed(m))}</span></div>
+    <div class="guess-text">${esc(m.guess)}</div>
+    <div style="display:flex; align-items:center; gap:6px; margin-top:8px; flex-wrap:wrap; font-size:12.5px;"><span class="label">자동 확인</span>${chips}</div>
+    <div style="display:flex; align-items:center; gap:8px; margin-top:8px; flex-wrap:wrap;">
+      <span class="label">학생에게 알릴 개수</span>
+      <span class="stepper"><button data-adj="${m.id}|-1">−</button><span style="color:#b45309; font-size:15px; padding:0 6px;">${keyCount(m)} / ${room.mainCount}</span><button data-adj="${m.id}|1">+</button></span>
+      <span style="flex:1"></span>
+      <button class="btn green" data-judge="${m.id}|ok">⭕ 정답</button>
+      <button class="btn" style="background:#dc2626;" data-judge="${m.id}|no">❌ 오답 +${fmt(room.settings.wrongPenaltySec)}</button>
+    </div>
+  </div>`;
+}
+
+async function sendAnswers(id, btn) {
+  const m = messages.find(x => x.id === id);
+  const answers = sel[id];
+  btn.disabled = true;
+  try {
+    const b = writeBatch(db);
+    b.update(doc(db, 'rooms', roomCode, 'messages', id), { status: 'answered', answers, answeredAt: serverTimestamp() });
+    if (teams.find(t => t.id === m.teamNo)) b.update(doc(db, 'rooms', roomCode, 'teams', m.teamNo), { waiting: false });
+    await b.commit();
+    delete sel[id];
+  } catch (e) { toast(explainError(e), 'error'); btn.disabled = false; }
+}
+
+async function judge(id, correct, btn) {
+  const m = messages.find(x => x.id === id);
+  const t = teams.find(x => x.id === m.teamNo);
+  const keys = correct ? room.mainCount : keyCount(m);
+  btn.disabled = true;
+  try {
+    const b = writeBatch(db);
+    b.update(doc(db, 'rooms', roomCode, 'messages', id), { status: 'answered', verdict: correct ? 'correct' : 'wrong', keys, answeredAt: serverTimestamp() });
+    if (t) {
+      if (correct) b.update(doc(db, 'rooms', roomCode, 'teams', m.teamNo), { solved: true, solvedAtSec: Math.round(msgElapsed(m)), bestKeys: room.mainCount, waiting: false });
+      else b.update(doc(db, 'rooms', roomCode, 'teams', m.teamNo), { wrong: increment(1), bestKeys: Math.max(t.bestKeys || 0, keys) });
+    }
+    await b.commit();
+    delete adj[id];
+    if (correct) {
+      toast(`🎉 ${m.teamNo}모둠 정답!`, 'ok');
+      await revealHint('solve', m.teamNo);
+      const left = teams.filter(x => x.uid || x.questions || x.wrong).filter(x => !x.solved && x.id !== m.teamNo);
+      if (!left.length) await endGame();
+    }
+  } catch (e) { toast(explainError(e), 'error'); btn.disabled = false; }
+}
+
+// ---------- 힌트 공개 (여러 진행자 기기가 있어도 겹치지 않게 트랜잭션) ----------
+async function revealHint(why, teamNo) {
+  if (!secret) return;
+  const ref = doc(db, 'rooms', roomCode);
+  try {
+    await runTransaction(db, async (tx) => {
+      const r = (await tx.get(ref)).data();
+      if (r.status !== 'playing') return;
+      const el = elapsedSec(r);
+      const upd = {};
+      if (why === 'slot') {
+        const due = slotsDue(r, el);
+        if ((r.hintSlotsApplied || 0) >= due) return;
+        upd.hintSlotsApplied = due;
+      }
+      const shown = r.hintsRevealed || [];
+      if (shown.length < secret.hints.length) {
+        upd.hintsRevealed = [...shown, secret.hints[shown.length]];
+        upd.hintLog = [...(r.hintLog || []), { n: shown.length + 1, atSec: Math.round(el), why, team: teamNo || '' }];
+      }
+      if (Object.keys(upd).length) tx.update(ref, upd);
+    });
+  } catch (e) { console.warn('hint', e); }
+}
+
+async function endGame() {
+  const ref = doc(db, 'rooms', roomCode);
+  try {
+    await runTransaction(db, async (tx) => {
+      const r = (await tx.get(ref)).data();
+      if (r.status !== 'playing') return;
+      tx.update(ref, { status: 'ended', endedAt: serverTimestamp() });
+    });
+  } catch (e) { toast(explainError(e), 'error'); }
+}
+
+// 0.5초마다: 타이머 표시, 자동 힌트, 시간 종료
+let tickBusy = false;
+async function tick() {
+  if (!room || room.status !== 'playing') return;
+  const el = elapsedSec(room);
+  const t = $('barTimer'); if (t) t.textContent = `⏱ ${fmt(remainSec(room))} 남음`;
+  if (tickBusy) return;
+  tickBusy = true;
+  try {
+    if (el >= room.settings.limitSec) await endGame();
+    else if ((room.hintSlotsApplied || 0) < slotsDue(room, el)) await revealHint('slot');
+  } finally { tickBusy = false; }
+  if (Math.floor(el) % 5 === 0) { renderHints(); renderTeamTable(); }
+}
+
+function renderAnswer() {
+  if (!secret) { $('ansBox').innerHTML = '<span class="muted">정답 정보 없음</span>'; return; }
+  $('ansToggle').textContent = ansHidden ? '보이기' : '가리기';
+  $('ansBox').innerHTML = `<div class="${ansHidden ? 'blurred' : ''}"><div class="secret" style="font-size:13px;">${esc(secret.answer)}</div>
+    <div style="margin-top:6px;">${secret.mainKeywords.map(k => `<span class="kw m">${esc(k.label)}</span>`).join('')}${(secret.extraKeywords || []).map(k => `<span class="kw x">${esc(k.label)}</span>`).join('')}</div></div>`;
+}
+$('ansToggle').onclick = () => { ansHidden = !ansHidden; store.set('mysteryAnsHidden', ansHidden); renderAnswer(); };
+
+function renderHints() {
+  if (!secret || !room) return;
+  const shown = room.hintsRevealed || [];
+  const log = room.hintLog || [];
+  const slots = hintSlotTimes(room);
+  const el = elapsedSec(room);
+  let slotIdx = room.hintSlotsApplied || 0;
+  $('hintList').innerHTML = secret.hints.map((h, i) => {
+    if (i < shown.length) {
+      const g = log.find(x => x.n === i + 1) || {};
+      const why = g.why === 'solve' ? `${g.team}모둠 정답` : g.why === 'manual' ? '직접 공개' : '자동';
+      return `<div class="hint-li"><span>✅</span><div><b>${i + 1}.</b> ${esc(h)}<div class="muted mono" style="font-size:11.5px;">${fmt(g.atSec)} · ${why}</div></div></div>`;
+    }
+    const at = slots[slotIdx++];
+    const when = room.status === 'playing' && at != null ? `${fmt(at)} 자동 (${fmt(at - el)} 후)` : '예정 없음';
+    return `<div class="hint-li" style="color:#a8a29e;"><span>○</span><div><b>${i + 1}.</b> ${esc(h)}<div class="mono" style="font-size:11.5px; color:#4338ca;">${room.status === 'ended' ? '공개 안 됨' : when}</div></div></div>`;
+  }).join('');
+}
+
+function teamState(t) {
+  if (t.solved) return '<span style="color:#15803d; font-weight:700;">정답</span>';
+  if (!t.uid) return '<span style="color:#a8a29e;">자리 빔</span>';
+  if (messages.some(m => m.teamNo === t.id && m.status === 'pending' && m.kind === 'guess')) return '<span style="color:#b45309;">판정 대기</span>';
+  if (t.waiting) return '<span style="color:#4338ca;">답변 대기</span>';
+  return room.status === 'ended' ? '<span style="color:#b91c1c;">미해결</span>' : '진행';
+}
+function renderTeamTable() {
+  if (!room) return;
+  const list = rankTeams(teams, room);
+  $('teamTable').innerHTML = `<tr><th>순위</th><th>모둠</th><th>기록</th><th>질문</th><th>오답</th><th>🔑</th><th>상태</th><th></th></tr>` +
+    (list.map(t => `<tr><td>${t.rank}</td><td><b>${t.id}</b></td><td>${fmt(t.score)}</td><td>${t.questions || 0}</td><td>${t.wrong || 0}</td><td>${t.bestKeys || 0}/${room.mainCount}</td><td>${teamState(t)}</td>
+      <td>${t.uid && room.status === 'playing' ? `<button class="btn red sm" data-free="${t.id}" title="기기가 꺼졌을 때 다른 기기가 이어받게">비우기</button>` : ''}</td></tr>`).join('') || '<tr><td colspan="8" class="muted">모둠 없음</td></tr>');
+  bindFree($('teamTable'));
+}
+
+// ---------- 종료 화면 ----------
+function renderEnd() {
+  const list = rankTeams(teams, room);
+  $('finalTable').innerHTML = `<tr><th>순위</th><th>모둠</th><th>이름</th><th>기록</th><th>질문</th><th>오답</th><th>🔑</th><th>결과</th></tr>` +
+    list.map(t => `<tr><td><b>${t.rank}</b></td><td>${t.id}모둠</td><td>${esc(t.name || '')}</td><td><b>${fmt(t.score)}</b></td><td>${t.questions || 0}</td><td>${t.wrong || 0}</td><td>${t.bestKeys || 0}/${room.mainCount}</td><td>${t.solved ? '<span style="color:#15803d; font-weight:700;">정답</span>' : '<span style="color:#b91c1c;">미해결</span>'}</td></tr>`).join('');
+  $('revealBtn').textContent = room.reveal ? '✅ 정답 공개됨 (다시 숨기기)' : '🔓 점수판에 정답 공개';
+
+  const featured = room.featured || [];
+  const isFeat = (id, i) => featured.some(f => f.id === id && f.i === i);
+  const byTeam = {};
+  messages.forEach(m => { (byTeam[m.teamNo] = byTeam[m.teamNo] || []).push(m); });
+  const ids = Object.keys(byTeam).sort((a, b) => a - b);
+  $('history').innerHTML = ids.length ? ids.map(id => `
+    <div class="hist-team"><div style="font-weight:800; margin-top:6px;">${teamLabel(id)}</div>
+    ${byTeam[id].map(m => m.kind === 'question'
+      ? m.questions.map((q, i) => {
+          const a = m.answers && ANSWERS[m.answers[i]];
+          return `<div class="hist-item"><button class="star ${isFeat(m.id, i) ? 'on' : ''}" data-star="${m.id}|${i}">★</button><span style="flex:1;">${esc(q)}</span>${a ? `<span class="pill ${a.cls}">${a.long}</span>` : '<span class="pill a-nul">답변 안 함</span>'}</div>`;
+        }).join('')
+      : `<div class="hist-item"><span style="width:24px;"></span><span style="flex:1;">🎯 ${esc(m.guess)}</span><span class="pill ${m.verdict === 'correct' ? 'a-yes' : m.verdict === 'wrong' ? 'a-no' : 'a-nul'}">${m.verdict === 'correct' ? '정답' : m.verdict === 'wrong' ? `오답 🔑${m.keys}/${room.mainCount}` : '판정 안 함'}</span></div>`
+    ).join('')}</div>`).join('') : '<div class="muted" style="margin-top:8px;">질문 기록이 없습니다.</div>';
+  $('history').querySelectorAll('[data-star]').forEach(b => b.onclick = async () => {
+    const [id, i] = b.dataset.star.split('|');
+    const m = messages.find(x => x.id === id);
+    const idx = Number(i);
+    let next = (room.featured || []).filter(f => !(f.id === id && f.i === idx));
+    if (next.length === (room.featured || []).length) next = [...next, { id, i: idx, team: m.teamNo, q: m.questions[idx], a: (m.answers || [])[idx] || '' }];
+    try { await updateDoc(doc(db, 'rooms', roomCode), { featured: next }); } catch (e) { toast(explainError(e), 'error'); }
+  });
+}
+$('revealBtn').onclick = async () => {
+  try {
+    await updateDoc(doc(db, 'rooms', roomCode), {
+      reveal: room.reveal ? null : { answer: secret.answer, main: secret.mainKeywords.map(k => k.label), extra: (secret.extraKeywords || []).map(k => k.label) }
+    });
+  } catch (e) { toast(explainError(e), 'error'); }
+};
+$('copyBtn').onclick = () => {
+  const list = rankTeams(teams, room);
+  const rows = [['순위', '모둠', '이름', '기록', '질문', '오답', '키워드', '결과'],
+    ...list.map(t => [t.rank, `${t.id}모둠`, t.name || '', fmt(t.score), t.questions || 0, t.wrong || 0, `${t.bestKeys || 0}/${room.mainCount}`, t.solved ? '정답' : '미해결'])];
+  navigator.clipboard.writeText(rows.map(r => r.join('\t')).join('\n')).then(() => toast('결과를 복사했습니다. 엑셀이나 시트에 붙여넣으세요.', 'ok'));
+};
+$('newBtn').onclick = openGallery;
+
+// ============================================================
+// 시작
+// ============================================================
+const startRoom = new URLSearchParams(location.search).get('room');
+if (startRoom && /^\d{6}$/.test(startRoom)) openRoom(startRoom);
+else openGallery();
+</script>
+</body>
+</html>
