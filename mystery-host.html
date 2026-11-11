@@ -332,7 +332,8 @@ function renderNav() {
   const showGallery = inRoom || mode === 'detail';
   $('barNav').innerHTML =
     `<button class="btn ghost-d sm" id="navHome" title="교실 놀이 수업실로">🏠 교실 놀이</button>` +
-    (showGallery ? `<button class="btn ghost-d sm" id="navGallery">‹ 갤러리</button>` : '');
+    (showGallery ? `<button class="btn ghost-d sm" id="navGallery">‹ 갤러리</button>` : '') +
+    `<a class="btn ghost-d sm" href="mystery-guide.html" target="_blank" rel="noopener" style="text-decoration:none;" title="새 탭에서 열려요">📘 선생님 가이드</a>`;
   const leave = (btn, go) => {
     if (navMode !== 'playing') { go(); return; }
     if (!btn.dataset.armed) toast('⚠️ 게임 중에 나가면 자동 힌트와 시간 종료가 멈춰요. 나가려면 한 번 더 누르세요. (최근 만든 방에서 이어서 할 수 있어요)', 'error');
@@ -424,7 +425,10 @@ async function openGallery() {
 }
 
 function renderFilters() {
-  const levels = ['전체', '저학년', '고학년'];
+  // 등록된 사건에 있는 학년대만 버튼으로 (저 → 중 → 고 순서)
+  const order = ['저학년', '중학년', '고학년'];
+  const have = new Set(problems.map(p => p.level).filter(Boolean));
+  const levels = ['전체', ...order.filter(l => have.has(l)), ...[...have].filter(l => !order.includes(l) && l !== '전학년')];
   const themes = ['전체', ...new Set(problems.map(p => p.theme).filter(Boolean))];
   $('filters').innerHTML =
     levels.map(l => `<span class="chip ${filter.level === l ? 'on' : ''}" data-k="level" data-v="${esc(l)}">${esc(l)}</span>`).join('') +

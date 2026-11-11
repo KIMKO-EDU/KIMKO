@@ -4,50 +4,187 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>교실 놀이 수업실</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
   <style>
-    :root { --ink:#2b1d10; --bg:#fffdf8; --sun:#fcd34d; --c:#c2410c; --s:#ffedd5;
-      --font-title:'Jua','Gowun Dodum',sans-serif; --font-body:'Gowun Dodum','Noto Sans KR',sans-serif; }
-    * { box-sizing:border-box; }
-    body { margin:0; font-family:var(--font-body); background:var(--bg); color:var(--ink); min-height:100vh; }
-    a { color:inherit; text-decoration:none; }
-    :focus-visible { outline:3px solid #2563eb; outline-offset:3px; }
-    .topband { background:var(--ink); color:#fff6e5; padding:18px 24px 26px; }
-    .topband-inner { max-width:960px; margin:0 auto; display:flex; flex-direction:column; gap:10px; }
-    .back-btn { width:fit-content; background:var(--sun); color:var(--ink); border-radius:999px; padding:8px 18px; font-size:15px; min-height:44px; display:inline-flex; align-items:center; }
-    h1 { margin:0; font-family:var(--font-title); font-weight:400; font-size:42px; line-height:1.2; color:var(--sun); }
-    .subtitle { margin:0; font-size:18px; line-height:1.6; word-break:keep-all; }
-    .page { max-width:960px; margin:0 auto; padding:28px 24px 64px; }
-    .rows { display:flex; flex-direction:column; gap:12px; }
-    .row { display:flex; align-items:center; gap:16px; border:3px solid var(--ink); border-radius:18px; padding:14px 18px; background:#fff; transition:transform .15s, box-shadow .15s; }
-    a.row:hover { background:var(--s); transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--ink); }
-    a.row:active { transform:translate(2px,2px); box-shadow:none; }
-    .e { width:56px; height:56px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:30px; flex:none; background:var(--s); border:3px solid var(--c); }
-    .t { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
-    .t b { font-family:var(--font-title); font-weight:400; font-size:21px; line-height:1.3; }
-    .d { font-size:15px; color:#4a3520; line-height:1.5; word-break:keep-all; }
-    .g { font-style:normal; font-size:13px; font-weight:700; color:var(--c); background:var(--s); border-radius:999px; padding:3px 12px; flex:none; white-space:nowrap; }
-    .go { font-size:22px; color:var(--c); flex:none; }
-    .row.soon { border-style:dashed; background:transparent; color:#6b5238; }
-    .row.soon .e { border-color:#6b5238; background:transparent; }
-    @media (max-width:600px) { .topband { padding:14px 16px 20px; } h1 { font-size:32px; } .page { padding:22px 16px 48px; }
-      .row { flex-wrap:wrap; padding:14px; gap:12px; } .t { flex-basis:calc(100% - 80px); } .go { display:none; } }
-    @media (prefers-reduced-motion:reduce) { * { transition:none !important; } }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Pretendard', sans-serif, -apple-system;
+      margin: 0;
+      padding: 40px 20px 60px;
+      background: #fdf8f6;
+      color: #332724;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .top-nav {
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: 24px;
+    }
+    .back-btn {
+      text-decoration: none;
+      color: #78350f;
+      font-size: 14px;
+      font-weight: 600;
+      transition: color 0.15s;
+    }
+    .back-btn:hover { color: #451a03; }
+
+    .header-box {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    h1 { font-size: 28px; margin: 0 0 8px 0; color: #451a03; }
+    .subtitle { color: #8c6a5e; font-size: 15px; margin: 0; }
+
+    /* 놀이 카드 그리드 */
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 800px;
+    }
+    .game-card {
+      background: #ffffff;
+      border: 1px solid #ebd3cb;
+      border-radius: 16px;
+      padding: 24px;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04);
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .game-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 20px -3px rgba(120,53,15,0.08);
+      border-color: #b45309;
+    }
+    .game-icon { font-size: 38px; margin-bottom: 12px; }
+    .game-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: #2d1810; }
+    .game-desc { font-size: 14px; color: #6e554d; line-height: 1.5; margin-bottom: 16px; }
+    .game-meta {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      background: #fcf4f1;
+      color: #9a3412;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .btn-launch {
+      font-size: 14px;
+      font-weight: 700;
+      color: #c2410c;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* 미스터리 타임 카드 (진행자 / 학생 입구 두 개) */
+    .game-card.mystery { border-top: 4px solid #4338ca; }
+    .game-card.mystery:hover { border-color: #4338ca; box-shadow: 0 12px 20px -3px rgba(67,56,202,0.12); }
+    .game-card.mystery .badge { background: #eef2ff; color: #3730a3; }
+    .mystery-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+    .mystery-btns a {
+      flex: 1 1 140px;
+      text-align: center;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 10px 12px;
+      border-radius: 10px;
+    }
+    .mystery-btns .host { background: #4338ca; color: #ffffff; }
+    .mystery-btns .host:hover { background: #3730a3; }
+    .mystery-btns .student { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+    .mystery-btns .student:hover { background: #ffedd5; }
+
+    /* 준비 중 카드 스타일 */
+    .game-card.disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      border-style: dashed;
+    }
+    .game-card.disabled:hover {
+      transform: none;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04);
+      border-color: #ebd3cb;
+    }
   </style>
 </head>
 <body>
-  <div class="topband"><div class="topband-inner">
-    <a href="index.html" class="back-btn">← 홈으로</a>
-    <h1>🎲 교실 놀이</h1>
-    <p class="subtitle">놀이를 골라 TV 화면에 띄워 주세요.</p>
-  </div></div>
-  <div class="page">
-    <div class="rows">
-      <a class="row" href="choco-auction.html"><span class="e">🖼️</span><span class="t"><b>무제한 명화 경매</b><span class="d">매 라운드 무작위로 나오는 1~5점 명화를 비공개 입찰로 낙찰받는 심리 눈치 게임이에요.</span></span><i class="g">3~8모둠</i><span class="go" aria-hidden="true">→</span></a>
-      <a class="row" href="hapgyeol.html"><span class="e">🔺</span><span class="t"><b>결합 게임 (합! 결!)</b><span class="d">3×3 판에서 모양·색·바탕색이 모두 같거나 모두 다른 타일 3장을 찾는 관찰력 게임이에요.</span></span><i class="g">2~8조</i><span class="go" aria-hidden="true">→</span></a>
-      <div class="row soon"><span class="e">＋</span><span class="t"><b>새로운 교실 놀이</b><span class="d">곧 추가될 예정이에요.</span></span></div>
+
+  <div class="top-nav">
+    <a href="index.html" class="back-btn">← 메인 플랫폼으로 돌아가기</a>
+  </div>
+
+  <div class="header-box">
+    <h1>🎲 교실 놀이 수업실</h1>
+    <p class="subtitle">진행할 교실 놀이 프로그램을 선택하여 개별 전용 페이지로 입장하세요.</p>
+  </div>
+
+  <div class="game-grid">
+    <!-- 1. 무제한 초코 경매 (단독 페이지 연결) -->
+    <a href="choco-auction.html" class="game-card">
+      <div>
+        <div class="game-icon">🍫</div>
+        <div class="game-title">무제한 초코 경매</div>
+        <div class="game-desc">
+          최고가 단독 입찰자만 초코를 획득하는 고도의 심리 눈치 게임! 동점 입찰 무효, 최저가 감점, 12R 종료 시 최고 지출 조 파산 패배 룰이 적용된 진행자 전용 스코어보드입니다.
+        </div>
+        <div class="game-meta">
+          <span class="badge">👥 4개 조 대결</span>
+          <span class="badge">⏱️ 12 라운드</span>
+          <span class="badge">📢 3·6·9R 총액 공개</span>
+        </div>
+      </div>
+      <div class="btn-launch">게임 진행 페이지 열기 →</div>
+    </a>
+
+    <!-- 2. 미스터리 타임 (실시간 모둠 추리 게임 · Firebase) -->
+    <div class="game-card mystery">
+      <div>
+        <div class="game-icon">🔍</div>
+        <div class="game-title">미스터리 타임</div>
+        <div class="game-desc">
+          사건 그림과 짧은 이야기만 보고 원인과 결과를 추리하는 모둠 대결! 모둠은 태블릿으로 선생님께 질문하고, 선생님은 "네 / 아니요 / 그럴 수도 / 중요하지 않음"으로 답합니다. 질문과 오답에는 시간 벌칙, 가장 빨리 전말을 맞힌 모둠이 우승!
+        </div>
+        <div class="game-meta">
+          <span class="badge">👥 모둠전 · 기기 1대 = 1모둠</span>
+          <span class="badge">⏱️ 40분 1차시</span>
+          <span class="badge">📺 실시간 점수판</span>
+          <span class="badge">🔒 진행은 교사 인증</span>
+        </div>
+      </div>
+      <div class="mystery-btns">
+        <a href="mystery-host.html" class="host">🧑‍🏫 선생님 · 게임 진행</a>
+        <a href="mystery.html" class="student">🕵️ 학생 · 방 코드 입장</a>
+      </div>
+      <a href="mystery-guide.html" style="display:block; text-align:center; margin-top:10px; font-size:13.5px; font-weight:700; color:#4338ca; text-decoration:none;">📘 처음이신가요? 선생님 가이드 보기 →</a>
+    </div>
+
+    <!-- 3. 향후 추가할 놀이 (대기 슬롯) -->
+    <div class="game-card disabled">
+      <div>
+        <div class="game-icon">✨</div>
+        <div class="game-title">새로운 교실 놀이 (준비 중)</div>
+        <div class="game-desc">
+          학급 골든벨, 밸런스 토론 타이머, 팀 빌딩 보드게임 점수판 등 추후 제작될 새로운 수업 지원 도구가 탑재될 자리입니다.
+        </div>
+      </div>
+      <div style="font-size: 13px; color: #a8a29e; font-weight: 600;">업데이트 예정</div>
     </div>
   </div>
+
 </body>
 </html>
