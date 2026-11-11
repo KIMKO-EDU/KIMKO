@@ -331,7 +331,7 @@ function renderNav() {
   const inRoom = ['lobby', 'playing', 'ended'].includes(mode);
   const showGallery = inRoom || mode === 'detail';
   $('barNav').innerHTML =
-    `<button class="btn ghost-d sm" id="navHome" title="교실 놀이 수업실로">🏠 교실 놀이</button>` +
+    `<button class="btn ghost-d sm" id="navHome" title="KIMKO-EDU 홈으로">🏠 홈</button>` +
     (showGallery ? `<button class="btn ghost-d sm" id="navGallery">‹ 갤러리</button>` : '') +
     `<a class="btn ghost-d sm" href="mystery-guide.html" target="_blank" rel="noopener" style="text-decoration:none;" title="새 탭에서 열려요">📘 선생님 가이드</a>`;
   const leave = (btn, go) => {
@@ -339,7 +339,7 @@ function renderNav() {
     if (!btn.dataset.armed) toast('⚠️ 게임 중에 나가면 자동 힌트와 시간 종료가 멈춰요. 나가려면 한 번 더 누르세요. (최근 만든 방에서 이어서 할 수 있어요)', 'error');
     confirmClick(btn, '정말 나갈까요?', go);
   };
-  $('navHome').onclick = () => leave($('navHome'), () => { location.href = 'play.html'; });
+  $('navHome').onclick = () => leave($('navHome'), () => { location.href = 'index.html'; });
   if ($('navGallery')) $('navGallery').onclick = () => leave($('navGallery'), () => openGallery());
 }
 
