@@ -106,7 +106,8 @@
   <div id="vEnd" class="body hidden">
     <div class="left" style="flex-basis:40%;" id="endLeft"></div>
     <div class="panel" style="gap:1.4vh;">
-      <div style="font-size:1.8vh; color:#fbbf24; font-weight:800;">🏆 최종 순위</div>
+      <div style="font-size:1.8vh; color:#fbbf24; font-weight:800;" id="rankHead">🏆 최종 순위</div>
+      <div id="finalNote" class="hidden" style="background:rgba(251,191,36,.15); border:1px solid rgba(251,191,36,.5); color:#fde68a; border-radius:1.2vh; padding:1.2vh 1.2vw; font-size:2vh; font-weight:700;"></div>
       <div class="podium" id="podium"></div>
       <table id="restTable"></table>
     </div>
@@ -247,6 +248,10 @@ function highlight(text, main, extra) {
 }
 function renderEnd() {
   view('vEnd');
+  const fc = room.finalCheck || 0;
+  $('rankHead').textContent = fc ? '🏆 잠정 순위' : '🏆 최종 순위';
+  $('finalNote').classList.toggle('hidden', !fc);
+  $('finalNote').textContent = `⏳ 마감 직전에 제출한 정답 ${fc}개를 선생님이 확인하고 있어요. 순위가 바뀔 수 있어요!`;
   const r = room.reveal;
   const feat = room.featured || [];
   $('endLeft').innerHTML = r ? `

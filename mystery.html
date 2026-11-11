@@ -448,6 +448,15 @@ function renderEnd(t) {
     [...(r.main || []), ...(r.extra || [])].sort((a, b) => b.length - a.length).forEach(w => { const e = esc(w); h = h.split(e).join(`\u0000${e}\u0001`); });
     ans = `<div style="font-weight:800; margin-top:20px;">🔓 사건의 전말</div><div class="ans-box">${h.replace(/\u0000/g, '<mark>').replace(/\u0001/g, '</mark>')}</div>`;
   }
+  const waiting = myMsgs.some(m => m.kind === 'guess' && m.status === 'pending');
+  if (waiting) {
+    $('gEnd').innerHTML = `
+      <div style="font-size:54px;">⏳</div>
+      <div style="font-size:26px; font-weight:900;">시간 종료!</div>
+      <div style="margin-top:10px; font-size:18px; line-height:1.6;">마감 직전에 제출한 정답을<br><b>선생님이 확인하고 있어요.</b> 잠시만 기다려 주세요!</div>
+      <div class="muted" style="margin-top:8px;">정답이면 제출한 시각으로 기록돼요.</div>`;
+    return;
+  }
   $('gEnd').innerHTML = `
     <div style="font-size:54px;">${me && me.rank === 1 ? '🏆' : me && me.solved ? '🎉' : '🏁'}</div>
     <div style="font-size:26px; font-weight:900;">게임 종료!</div>

@@ -243,6 +243,15 @@
       </div>
       <!-- 종료 -->
       <div id="endWrap" class="hidden">
+        <div id="finalWrap" class="hidden" style="margin-bottom:12px;">
+          <div class="card" style="border-color:#f59e0b; background:#fffbeb; margin-bottom:10px;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span style="font-size:18px; font-weight:900;">⏳ 마감 직전 제출 확인</span><span class="pill" style="background:#f59e0b; color:#1c1917;" id="finalCount">0</span>
+              <span class="muted" style="font-size:13px;">시간 안에 들어온 정답 제출이에요. 판정하면 순위에 그대로 반영됩니다. 정답이면 제출한 시각으로 기록돼요.</span>
+            </div>
+          </div>
+          <div id="finalQueue"></div>
+        </div>
         <div class="card" style="margin-bottom:12px;">
           <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
             <span style="font-size:20px; font-weight:900;">🏁 게임 종료</span><span style="flex:1"></span>
@@ -331,7 +340,7 @@ function renderNav() {
   const inRoom = ['lobby', 'playing', 'ended'].includes(mode);
   const showGallery = inRoom || mode === 'detail';
   $('barNav').innerHTML =
-    `<button class="btn ghost-d sm" id="navHome" title="KIMKO-EDU 홈으로">🏠 홈</button>` +
+    `<button class="btn ghost-d sm" id="navHome" title="교실 놀이 수업실로">🏠 교실 놀이</button>` +
     (showGallery ? `<button class="btn ghost-d sm" id="navGallery">‹ 갤러리</button>` : '') +
     `<a class="btn ghost-d sm" href="mystery-guide.html" target="_blank" rel="noopener" style="text-decoration:none;" title="새 탭에서 열려요">📘 선생님 가이드</a>`;
   const leave = (btn, go) => {
@@ -339,7 +348,7 @@ function renderNav() {
     if (!btn.dataset.armed) toast('⚠️ 게임 중에 나가면 자동 힌트와 시간 종료가 멈춰요. 나가려면 한 번 더 누르세요. (최근 만든 방에서 이어서 할 수 있어요)', 'error');
     confirmClick(btn, '정말 나갈까요?', go);
   };
-  $('navHome').onclick = () => leave($('navHome'), () => { location.href = 'index.html'; });
+  $('navHome').onclick = () => leave($('navHome'), () => { location.href = 'play.html'; });
   if ($('navGallery')) $('navGallery').onclick = () => leave($('navGallery'), () => openGallery());
 }
 
@@ -774,18 +783,34 @@ function renderQueue() {
   $('qCount').textContent = pend.length;
   if (!pend.length) { $('queue').innerHTML = '<div class="empty-q">새 질문을 기다리는 중입니다 🕵️</div>'; return; }
   $('queue').innerHTML = pend.map(m => m.kind === 'question' ? questionCard(m) : guessCard(m)).join('');
-  // 답변 버튼
-  $('queue').querySelectorAll('[data-ans]').forEach(b => b.onclick = () => {
+  bindCards($('queue'), renderQueue);
+}
+
+// 질문 답변 · 키워드 조정 · 정답 판정 버튼 연결
+function bindCards(root, rerender) {
+  root.querySelectorAll('[data-ans]').forEach(b => b.onclick = () => {
     const [id, i, v] = b.dataset.ans.split('|');
-    sel[id] = sel[id] || []; sel[id][Number(i)] = v; renderQueue();
+    sel[id] = sel[id] || []; sel[id][Number(i)] = v; rerender();
   });
-  $('queue').querySelectorAll('[data-send]').forEach(b => b.onclick = () => sendAnswers(b.dataset.send, b));
-  $('queue').querySelectorAll('[data-adj]').forEach(b => b.onclick = () => {
+  root.querySelectorAll('[data-send]').forEach(b => b.onclick = () => sendAnswers(b.dataset.send, b));
+  root.querySelectorAll('[data-adj]').forEach(b => b.onclick = () => {
     const [id, d] = b.dataset.adj.split('|');
     const m = messages.find(x => x.id === id);
-    adj[id] = Math.max(0, Math.min(room.mainCount, keyCount(m) + Number(d))); renderQueue();
+    adj[id] = Math.max(0, Math.min(room.mainCount, keyCount(m) + Number(d))); rerender();
   });
-  $('queue').querySelectorAll('[data-judge]').forEach(b => b.onclick = () => { const [id, v] = b.dataset.judge.split('|'); judge(id, v === 'ok', b); });
+  root.querySelectorAll('[data-judge]').forEach(b => b.onclick = () => { const [id, v] = b.dataset.judge.split('|'); judge(id, v === 'ok', b); });
+}
+
+// 게임이 끝난 뒤에도, 시간 안에 들어온 정답 제출은 판정할 수 있게
+function pendingFinal() { return messages.filter(m => m.status === 'pending' && m.kind === 'guess'); }
+function renderFinal() {
+  const list = pendingFinal();
+  $('finalWrap').classList.toggle('hidden', !list.length);
+  $('finalCount').textContent = list.length;
+  $('finalQueue').innerHTML = list.map(guessCard).join('');
+  bindCards($('finalQueue'), renderFinal);
+  // 점수판·학생 화면에 "확인 중"을 알리기 위해 개수를 방 정보에 기록
+  if ((room.finalCheck || 0) !== list.length) updateDoc(doc(db, 'rooms', roomCode), { finalCheck: list.length }).catch(() => {});
 }
 
 function questionCard(m) {
@@ -891,6 +916,8 @@ async function endGame() {
       if (r.status !== 'playing') return;
       tx.update(ref, { status: 'ended', endedAt: serverTimestamp() });
     });
+    const n = messages.filter(m => m.status === 'pending' && m.kind === 'guess').length;
+    if (n) toast(`⏳ 마감 직전 정답 제출 ${n}개가 남아 있어요. 판정해 주세요!`);
   } catch (e) { toast(explainError(e), 'error'); }
 }
 
@@ -954,6 +981,7 @@ function renderTeamTable() {
 
 // ---------- 종료 화면 ----------
 function renderEnd() {
+  renderFinal();
   const list = rankTeams(teams, room);
   $('finalTable').innerHTML = `<tr><th>순위</th><th>모둠</th><th>이름</th><th>기록</th><th>질문</th><th>오답</th><th>🔑</th><th>결과</th></tr>` +
     list.map(t => `<tr><td><b>${t.rank}</b></td><td>${t.id}모둠</td><td>${esc(t.name || '')}</td><td><b>${fmt(t.score)}</b></td><td>${t.questions || 0}</td><td>${t.wrong || 0}</td><td>${t.bestKeys || 0}/${room.mainCount}</td><td>${t.solved ? '<span style="color:#15803d; font-weight:700;">정답</span>' : '<span style="color:#b91c1c;">미해결</span>'}</td></tr>`).join('');
@@ -982,13 +1010,18 @@ function renderEnd() {
     try { await updateDoc(doc(db, 'rooms', roomCode), { featured: next }); } catch (e) { toast(explainError(e), 'error'); }
   });
 }
-$('revealBtn').onclick = async () => {
+$('revealBtn').onclick = () => {
+  const n = pendingFinal().length;
+  if (n && !room.reveal) { confirmClick($('revealBtn'), `확인 안 한 제출 ${n}개! 그래도 공개?`, doReveal); return; }
+  doReveal();
+};
+async function doReveal() {
   try {
     await updateDoc(doc(db, 'rooms', roomCode), {
       reveal: room.reveal ? null : { answer: secret.answer, main: secret.mainKeywords.map(k => k.label), extra: (secret.extraKeywords || []).map(k => k.label) }
     });
   } catch (e) { toast(explainError(e), 'error'); }
-};
+}
 $('copyBtn').onclick = () => {
   const list = rankTeams(teams, room);
   const rows = [['순위', '모둠', '이름', '기록', '질문', '오답', '키워드', '결과'],
