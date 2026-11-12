@@ -118,7 +118,7 @@
 <script type="module">
 import {
   db, ready, esc, fmt, explainError, pageUrl, EST,
-  elapsedSec, remainSec, rankTeams, nextHintIn, ANSWERS,
+  elapsedSec, remainSec, rankTeams, nextHintIn, ANSWERS, penTable,
   doc, collection, onSnapshot
 } from './mystery-firebase.js';
 import { slideHtml, injectSlideCss } from './mystery-slides.js';
@@ -236,7 +236,7 @@ function renderTable() {
       <td class="mono">${t.questions || 0}</td><td class="mono">${t.wrong || 0}</td>
       <td>${dots(t)}</td>
       <td style="${t.solved ? 'color:#86efac; font-weight:800;' : 'color:#94a3b8;'}">${t.solved ? '🎉 정답!' : t.uid ? '추리 중…' : '자리 빔'}</td></tr>`).join('');
-  $('foot').textContent = `기록 = 지난 시간 + 질문 1개당 +${fmt(s.qPenaltySec)} + 오답 +${fmt(s.wrongPenaltySec)} · 정답 모둠은 기록이 멈춤 · 🔑 = 찾은 메인 키워드 개수`;
+  $('foot').textContent = `기록 = 지난 시간 + 질문 1개당 +${fmt(s.qPenaltySec)} + 오답 벌칙(키워드 ${penTable(s, room.mainCount)}) · 정답 모둠은 기록이 멈춤 · 🔑 = 찾은 메인 키워드 개수`;
 }
 
 // ---------- 종료 ----------

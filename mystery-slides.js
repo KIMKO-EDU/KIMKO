@@ -3,7 +3,7 @@
 // 점수판(mystery-board.html)과 진행자 화면(mystery-host.html)이 함께 사용
 // 방 설정(제한 시간, 벌칙, 힌트 간격)이 슬라이드 숫자에 자동으로 들어감
 // ============================================================
-import { fmt, esc } from './mystery-firebase.js';
+import { fmt, esc, wrongPenFor } from './mystery-firebase.js';
 
 export const SLIDE_COUNT = 7;
 
@@ -64,6 +64,8 @@ export function injectSlideCss() {
 export function slideHtml(i, room, code) {
   const s = room.settings;
   const q = fmt(s.qPenaltySec), w = fmt(s.wrongPenaltySec);
+  const disc = s.keyDiscountSec || 0;
+  const wMin = fmt(wrongPenFor(s, Math.max(1, (room.mainCount || 4) - 1)));
   const lim = Math.round(s.limitSec / 60), uns = Math.round((s.limitSec + s.unsolvedExtraSec) / 60);
   const hf = Math.round(s.hintFirstSec / 60), he = Math.round(s.hintEverySec / 60);
   const mk = room.mainCount || 4;
@@ -125,7 +127,7 @@ export function slideHtml(i, room, code) {
        <div class="ms-formula">우리 기록 = 걸린 시간 + 질문 벌칙 + 오답 벌칙</div>
        <div class="ms-pen">
          <div><div class="n">+${q}</div><div class="l">질문 1개마다</div></div>
-         <div><div class="n">+${w}</div><div class="l">정답이 틀리면</div></div>
+         <div><div class="n">+${w}</div><div class="l">정답이 틀리면${disc ? `<br><span style="font-weight:500; font-size:.85em; color:#94a3b8;">(키워드 찾은 만큼 줄어요)</span>` : ''}</div></div>
          <div><div class="n">${uns}분</div><div class="l">끝까지 못 맞히면<br><span style="font-weight:500; font-size:.85em; color:#94a3b8;">(+ 벌칙)</span></div></div>
        </div>
        <div class="ms-card" style="text-align:center; font-size:1.1em;">⏳ 선생님 답을 <b>받아야</b> 다음 질문을 보낼 수 있어요. 질문을 아껴서, 잘 생각하고 보내요!</div>
@@ -148,11 +150,14 @@ export function slideHtml(i, room, code) {
            <ul class="ms-list" style="font-size:1.05em;">
              <li><b>원인 → 결과</b> 순서로 이야기처럼</li>
              <li>꼭 들어가야 할 <b>메인 키워드 ${mk}개</b></li>
-             <li>언제든 제출 가능, 틀리면 +${w}</li>
+             <li>언제든 제출 가능!</li>
+             <li><b>문장으로</b> 써요 (단어만 나열 ✕)</li>
            </ul>
          </div>
        </div>
-       <div class="ms-formula" style="font-size:1.15em;">틀려도 알려 줘요 → "메인 키워드 ${mk}개 중 ${Math.max(1, mk - 1)}개를 찾았어요!" ${dots(Math.max(1, mk - 1))}<br><span style="font-size:.8em; color:#c7d2fe; font-weight:600;">점수판의 🔑 칸에서 다른 모둠이 몇 개 찾았는지도 볼 수 있어요</span></div>
+       <div class="ms-formula" style="font-size:1.1em;">틀려도 알려 줘요 → "메인 키워드 ${mk}개 중 ${Math.max(1, mk - 1)}개를 찾았어요!" ${dots(Math.max(1, mk - 1))}<br>
+         <span style="font-size:.82em; color:#fde68a; font-weight:700;">${disc ? `찾은 키워드 1개마다 벌칙 −${fmt(disc)} → 0개 +${w} … ${Math.max(1, mk - 1)}개면 +${wMin}만!` : `틀리면 +${w}`}</span><br>
+         <span style="font-size:.75em; color:#c7d2fe; font-weight:600;">점수판의 🔑 칸에서 다른 모둠이 몇 개 찾았는지도 볼 수 있어요</span></div>
      </div>`,
 
     // 7. 모둠 약속

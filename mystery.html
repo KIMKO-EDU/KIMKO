@@ -172,7 +172,7 @@
 <script type="module">
 import {
   db, ready, now, esc, fmt, toast, explainError, EST, ANSWERS,
-  elapsedSec, remainSec, teamScore, rankTeams, nextHintIn, ms,
+  elapsedSec, remainSec, teamScore, rankTeams, nextHintIn, ms, wrongPenFor, penTable,
   doc, getDoc, setDoc, updateDoc, collection, query, where, onSnapshot,
   writeBatch, serverTimestamp, increment
 } from './mystery-firebase.js';
@@ -288,7 +288,9 @@ function renderRules() {
     ❓ 질문은 한 번에 <b>최대 3개</b>. 질문 1개마다 기록에 <b>+${fmt(s.qPenaltySec)}</b>.<br>
     ⏳ 선생님 답을 받아야 다음 질문을 보낼 수 있어요.<br>
     💬 선생님 답: 네 / 아니요 / 그럴 수도 있습니다 / 중요하지 않습니다<br>
-    🎯 정답은 언제든 제출! 틀리면 <b>+${fmt(s.wrongPenaltySec)}</b>, 메인 키워드를 몇 개 찾았는지 알려 줘요.<br>
+    🎯 정답은 언제든 제출! 틀려도 <b>메인 키워드를 찾은 만큼 벌칙이 줄어요</b>.<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;(${penTable(s, room.mainCount)})<br>
+    ✍️ 정답은 <b>문장으로</b> 써요. 단어만 나열하면 키워드 0개로 처리돼요.<br>
     💡 시간이 지나거나 정답 모둠이 나오면 힌트가 열려요.<br>
     🏆 기록이 가장 짧은 모둠이 1등!`;
 }
@@ -328,7 +330,7 @@ function renderPlay(t) {
     });
     else {
       const v = m.verdict === 'correct' ? '<span class="pill" style="background:#16a34a; color:#fff;">⭕ 정답!</span>'
-        : m.verdict === 'wrong' ? `<span class="pill" style="background:#fff; color:#b45309; border:1px solid #fde68a;">🔑 ${m.keys} / ${room.mainCount}</span><span class="pill" style="background:#dc2626; color:#fff;">오답 +${fmt(room.settings.wrongPenaltySec)}</span>`
+        : m.verdict === 'wrong' ? `<span class="pill" style="background:#fff; color:#b45309; border:1px solid #fde68a;">🔑 ${m.keys} / ${room.mainCount}</span><span class="pill" style="background:#dc2626; color:#fff;">오답 +${fmt(m.penSec != null ? m.penSec : room.settings.wrongPenaltySec)}</span>`
         : '<span class="pill a-wait">⏳ 확인 중</span>';
       items.push(`<div class="log-item ${isNew ? 'new' : ''}" style="background:${m.verdict === 'wrong' ? '#fef2f2' : m.verdict === 'correct' ? '#f0fdf4' : '#fffbeb'}; border-radius:8px; padding:7px 8px;"><span class="q">🎯 ${esc(m.guess)}</span>${v}</div>`);
     }
@@ -394,7 +396,7 @@ $('askBtn').onclick = async () => {
 // 정답 제출
 $('guessOpen').onclick = () => {
   $('guessKeyInfo').innerHTML = `✔ 꼭 들어가야 할 <b>메인 키워드는 ${room.mainCount}개</b>예요. 빠뜨린 게 없는지 확인해 보세요.`;
-  $('guessPenInfo').innerHTML = `⚠️ 틀리면 우리 기록에 <b>+${fmt(room.settings.wrongPenaltySec)}</b>이 더해져요.`;
+  $('guessPenInfo').innerHTML = `⚠️ 틀려도 찾은 키워드만큼 벌칙이 줄어요: <b>${penTable(room.settings, room.mainCount)}</b><br>✍️ <b>문장으로</b> 써 주세요. 단어만 나열하면 키워드 0개로 처리돼요.`;
   $('mGuess').classList.remove('hidden'); $('guessIn').focus();
 };
 $('guessCancel').onclick = () => $('mGuess').classList.add('hidden');
@@ -425,7 +427,7 @@ function showResult(m) {
     const n = m.keys || 0, tot = room.mainCount;
     box.className = 'result no';
     box.innerHTML = `<div style="font-size:50px;">🤔</div><div style="font-size:27px; font-weight:900;">아쉬워요, 오답!</div>
-      <div style="margin-top:4px;">우리 기록 <b>+${fmt(room.settings.wrongPenaltySec)}</b></div>
+      <div style="margin-top:4px;">우리 기록 <b>+${fmt(m.penSec != null ? m.penSec : room.settings.wrongPenaltySec)}</b>${n > 0 && (room.settings.keyDiscountSec || 0) > 0 ? ` <span style="font-size:13px;">(키워드 ${n}개 덕분에 ${fmt(n * room.settings.keyDiscountSec)} 줄었어요!)</span>` : ''}</div>
       <div style="background:#fff; border:1px solid #fed7aa; border-radius:14px; padding:12px; margin-top:12px;">
         <div style="font-size:13px; font-weight:700;">메인 키워드 ${tot}개 중</div>
         <div class="kdots">${Array.from({ length: tot }, (_, i) => `<span class="${i < n ? 'on' : ''}"></span>`).join('')}</div>

@@ -73,7 +73,8 @@ export const DEFAULT_SETTINGS = {
   hintFirstSec: 6 * 60,  // 첫 힌트
   hintEverySec: 3 * 60,  // 힌트 간격
   qPenaltySec: 30,       // 질문 1개 벌칙
-  wrongPenaltySec: 120,  // 오답 벌칙
+  wrongPenaltySec: 120,  // 오답 벌칙 (키워드 0개일 때)
+  keyDiscountSec: 30,    // 오답이어도 메인 키워드 1개당 줄여 주는 시간
   unsolvedExtraSec: 300  // 못 맞히면 제한 시간 + 이만큼
 };
 
@@ -117,7 +118,9 @@ export function fmt(sec) {
 // 모둠 기록 = (정답이면 맞힌 시각 / 못 맞히면 제한+5분 / 진행 중이면 지난 시간) + 벌칙
 export function teamScore(team, room, nowMs = now()) {
   const s = room.settings;
-  const pen = (team.questions || 0) * s.qPenaltySec + (team.wrong || 0) * s.wrongPenaltySec;
+  // 오답 벌칙은 판정 때마다 실제 붙은 값을 wrongPenSec에 쌓음 (예전 방은 오답 수 × 고정 벌칙)
+  const wrongPen = typeof team.wrongPenSec === 'number' ? team.wrongPenSec : (team.wrong || 0) * s.wrongPenaltySec;
+  const pen = (team.questions || 0) * s.qPenaltySec + wrongPen;
   const el = elapsedSec(room, nowMs);
   const over = room.status === 'ended' || el >= s.limitSec;
   let base, state;
@@ -138,6 +141,17 @@ export function rankTeams(teams, room, nowMs = now()) {
     t.rank = rank;
   });
   return list;
+}
+
+// ---------- 오답 벌칙 (키워드 개수에 따라 줄어듦) ----------
+// 키워드 0개: +2분, 1개: +1분30초, 2개: +1분, 3개: +30초 (기본값 기준)
+export function wrongPenFor(s, keys) {
+  return Math.max(0, (s.wrongPenaltySec || 0) - (keys || 0) * (s.keyDiscountSec || 0));
+}
+// "0개 +2:00 · 1개 +1:30 · 2개 +1:00 · 3개 +0:30"
+export function penTable(s, mainCount) {
+  const n = Math.max(1, (mainCount || 4) - 1);
+  return Array.from({ length: n + 1 }, (_, k) => `${k}개 +${fmt(wrongPenFor(s, k))}`).join(' · ');
 }
 
 // ---------- 힌트 일정 ----------

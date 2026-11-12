@@ -169,7 +169,8 @@
         <div class="field"><div class="label">첫 힌트 (분)</div><input id="sHintFirst" type="number" min="1" max="60" value="6"></div>
         <div class="field"><div class="label">힌트 간격 (분)</div><input id="sHintEvery" type="number" min="1" max="30" value="3"></div>
         <div class="field"><div class="label">질문 1개 벌칙 (초)</div><input id="sQPen" type="number" min="0" max="300" value="30"></div>
-        <div class="field"><div class="label">오답 벌칙 (분)</div><input id="sWrongPen" type="number" min="0" max="20" value="2"></div>
+        <div class="field"><div class="label">오답 벌칙 (분, 키워드 0개일 때)</div><input id="sWrongPen" type="number" min="0" max="20" value="2"></div>
+        <div class="field"><div class="label">오답 감면 (키워드 1개당, 초)</div><input id="sKeyDisc" type="number" min="0" max="120" value="30"></div>
         <div class="field"><div class="label">못 맞힘 추가 (분)</div><input id="sUnsolved" type="number" min="0" max="60" value="5"></div>
       </div>
       <div class="note-box" id="ruleSummary"></div>
@@ -318,7 +319,7 @@
 <script type="module">
 import {
   db, ready, now, esc, fmt, toast, explainError, pageUrl, EST, ANSWERS, DEFAULT_SETTINGS,
-  elapsedSec, remainSec, teamScore, rankTeams, hintSlotTimes, slotsDue, findKeywords, ms,
+  elapsedSec, remainSec, teamScore, rankTeams, hintSlotTimes, slotsDue, findKeywords, ms, wrongPenFor, penTable,
   doc, getDoc, getDocs, setDoc, updateDoc, collection, query, orderBy, onSnapshot,
   writeBatch, runTransaction, serverTimestamp, increment, Timestamp
 } from './mystery-firebase.js';
@@ -506,7 +507,7 @@ $('teamModeSeg').querySelectorAll('button').forEach(b => b.onclick = () => {
   $('teamCountWrap').classList.toggle('hidden', teamMode === 'auto');
   updateSummary();
 });
-['sLimit', 'sHintFirst', 'sHintEvery', 'sQPen', 'sWrongPen', 'sUnsolved', 'sTeamCount'].forEach(id => $(id).oninput = updateSummary);
+['sLimit', 'sHintFirst', 'sHintEvery', 'sQPen', 'sWrongPen', 'sKeyDisc', 'sUnsolved', 'sTeamCount'].forEach(id => $(id).oninput = updateSummary);
 
 function readSettings() {
   const n = (id, min, max) => Math.min(max, Math.max(min, Math.round(Number($(id).value) || 0)));
@@ -519,6 +520,7 @@ function readSettings() {
   s.hintEverySec = n('sHintEvery', 1, 30) * 60;
   s.qPenaltySec = n('sQPen', 0, 300);
   s.wrongPenaltySec = n('sWrongPen', 0, 20) * 60;
+  s.keyDiscountSec = n('sKeyDisc', 0, 120);
   s.unsolvedExtraSec = n('sUnsolved', 0, 60) * 60;
   return s;
 }
@@ -530,7 +532,8 @@ function updateSummary() {
   $('ruleSummary').innerHTML = `
     힌트 자동 공개: <b>${slots.join(' · ') || '없음'}</b> + 정답 모둠이 나오면 즉시 하나 더<br>
     못 맞힌 모둠 기록 = <b>${(s.limitSec + s.unsolvedExtraSec) / 60}분</b>(제한 시간 + ${s.unsolvedExtraSec / 60}분) + 벌칙<br>
-    종료: 모든 모둠 정답 · ${s.limitSec / 60}분 경과 · 선생님 [게임 종료]`;
+    종료: 모든 모둠 정답 · ${s.limitSec / 60}분 경과 · 선생님 [게임 종료]
+    <br>오답 벌칙(찾은 메인 키워드 수): <b>${penTable(s, (curSecret && curSecret.mainKeywords ? curSecret.mainKeywords.length : cur.mainCount) || 4)}</b>`;
 }
 
 $('createBtn').onclick = async () => {
@@ -842,7 +845,9 @@ function guessCard(m) {
       <span class="stepper"><button data-adj="${m.id}|-1">−</button><span style="color:#b45309; font-size:15px; padding:0 6px;">${keyCount(m)} / ${room.mainCount}</span><button data-adj="${m.id}|1">+</button></span>
       <span style="flex:1"></span>
       <button class="btn green" data-judge="${m.id}|ok">⭕ 정답</button>
-      <button class="btn" style="background:#dc2626;" data-judge="${m.id}|no">❌ 오답 +${fmt(room.settings.wrongPenaltySec)}</button>
+      <button class="btn" style="background:#dc2626;" data-judge="${m.id}|no">❌ 오답 +${fmt(wrongPenFor(room.settings, keyCount(m)))}</button>
+    </div>
+    <div class="muted" style="font-size:12px; margin-top:6px;">💡 문장이 아니라 단어만 나열한 제출은 키워드를 <b>0개</b>로 조정해 판정하세요.</div><div>
     </div>
   </div>`;
 }
@@ -867,10 +872,15 @@ async function judge(id, correct, btn) {
   btn.disabled = true;
   try {
     const b = writeBatch(db);
-    b.update(doc(db, 'rooms', roomCode, 'messages', id), { status: 'answered', verdict: correct ? 'correct' : 'wrong', keys, answeredAt: serverTimestamp() });
+    const penSec = correct ? 0 : wrongPenFor(room.settings, keys);
+    b.update(doc(db, 'rooms', roomCode, 'messages', id), { status: 'answered', verdict: correct ? 'correct' : 'wrong', keys, penSec, answeredAt: serverTimestamp() });
     if (t) {
       if (correct) b.update(doc(db, 'rooms', roomCode, 'teams', m.teamNo), { solved: true, solvedAtSec: Math.round(msgElapsed(m)), bestKeys: room.mainCount, waiting: false });
-      else b.update(doc(db, 'rooms', roomCode, 'teams', m.teamNo), { wrong: increment(1), bestKeys: Math.max(t.bestKeys || 0, keys) });
+      else {
+        // 예전 방식으로 쌓인 오답이 있으면 그 벌칙부터 옮겨 담고 이번 벌칙을 더함
+        const prev = typeof t.wrongPenSec === 'number' ? t.wrongPenSec : (t.wrong || 0) * room.settings.wrongPenaltySec;
+        b.update(doc(db, 'rooms', roomCode, 'teams', m.teamNo), { wrong: increment(1), wrongPenSec: prev + penSec, bestKeys: Math.max(t.bestKeys || 0, keys) });
+      }
     }
     await b.commit();
     delete adj[id];
@@ -999,7 +1009,7 @@ function renderEnd() {
           const a = m.answers && ANSWERS[m.answers[i]];
           return `<div class="hist-item"><button class="star ${isFeat(m.id, i) ? 'on' : ''}" data-star="${m.id}|${i}">★</button><span style="flex:1;">${esc(q)}</span>${a ? `<span class="pill ${a.cls}">${a.long}</span>` : '<span class="pill a-nul">답변 안 함</span>'}</div>`;
         }).join('')
-      : `<div class="hist-item"><span style="width:24px;"></span><span style="flex:1;">🎯 ${esc(m.guess)}</span><span class="pill ${m.verdict === 'correct' ? 'a-yes' : m.verdict === 'wrong' ? 'a-no' : 'a-nul'}">${m.verdict === 'correct' ? '정답' : m.verdict === 'wrong' ? `오답 🔑${m.keys}/${room.mainCount}` : '판정 안 함'}</span></div>`
+      : `<div class="hist-item"><span style="width:24px;"></span><span style="flex:1;">🎯 ${esc(m.guess)}</span><span class="pill ${m.verdict === 'correct' ? 'a-yes' : m.verdict === 'wrong' ? 'a-no' : 'a-nul'}">${m.verdict === 'correct' ? '정답' : m.verdict === 'wrong' ? `오답 🔑${m.keys}/${room.mainCount} +${fmt(m.penSec != null ? m.penSec : room.settings.wrongPenaltySec)}` : '판정 안 함'}</span></div>`
     ).join('')}</div>`).join('') : '<div class="muted" style="margin-top:8px;">질문 기록이 없습니다.</div>';
   $('history').querySelectorAll('[data-star]').forEach(b => b.onclick = async () => {
     const [id, i] = b.dataset.star.split('|');
