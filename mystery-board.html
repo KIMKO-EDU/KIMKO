@@ -258,6 +258,7 @@ function renderEnd() {
       <div style="font-size:1.8vh; color:#fbbf24; font-weight:800;">🔓 사건의 전말</div>
       <div class="ans">${highlight(r.answer, r.main || [], r.extra || [])}</div>
       <div style="font-size:1.6vh; color:#94a3b8;"><mark class="m">메인</mark> ${(r.main || []).map(esc).join(' · ')} &nbsp; <mark class="x">추가</mark> ${(r.extra || []).map(esc).join(' · ')}</div>
+      ${(r.discussion || []).length ? `<div class="hints" style="flex:none;"><div class="h">💬 함께 생각해 봐요</div><ol style="font-size:1.9vh;">${r.discussion.map(d => `<li>${esc(d)}</li>`).join('')}</ol></div>` : ''}
       ${feat.length ? `<div class="hints" style="flex:none;"><div class="h">⭐ 결정적 질문</div><div class="feat">${feat.map(f => `${f.team}모둠: ${esc(f.q)} → <span class="a">${f.a && ANSWERS[f.a] ? ANSWERS[f.a].long : ''}</span>`).join('<br>')}</div></div>` : ''}`
     : `<img src="${esc(room.imageUrl)}" alt="">
       <div style="font-size:3.4vh; font-weight:900; margin-top:1vh;">🏁 게임 종료!</div>

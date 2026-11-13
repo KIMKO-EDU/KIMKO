@@ -492,7 +492,14 @@ function secretHtml(s) {
   return `<div class="label">사건의 전말</div><div class="secret">${esc(s.answer)}</div>
     <div class="label" style="margin-top:8px;">메인 키워드</div>${(s.mainKeywords || []).map(k => `<span class="kw m">${esc(k.label)}</span>`).join('')}
     <div class="label" style="margin-top:8px;">추가 키워드</div>${(s.extraKeywords || []).map(k => `<span class="kw x">${esc(k.label)}</span>`).join('') || '<span class="muted">없음</span>'}
-    <div class="label" style="margin-top:8px;">힌트</div><ol style="margin:4px 0 0; padding-left:20px; font-size:13.5px; line-height:1.6;">${(s.hints || []).map(h => `<li>${esc(h)}</li>`).join('')}</ol>`;
+    <div class="label" style="margin-top:8px;">힌트</div><ol style="margin:4px 0 0; padding-left:20px; font-size:13.5px; line-height:1.6;">${(s.hints || []).map(h => `<li>${esc(h)}</li>`).join('')}</ol>` + extraSecretHtml(s);
+}
+// 해설 발문 · 교사용 메모 (있는 사건만)
+function extraSecretHtml(s) {
+  let h = '';
+  if ((s.discussion || []).length) h += `<div class="label" style="margin-top:8px;">💬 해설 발문</div><ul style="margin:4px 0 0; padding-left:20px; font-size:13.5px; line-height:1.6;">${s.discussion.map(d => `<li>${esc(d)}</li>`).join('')}</ul>`;
+  if (s.teacherNote) h += `<div style="margin-top:8px; background:#fff7ed; border-left:3px solid #f59e0b; border-radius:8px; padding:8px 10px; font-size:13px; line-height:1.55;"><b>📝 선생님 메모</b><br>${esc(s.teacherNote)}</div>`;
+  return h;
 }
 $('dSecretBtn').onclick = async () => {
   const box = $('dSecret');
@@ -557,7 +564,8 @@ $('createBtn').onclick = async () => {
       });
       b.set(doc(db, 'rooms', c, 'secret', 'hostKey'), { pin });
       b.set(doc(db, 'rooms', c, 'secret', 'answer'), {
-        answer: curSecret.answer, mainKeywords: curSecret.mainKeywords || [], extraKeywords: curSecret.extraKeywords || [], hints: curSecret.hints || []
+        answer: curSecret.answer, mainKeywords: curSecret.mainKeywords || [], extraKeywords: curSecret.extraKeywords || [], hints: curSecret.hints || [],
+        discussion: curSecret.discussion || [], teacherNote: curSecret.teacherNote || ''
       });
       b.set(doc(db, 'rooms', c, 'hosts', uid), { pin, createdAt: serverTimestamp() });
       try { await b.commit(); code = c; } catch (e) { lastErr = e; if (!(e.code || '').includes('permission')) break; }
@@ -950,7 +958,7 @@ function renderAnswer() {
   if (!secret) { $('ansBox').innerHTML = '<span class="muted">정답 정보 없음</span>'; return; }
   $('ansToggle').textContent = ansHidden ? '보이기' : '가리기';
   $('ansBox').innerHTML = `<div class="${ansHidden ? 'blurred' : ''}"><div class="secret" style="font-size:13px;">${esc(secret.answer)}</div>
-    <div style="margin-top:6px;">${secret.mainKeywords.map(k => `<span class="kw m">${esc(k.label)}</span>`).join('')}${(secret.extraKeywords || []).map(k => `<span class="kw x">${esc(k.label)}</span>`).join('')}</div></div>`;
+    <div style="margin-top:6px;">${secret.mainKeywords.map(k => `<span class="kw m">${esc(k.label)}</span>`).join('')}${(secret.extraKeywords || []).map(k => `<span class="kw x">${esc(k.label)}</span>`).join('')}</div>${extraSecretHtml(secret)}</div>`;
 }
 $('ansToggle').onclick = () => { ansHidden = !ansHidden; store.set('mysteryAnsHidden', ansHidden); renderAnswer(); };
 
@@ -1028,7 +1036,7 @@ $('revealBtn').onclick = () => {
 async function doReveal() {
   try {
     await updateDoc(doc(db, 'rooms', roomCode), {
-      reveal: room.reveal ? null : { answer: secret.answer, main: secret.mainKeywords.map(k => k.label), extra: (secret.extraKeywords || []).map(k => k.label) }
+      reveal: room.reveal ? null : { answer: secret.answer, main: secret.mainKeywords.map(k => k.label), extra: (secret.extraKeywords || []).map(k => k.label), discussion: secret.discussion || [] }
     });
   } catch (e) { toast(explainError(e), 'error'); }
 }
