@@ -161,7 +161,7 @@
       <div class="field"><div class="label">모둠 수</div>
         <div class="seg" id="teamModeSeg"><button data-v="auto">자동 (접속한 기기 수)</button><button data-v="fixed" class="on">직접 정하기</button></div>
         <div id="teamCountWrap" style="display:flex; align-items:center; gap:8px; margin-top:8px;">
-          <input id="sTeamCount" type="number" min="2" max="12" value="6" style="width:90px; padding:8px 10px; border:1px solid #d6d3d1; border-radius:10px;"> <span>모둠 (2~12)</span>
+          <input id="sTeamCount" type="number" min="2" max="40" value="6" style="width:90px; padding:8px 10px; border:1px solid #d6d3d1; border-radius:10px;"> <span>모둠 (2~40)</span>
         </div>
       </div>
       <div class="f2">
@@ -520,8 +520,8 @@ function readSettings() {
   const n = (id, min, max) => Math.min(max, Math.max(min, Math.round(Number($(id).value) || 0)));
   const s = { ...DEFAULT_SETTINGS };
   s.teamMode = teamMode;
-  s.teamCount = n('sTeamCount', 2, 12);
-  s.maxTeams = teamMode === 'auto' ? 12 : s.teamCount;
+  s.teamCount = n('sTeamCount', 2, 40);
+  s.maxTeams = teamMode === 'auto' ? 40 : s.teamCount;
   s.limitSec = n('sLimit', 5, 60) * 60;
   s.hintFirstSec = n('sHintFirst', 1, 60) * 60;
   s.hintEverySec = n('sHintEvery', 1, 30) * 60;

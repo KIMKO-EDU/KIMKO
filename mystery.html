@@ -247,7 +247,7 @@ function renderPick() {
   if (s.teamMode === 'fixed') ids = Array.from({ length: s.teamCount }, (_, i) => String(i + 1));
   else {
     ids = teams.map(t => t.id).sort((a, b) => a - b);
-    const free = Array.from({ length: 12 }, (_, i) => String(i + 1)).find(id => !teams.find(t => t.id === id));
+    const free = Array.from({ length: 40 }, (_, i) => String(i + 1)).find(id => !teams.find(t => t.id === id));
     if (free) ids.push('new:' + free);
   }
   if (picked && !ids.includes(picked) && !ids.includes('new:' + picked)) picked = null;

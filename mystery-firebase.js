@@ -68,7 +68,7 @@ async function syncClock(uid) {
 export const DEFAULT_SETTINGS = {
   teamMode: 'fixed',     // 'fixed' = 모둠 수 직접, 'auto' = 접속한 기기 수만큼
   teamCount: 6,
-  maxTeams: 6,           // fixed면 teamCount, auto면 12
+  maxTeams: 6,           // fixed면 teamCount, auto면 40
   limitSec: 23 * 60,     // 제한 시간
   hintFirstSec: 6 * 60,  // 첫 힌트
   hintEverySec: 3 * 60,  // 힌트 간격

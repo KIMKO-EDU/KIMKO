@@ -30,7 +30,7 @@
     .hints ol { margin: 0; padding-left: 1.4em; font-size: 2vh; line-height: 1.6; color: #e2e8f0; }
     .hints li.new { animation: flash 1.2s 3; color: #fde68a; }
     @keyframes flash { 50% { background: rgba(251,191,36,.25); } }
-    .panel { flex: 1; background: #1e293b; border-radius: 1.6vh; padding: 1.6vh 1.4vw; min-height: 0; display: flex; flex-direction: column; }
+    .panel { flex: 1; background: #1e293b; border-radius: 1.6vh; padding: 1.6vh 1.4vw; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 2.3vh; }
     th { color: #94a3b8; font-size: 1.6vh; text-align: left; padding: .6vh .5vw; font-weight: 700; }
     td { padding: 1.1vh .5vw; border-top: 1px solid #334155; }
@@ -40,6 +40,11 @@
     .dot { display: inline-block; width: 1.3vh; height: 1.3vh; border-radius: 50%; margin-right: .3vw; border: 2px solid #475569; vertical-align: middle; }
     .dot.on { background: #fbbf24; border-color: #fbbf24; }
     .dot.ok { background: #86efac; border-color: #86efac; }
+    .cols { display: grid; gap: 1.2vw; align-items: start; }
+    .cols.c2 { grid-template-columns: 1fr 1fr; } .cols.c3 { grid-template-columns: 1fr 1fr 1fr; }
+    table.dn { font-size: 2vh; } table.dn th { font-size: 1.4vh; padding: .3vh .3vw; } table.dn td { padding: .45vh .3vw; }
+    table.dn .rank { font-size: 2.2vh; } table.dn .dot { width: 1.1vh; height: 1.1vh; margin-right: .15vw; border-width: 1.5px; }
+    table.dn.t3 { font-size: 1.75vh; } table.dn.t3 .rank { font-size: 1.9vh; }
     .foot { font-size: 1.4vh; color: #64748b; margin-top: auto; padding-top: 1vh; }
     /* 대기 */
     .lobby { flex: 1; display: flex; align-items: center; justify-content: center; gap: 5vw; }
@@ -97,7 +102,7 @@
       <div class="hints"><div class="h" id="hHead"></div><ol id="hList"></ol></div>
     </div>
     <div class="panel">
-      <table id="rankTable"></table>
+      <div id="rankTable"></div>
       <div class="foot" id="foot"></div>
     </div>
   </div>
@@ -109,7 +114,7 @@
       <div style="font-size:1.8vh; color:#fbbf24; font-weight:800;" id="rankHead">🏆 최종 순위</div>
       <div id="finalNote" class="hidden" style="background:rgba(251,191,36,.15); border:1px solid rgba(251,191,36,.5); color:#fde68a; border-radius:1.2vh; padding:1.2vh 1.2vw; font-size:2vh; font-weight:700;"></div>
       <div class="podium" id="podium"></div>
-      <table id="restTable"></table>
+      <div id="restTable"></div>
     </div>
   </div>
 </div>
@@ -220,22 +225,42 @@ function renderHintHead() {
   const n = nextHintIn(room, elapsedSec(room));
   $('hHead').textContent = `💡 공개된 힌트 ${hs.length} / ${room.hintCount}` + (n != null ? ` · 다음 힌트 ${fmt(n)} 후` : '');
 }
-function dots(t) {
+function dots(t, compact) {
   const n = t.bestKeys || 0, tot = room.mainCount || 4;
-  if (!t.solved && !n && !(t.wrong > 0)) return '<span style="color:#475569; font-size:1.7vh;">제출 전</span>';
+  if (!t.solved && !n && !(t.wrong > 0)) return `<span style="color:#475569; font-size:1.7vh;">${compact ? '–' : '제출 전'}</span>`;
   return Array.from({ length: tot }, (_, i) => `<span class="dot ${i < n ? (t.solved ? 'ok' : 'on') : ''}"></span>`).join('') + `<span style="color:#94a3b8; font-size:1.6vh;">${n}/${tot}</span>`;
 }
+function colCount(n) { return n <= 10 ? 1 : n <= 24 ? 2 : 3; }
 function renderTable() {
   const list = rankTeams(teams, room);
   const s = room.settings;
-  $('rankTable').innerHTML = `<tr><th>순위</th><th>모둠</th><th>기록</th><th>질문</th><th>오답</th><th>🔑 키워드</th><th>상태</th></tr>` +
-    list.map(t => `<tr class="${t.solved ? 'solved' : ''}">
+  const k = colCount(list.length);
+  if (k === 1) {
+    $('rankTable').className = '';
+    $('rankTable').innerHTML = '<table>' + `<tr><th>순위</th><th>모둠</th><th>기록</th><th>질문</th><th>오답</th><th>🔑 키워드</th><th>상태</th></tr>` +
+      list.map(t => `<tr class="${t.solved ? 'solved' : ''}">
       <td class="rank ${t.rank === 1 ? 'r1' : ''}">${t.rank}</td>
       <td style="font-weight:800;">${t.id}모둠${t.name ? `<div style="font-size:1.5vh; color:#94a3b8; font-weight:500;">${esc(t.name)}</div>` : ''}</td>
       <td class="mono" style="font-weight:800; ${t.solved ? 'color:#86efac;' : ''}">${fmt(t.score)}</td>
       <td class="mono">${t.questions || 0}</td><td class="mono">${t.wrong || 0}</td>
       <td>${dots(t)}</td>
-      <td style="${t.solved ? 'color:#86efac; font-weight:800;' : 'color:#94a3b8;'}">${t.solved ? '🎉 정답!' : t.uid ? '추리 중…' : '자리 빔'}</td></tr>`).join('');
+      <td style="${t.solved ? 'color:#86efac; font-weight:800;' : 'color:#94a3b8;'}">${t.solved ? '🎉 정답!' : t.uid ? '추리 중…' : '자리 빔'}</td></tr>`).join('') + '</table>';
+  } else {
+    // 많이 접속했을 때: 표를 2~3단으로 나누고 핵심 칸(순위·모둠·기록·키워드)만 보여 줘요
+    const per = Math.ceil(list.length / k);
+    let html = '';
+    for (let c = 0; c < k; c++) {
+      const part = list.slice(c * per, (c + 1) * per);
+      html += `<table class="dn ${k === 3 ? 't3' : ''}"><tr><th>순위</th><th>팀</th><th>기록</th><th>🔑</th></tr>` +
+        part.map(t => `<tr class="${t.solved ? 'solved' : ''}">
+        <td class="rank ${t.rank === 1 ? 'r1' : ''}">${t.rank}</td>
+        <td style="font-weight:800; white-space:nowrap;">${t.id}${t.solved ? ' 🎉' : ''}</td>
+        <td class="mono" style="font-weight:800; ${t.solved ? 'color:#86efac;' : ''}">${fmt(t.score)}</td>
+        <td style="white-space:nowrap;">${dots(t, true)}</td></tr>`).join('') + '</table>';
+    }
+    $('rankTable').className = `cols c${k}`;
+    $('rankTable').innerHTML = html;
+  }
   $('foot').textContent = `기록 = 지난 시간 + 질문 1개당 +${fmt(s.qPenaltySec)} + 오답 벌칙(키워드 ${penTable(s, room.mainCount)}) · 정답 모둠은 기록이 멈춤 · 🔑 = 찾은 메인 키워드 개수`;
 }
 
@@ -265,16 +290,34 @@ function renderEnd() {
       <div class="story">사건의 전말은 무엇이었을까요?<br>선생님이 정답을 공개할 때까지 잠시 기다려 주세요.</div>`;
   const list = rankTeams(teams, room);
   const top = [list[1], list[0], list[2]];
-  const hgt = ['17vh', '23vh', '13vh'], bg = ['#475569', 'linear-gradient(180deg,#f59e0b,#b45309)', '#334155'];
+  const dense = Math.max(list.length - 3, 0) > 7;
+  const hgt = dense ? ['9vh', '13vh', '6vh'] : ['17vh', '23vh', '13vh'], bg = ['#475569', 'linear-gradient(180deg,#f59e0b,#b45309)', '#334155'];
   $('podium').innerHTML = top.map((t, i) => t ? `<div>
       ${i === 1 ? '<div style="font-size:3.6vh;">👑</div>' : ''}
       <div style="font-weight:900; font-size:${i === 1 ? '2.8vh' : '2.3vh'}; ${i === 1 ? 'color:#fbbf24;' : ''}">${t.id}모둠</div>
       <div class="mono" style="color:#cbd5e1; font-size:1.9vh;">${fmt(t.score)}${t.solved ? '' : ' (미해결)'}</div>
       <div class="blk" style="height:${hgt[i]}; background:${bg[i]};">${t.rank}</div></div>` : '<div></div>').join('');
   const rest = list.slice(3);
-  $('restTable').innerHTML = rest.length ? `<tr><th>순위</th><th>모둠</th><th>기록</th><th>질문</th><th>오답</th><th>🔑</th><th>결과</th></tr>` +
-    rest.map(t => `<tr><td class="rank">${t.rank}</td><td style="font-weight:800;">${t.id}모둠</td><td class="mono">${fmt(t.score)}</td><td class="mono">${t.questions || 0}</td><td class="mono">${t.wrong || 0}</td><td>${dots(t)}</td>
-      <td style="color:${t.solved ? '#86efac' : '#fca5a5'};">${t.solved ? '정답' : '미해결'}</td></tr>`).join('') : '';
+  const k = rest.length <= 7 ? 1 : rest.length <= 20 ? 2 : 3;
+  if (!rest.length) $('restTable').innerHTML = '';
+  else if (k === 1) {
+    $('restTable').className = '';
+    $('restTable').innerHTML = `<table><tr><th>순위</th><th>모둠</th><th>기록</th><th>질문</th><th>오답</th><th>🔑</th><th>결과</th></tr>` +
+      rest.map(t => `<tr><td class="rank">${t.rank}</td><td style="font-weight:800;">${t.id}모둠</td><td class="mono">${fmt(t.score)}</td><td class="mono">${t.questions || 0}</td><td class="mono">${t.wrong || 0}</td><td>${dots(t)}</td>
+      <td style="color:${t.solved ? '#86efac' : '#fca5a5'};">${t.solved ? '정답' : '미해결'}</td></tr>`).join('') + '</table>';
+  } else {
+    const per = Math.ceil(rest.length / k);
+    let html = '';
+    for (let c = 0; c < k; c++) {
+      html += `<table class="dn ${k === 3 ? 't3' : ''}"><tr><th>순위</th><th>팀</th><th>기록</th><th>🔑</th></tr>` +
+        rest.slice(c * per, (c + 1) * per).map(t => `<tr><td class="rank">${t.rank}</td><td style="font-weight:800; white-space:nowrap;">${t.id}</td>
+        <td class="mono" style="${t.solved ? '' : 'color:#fca5a5;'}">${t.solved ? fmt(t.score) : '미해결'}</td><td style="white-space:nowrap;">${dots(t, true)}</td></tr>`).join('') + '</table>';
+    }
+    $('restTable').className = `cols c${k}`;
+    $('restTable').innerHTML = html;
+  }
+  // 많을 때는 시상대를 낮춰서 아래 표 자리를 확보
+  $('podium').style.height = rest.length > 7 ? '27vh' : '30vh';
 }
 
 // 힌트가 열릴 때 짧은 효과음
