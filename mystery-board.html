@@ -45,6 +45,17 @@
     table.dn { font-size: 2vh; } table.dn th { font-size: 1.4vh; padding: .3vh .3vw; } table.dn td { padding: .45vh .3vw; }
     table.dn .rank { font-size: 2.2vh; } table.dn .dot { width: 1.1vh; height: 1.1vh; margin-right: .15vw; border-width: 1.5px; }
     table.dn.t3 { font-size: 1.75vh; } table.dn.t3 .rank { font-size: 1.9vh; }
+    .clog { display: flex; flex-direction: column; gap: .9vh; }
+    .clog .it { display: flex; align-items: center; gap: 1vw; background: #0f172a; border-radius: 1.2vh; padding: 1.1vh 1.2vw; font-size: 2.6vh; }
+    .clog .it.new { animation: flash 1.2s 2; }
+    .clog .no { color: #64748b; font-weight: 800; font-size: 2vh; min-width: 3.4vw; }
+    .clog .q { flex: 1; color: #f1f5f9; }
+    .clog .ans { font-weight: 900; border-radius: 1vh; padding: .5vh 1vw; font-size: 2.4vh; white-space: nowrap; }
+    .ans.yes { background: #166534; color: #bbf7d0; } .ans.no { background: #7f1d1d; color: #fecaca; }
+    .ans.maybe { background: #78350f; color: #fde68a; } .ans.nul { background: #334155; color: #cbd5e1; }
+    .ans.ok { background: #f59e0b; color: #1c1917; } .ans.gno { background: #312e81; color: #c7d2fe; }
+    .chead { display: flex; align-items: baseline; gap: 2vw; margin-bottom: 1.2vh; }
+    .chead .big { font-size: 3vh; font-weight: 900; color: #fbbf24; }
     .foot { font-size: 1.4vh; color: #64748b; margin-top: auto; padding-top: 1vh; }
     /* 대기 */
     .lobby { flex: 1; display: flex; align-items: center; justify-content: center; gap: 5vw; }
@@ -162,13 +173,23 @@ function render() {
   $('title').textContent = room.title;
   renderTimer();
   if (room.status === 'lobby' && room.tutorial && room.tutorial.on) renderSlides();
+  else if (room.status === 'lobby' && isClass()) renderPlay();
   else if (room.status === 'lobby') renderLobby();
   else if (room.status === 'playing') renderPlay();
   else renderEnd();
 }
 
+function isClass() { return !!(room && room.settings && room.settings.classMode); }
 function renderTimer() {
   const s = room.settings;
+  if (isClass()) {
+    const el = elapsedSec(room);
+    $('timer').classList.remove('low');
+    $('timer').textContent = room.status === 'ended' ? '종료' : fmt(room.status === 'lobby' ? 0 : el);
+    $('timerLabel').textContent = room.status === 'ended' ? '' : '지난 시간';
+    $('bar').style.width = room.status === 'ended' ? '100%' : '0%';
+    return;
+  }
   const r = remainSec(room);
   $('timer').textContent = room.status === 'ended' ? '종료' : fmt(r);
   $('timer').classList.toggle('low', room.status === 'playing' && r <= 60);
@@ -222,6 +243,7 @@ function renderPlay() {
 }
 function renderHintHead() {
   const hs = room.hintsRevealed || [];
+  if (room.status === 'lobby') { $('hHead').textContent = `💡 힌트 ${room.hintCount}개가 시간에 맞춰 나와요`; return; }
   const n = nextHintIn(room, elapsedSec(room));
   $('hHead').textContent = `💡 공개된 힌트 ${hs.length} / ${room.hintCount}` + (n != null ? ` · 다음 힌트 ${fmt(n)} 후` : '');
 }
@@ -231,7 +253,41 @@ function dots(t, compact) {
   return Array.from({ length: tot }, (_, i) => `<span class="dot ${i < n ? (t.solved ? 'ok' : 'on') : ''}"></span>`).join('') + `<span style="color:#94a3b8; font-size:1.6vh;">${n}/${tot}</span>`;
 }
 function colCount(n) { return n <= 10 ? 1 : n <= 24 ? 2 : 3; }
+// ---------- 교실 모드: 선생님이 띄운 질문과 답 ----------
+const ANS_TV = { yes: '네', no: '아니요', maybe: '그럴 수도', nul: '중요하지 않아요' };
+let clogKey = '';
+function classLogHtml(log, compact) {
+  let qn = 0, gn = 0;
+  return log.map((x, i) => {
+    const fresh = !compact && i === log.length - 1 ? 'new' : '';
+    if (x.k === 'q') { qn++; return `<div class="it ${fresh}"><span class="no">Q${qn}</span><span class="q">${esc(x.t)}</span><span class="ans ${x.a}">${ANS_TV[x.a] || ''}</span></div>`; }
+    gn++;
+    return `<div class="it ${fresh}"><span class="no">🎯${gn}</span><span class="q">${esc(x.t || '정답 말하기')}</span><span class="ans ${x.v === 'ok' ? 'ok' : 'gno'}">${x.v === 'ok' ? '🎉 정답!' : '🤔 아직 아니에요'}</span></div>`;
+  }).join('');
+}
+function renderClassLog() {
+  const log = room.classLog || [];
+  const key = room.status + '|' + log.map(x => x.id).join(',');
+  if (key === clogKey) return;
+  const grew = clogKey && log.length > (clogKey.split('|')[1] || '').split(',').filter(Boolean).length;
+  clogKey = key;
+  const q = log.filter(x => x.k === 'q').length, g = log.filter(x => x.k === 'g').length;
+  $('rankTable').className = '';
+  $('rankTable').innerHTML = room.status === 'lobby'
+    ? `<div style="font-size:3.4vh; font-weight:900; color:#fbbf24; margin:1vh 0 2vh;">🔍 우리 반이 함께 풀어요!</div>
+       <div style="font-size:2.6vh; line-height:1.9; color:#e2e8f0;">① 이야기를 잘 읽어요.<br>② 손을 들고 <b style="color:#fbbf24;">"네 / 아니요"로 대답할 수 있는 질문</b>을 해요.<br>③ 선생님 대답이 이 화면에 나와요. 다 같이 생각해요.<br>④ 사건의 전말을 알 것 같으면 말해 봐요!</div>`
+    : `<div class="chead"><span class="big">🙋 질문 ${q}개</span><span class="big" style="color:#c7d2fe;">🎯 정답 시도 ${g}번</span></div>
+       <div class="clog">${log.length ? classLogHtml(log) : '<div style="font-size:2.4vh; color:#64748b;">손을 들고 첫 질문을 해 보세요!</div>'}</div>`;
+  const pnl = $('rankTable').closest('.panel');
+  if (pnl) pnl.scrollTop = pnl.scrollHeight;
+  if (grew) beep();
+}
 function renderTable() {
+  if (isClass()) {
+    renderClassLog();
+    $('foot').textContent = '선생님이 질문을 듣고 대답해요 · 힌트는 시간이 지나면 하나씩 나와요 · 다 같이 추리해요!';
+    return;
+  }
   const list = rankTeams(teams, room);
   const s = room.settings;
   const k = colCount(list.length);
@@ -288,6 +344,21 @@ function renderEnd() {
     : `<img src="${esc(room.imageUrl)}" alt="">
       <div style="font-size:3.4vh; font-weight:900; margin-top:1vh;">🏁 게임 종료!</div>
       <div class="story">사건의 전말은 무엇이었을까요?<br>선생님이 정답을 공개할 때까지 잠시 기다려 주세요.</div>`;
+  if (isClass()) {
+    const log = room.classLog || [];
+    const q = log.filter(x => x.k === 'q').length, g = log.filter(x => x.k === 'g').length;
+    const t = room.classSolved ? room.classSolvedSec : elapsedSec(room);
+    $('rankHead').textContent = '🏆 우리 반 기록';
+    $('finalNote').classList.add('hidden');
+    $('podium').style.height = 'auto';
+    $('podium').innerHTML = `<div style="width:auto; text-align:center; padding:1vh 0;">
+      <div style="font-size:6vh; font-weight:900; color:${room.classSolved ? '#fbbf24' : '#e2e8f0'};">${room.classSolved ? '🎉 우리 반 정답!' : '🏁 게임 종료'}</div>
+      <div style="font-size:3vh; color:#cbd5e1; margin-top:1vh;"><b class="mono" style="color:#fff;">${fmt(t)}</b> 동안 · 질문 <b style="color:#fff;">${q}개</b> · 정답 시도 <b style="color:#fff;">${g}번</b></div></div>`;
+    $('restTable').className = '';
+    $('restTable').innerHTML = `<div class="clog" style="font-size:2vh;">${classLogHtml(log, true)}</div>`;
+    $('restTable').querySelectorAll('.it').forEach(e => { e.style.fontSize = '2vh'; e.style.padding = '.7vh 1vw'; });
+    return;
+  }
   const list = rankTeams(teams, room);
   const top = [list[1], list[0], list[2]];
   const dense = Math.max(list.length - 3, 0) > 7;

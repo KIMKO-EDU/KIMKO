@@ -213,6 +213,7 @@ $('codeIn').oninput = () => { $('codeIn').value = $('codeIn').value.replace(/\D/
 // ============================================================
 function render() {
   if (!room) return;
+  if (room.settings && room.settings.classMode) { message('📺 이 방은 <b>교실 모드</b>예요.<br>기기는 필요 없어요. TV 화면을 함께 보며 추리해요!'); return; }
   const mine = teams.find(t => t.uid === uid);
   if (mine) {
     if (myTeamId !== mine.id) { myTeamId = mine.id; hadTeam = true; listenMyMsgs(); }

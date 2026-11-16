@@ -158,20 +158,24 @@
     </div>
     <div class="card" style="display:flex; flex-direction:column; gap:14px;">
       <div style="font-size:18px; font-weight:800;">⚙️ 방 설정 <span class="muted" style="font-size:13px; font-weight:500;">기본값 = 40분 수업용</span></div>
-      <div class="field"><div class="label">모둠 수</div>
+      <div class="field"><div class="label">진행 방식</div>
+        <div class="seg" id="playModeSeg"><button data-v="live" class="on">📱 실시간 (모둠별 기기)</button><button data-v="class">📺 교실 모드 (선생님 진행)</button></div>
+        <div class="muted" style="font-size:12.5px; margin-top:6px; line-height:1.5;" id="playModeNote"></div>
+      </div>
+      <div class="field liveOnly"><div class="label">모둠 수</div>
         <div class="seg" id="teamModeSeg"><button data-v="auto">자동 (접속한 기기 수)</button><button data-v="fixed" class="on">직접 정하기</button></div>
         <div id="teamCountWrap" style="display:flex; align-items:center; gap:8px; margin-top:8px;">
           <input id="sTeamCount" type="number" min="2" max="40" value="6" style="width:90px; padding:8px 10px; border:1px solid #d6d3d1; border-radius:10px;"> <span>모둠 (2~40)</span>
         </div>
       </div>
       <div class="f2">
-        <div class="field"><div class="label">제한 시간 (분)</div><input id="sLimit" type="number" min="5" max="60" value="23"></div>
+        <div class="field liveOnly"><div class="label">제한 시간 (분)</div><input id="sLimit" type="number" min="5" max="60" value="23"></div>
         <div class="field"><div class="label">첫 힌트 (분)</div><input id="sHintFirst" type="number" min="1" max="60" value="6"></div>
         <div class="field"><div class="label">힌트 간격 (분)</div><input id="sHintEvery" type="number" min="1" max="30" value="3"></div>
-        <div class="field"><div class="label">질문 1개 벌칙 (초)</div><input id="sQPen" type="number" min="0" max="300" value="30"></div>
-        <div class="field"><div class="label">오답 벌칙 (분, 키워드 0개일 때)</div><input id="sWrongPen" type="number" min="0" max="20" value="2"></div>
-        <div class="field"><div class="label">오답 감면 (키워드 1개당, 초)</div><input id="sKeyDisc" type="number" min="0" max="120" value="30"></div>
-        <div class="field"><div class="label">못 맞힘 추가 (분)</div><input id="sUnsolved" type="number" min="0" max="60" value="5"></div>
+        <div class="field liveOnly"><div class="label">질문 1개 벌칙 (초)</div><input id="sQPen" type="number" min="0" max="300" value="30"></div>
+        <div class="field liveOnly"><div class="label">오답 벌칙 (분, 키워드 0개일 때)</div><input id="sWrongPen" type="number" min="0" max="20" value="2"></div>
+        <div class="field liveOnly"><div class="label">오답 감면 (키워드 1개당, 초)</div><input id="sKeyDisc" type="number" min="0" max="120" value="30"></div>
+        <div class="field liveOnly"><div class="label">못 맞힘 추가 (분)</div><input id="sUnsolved" type="number" min="0" max="60" value="5"></div>
       </div>
       <div class="note-box" id="ruleSummary"></div>
       <div class="field"><div class="label">진행자 PIN (숫자 4~6자리)</div>
@@ -210,7 +214,18 @@
     </div>
   </div>
 
-  <div class="lobby">
+  <div id="lClass" class="card hidden" style="max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:12px;">
+    <div style="font-size:20px; font-weight:900;">📺 교실 모드 · 선생님이 진행해요</div>
+    <div style="line-height:1.7; font-size:14.5px;">
+      ① [📺 점수판 열기]로 연 창을 TV(확장 모니터)로 옮기세요. 그림과 이야기가 크게 나와요.<br>
+      ② 이야기를 함께 읽고 [▶ 시작]을 누르세요. 지난 시간이 올라가고 힌트는 정해 둔 시간에 자동으로 나와요.<br>
+      ③ 학생이 말한 질문을 받아 적고 <b>네 / 아니요 / 그럴 수도 / 중요X</b> 중 하나를 누르면 TV에 바로 나와요.<br>
+      ④ 정답 말하기도 받아 적고, 이야기가 맞으면 <b>[🎉 정답!]</b>을 누르세요. 키워드는 선생님이 자유롭게 판단하면 돼요.
+    </div>
+    <div class="note-box">⚠️ 이 화면에는 정답이 보여요. 학생들은 TV(점수판)만 보도록 <b>확장 모드</b>(윈도우: <b>Win + P</b> → 확장)로 연결하세요. 시간·질문 수 목표("10분 안에!", "질문 15개 안에!")는 선생님이 자유롭게 정하세요.</div>
+    <div style="display:flex; justify-content:flex-end;"><button class="btn amb big" id="startBtn2">▶ 시작</button></div>
+  </div>
+  <div class="lobby" id="lLive">
     <div class="card" style="text-align:center;">
       <div class="label">방 코드</div>
       <div class="code-big mono" id="lCode"></div>
@@ -234,6 +249,29 @@
 <div id="vGame" class="hidden">
   <div class="game">
     <div>
+      <!-- 교실 모드: 선생님이 받아 적기 -->
+      <div id="classWrap" class="hidden">
+        <div class="card" style="margin-bottom:12px;">
+          <div style="display:flex; align-items:center; gap:8px;"><span style="font-weight:800; font-size:17px;">🙋 질문 받아 적기</span><span class="muted" style="font-size:13px;">적고 나서 답을 누르면 TV에 바로 나와요</span></div>
+          <input id="cQ" placeholder="예: 하준이가 동생과 싸웠나요?" maxlength="120" style="width:100%; margin-top:10px; padding:12px 14px; font-size:17px; border:1px solid #d6d3d1; border-radius:12px;">
+          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin-top:10px;">
+            <button class="btn big a-yes" data-ca="yes">네</button><button class="btn big a-no" data-ca="no">아니요</button>
+            <button class="btn big a-may" data-ca="maybe">그럴 수도</button><button class="btn big a-nul" data-ca="nul">중요X</button>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:12px;">
+          <div style="display:flex; align-items:center; gap:8px;"><span style="font-weight:800; font-size:17px;">🎯 정답 말해 보기</span><span class="muted" style="font-size:13px;">키워드는 선생님이 판단해요. 이야기가 맞으면 정답!</span></div>
+          <textarea id="cG" rows="2" maxlength="300" placeholder="학생이 말한 사건의 전말을 짧게 적어요 (비워 둬도 돼요)" style="width:100%; margin-top:10px; padding:12px 14px; font-size:16px; border:1px solid #d6d3d1; border-radius:12px; font-family:inherit; resize:vertical;"></textarea>
+          <div style="display:flex; gap:8px; margin-top:10px;">
+            <button class="btn ghost big" id="cNo" style="flex:1;">🤔 아직 아니에요</button>
+            <button class="btn amb big" id="cOk" style="flex:1;">🎉 정답! (게임 끝)</button>
+          </div>
+        </div>
+        <div class="card">
+          <div style="display:flex; align-items:center; gap:8px;"><b>TV에 나온 기록</b><span class="pill a-nul" id="cCount"></span><span class="muted" style="font-size:12.5px; margin-left:auto;">잘못 누르면 🗑로 지워요</span></div>
+          <div id="cLog" style="margin-top:6px;"></div>
+        </div>
+      </div>
       <!-- 진행 중: 답변 대기 -->
       <div id="queueWrap">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
@@ -263,7 +301,7 @@
           <table class="t mono" style="margin-top:12px;" id="finalTable"></table>
         </div>
         <div class="card">
-          <div style="display:flex; align-items:center; gap:8px;"><b>모둠별 질문 기록</b><span class="muted" style="font-size:13px;">⭐을 누르면 점수판 정답 공개 화면에 "결정적 질문"으로 나와요</span></div>
+          <div style="display:flex; align-items:center; gap:8px;"><b id="histHead">모둠별 질문 기록</b><span class="muted" style="font-size:13px;" id="histNote">⭐을 누르면 점수판 정답 공개 화면에 "결정적 질문"으로 나와요</span></div>
           <div id="history"></div>
         </div>
       </div>
@@ -278,7 +316,7 @@
         <b>💡 힌트</b>
         <div id="hintList" style="margin-top:6px;"></div>
       </div>
-      <div class="card">
+      <div class="card" id="teamCard">
         <b>모둠 현황</b>
         <table class="t mono" id="teamTable" style="margin-top:4px;"></table>
       </div>
@@ -321,7 +359,7 @@ import {
   db, ready, now, esc, fmt, toast, explainError, pageUrl, EST, ANSWERS, DEFAULT_SETTINGS,
   elapsedSec, remainSec, teamScore, rankTeams, hintSlotTimes, slotsDue, findKeywords, ms, wrongPenFor, penTable,
   doc, getDoc, getDocs, setDoc, updateDoc, collection, query, orderBy, onSnapshot,
-  writeBatch, runTransaction, serverTimestamp, increment, Timestamp
+  writeBatch, runTransaction, serverTimestamp, increment, Timestamp, arrayUnion, arrayRemove
 } from './mystery-firebase.js';
 import { SLIDE_COUNT, slideHtml, injectSlideCss } from './mystery-slides.js';
 injectSlideCss();
@@ -472,7 +510,7 @@ $('resumeBtn').onclick = () => {
 // ============================================================
 // ② 미리보기 · 방 설정
 // ============================================================
-let cur = null, curSecret = null, teamMode = 'fixed';
+let cur = null, curSecret = null, teamMode = 'fixed', playMode = 'live';
 $('backGallery').onclick = openGallery;
 
 function openDetail(pid) {
@@ -514,11 +552,23 @@ $('teamModeSeg').querySelectorAll('button').forEach(b => b.onclick = () => {
   $('teamCountWrap').classList.toggle('hidden', teamMode === 'auto');
   updateSummary();
 });
+$('playModeSeg').querySelectorAll('button').forEach(b => b.onclick = () => setPlayMode(b.dataset.v));
+function setPlayMode(v) {
+  playMode = v;
+  $('playModeSeg').querySelectorAll('button').forEach(x => x.classList.toggle('on', x.dataset.v === v));
+  document.querySelectorAll('.liveOnly').forEach(x => x.classList.toggle('hidden', v === 'class'));
+  $('playModeNote').innerHTML = v === 'class'
+    ? '학생 기기 없이 반 전체가 함께 풀어요. 학생이 말로 질문하면 선생님이 받아 적고 답을 눌러 TV(점수판)에 띄워요. <b>저학년·기기가 부족할 때</b> 좋아요.'
+    : '모둠마다 기기 1대로 접속해 질문과 정답을 직접 보내고 순위를 겨뤄요.';
+  updateSummary();
+}
+setPlayMode('live');
 ['sLimit', 'sHintFirst', 'sHintEvery', 'sQPen', 'sWrongPen', 'sKeyDisc', 'sUnsolved', 'sTeamCount'].forEach(id => $(id).oninput = updateSummary);
 
 function readSettings() {
   const n = (id, min, max) => Math.min(max, Math.max(min, Math.round(Number($(id).value) || 0)));
   const s = { ...DEFAULT_SETTINGS };
+  s.classMode = playMode === 'class';
   s.teamMode = teamMode;
   s.teamCount = n('sTeamCount', 2, 40);
   s.maxTeams = teamMode === 'auto' ? 40 : s.teamCount;
@@ -529,6 +579,7 @@ function readSettings() {
   s.wrongPenaltySec = n('sWrongPen', 0, 20) * 60;
   s.keyDiscountSec = n('sKeyDisc', 0, 120);
   s.unsolvedExtraSec = n('sUnsolved', 0, 60) * 60;
+  if (s.classMode) { s.teamMode = 'fixed'; s.teamCount = 0; s.maxTeams = 0; s.limitSec = 60 * 60; }  // 학생 기기 접속 막음, 최대 60분
   return s;
 }
 function updateSummary() {
@@ -536,6 +587,12 @@ function updateSummary() {
   const s = readSettings();
   const slots = [];
   for (let i = 0; i < (cur.hintCount || 0); i++) { const t = s.hintFirstSec + i * s.hintEverySec; if (t < s.limitSec) slots.push(t / 60 + '분'); }
+  if (s.classMode) {
+    $('ruleSummary').innerHTML = `힌트 자동 공개: <b>${slots.join(' · ') || '없음'}</b> (선생님 화면에서 바로 공개도 가능)<br>
+      시간·질문 수 제한 없음 · 선생님이 [🎉 정답!]이나 [게임 종료]를 누르면 끝나요 (최대 60분)<br>
+      TV에는 <b>질문과 답, 정답 시도</b>가 그대로 보여요. 정답은 보이지 않아요.`;
+    return;
+  }
   $('ruleSummary').innerHTML = `
     힌트 자동 공개: <b>${slots.join(' · ') || '없음'}</b> + 정답 모둠이 나오면 즉시 하나 더<br>
     못 맞힌 모둠 기록 = <b>${(s.limitSec + s.unsolvedExtraSec) / 60}분</b>(제한 시간 + ${s.unsolvedExtraSec / 60}분) + 벌칙<br>
@@ -559,7 +616,7 @@ $('createBtn').onclick = async () => {
         hostUid: uid, problemId: cur.id, no: cur.no, title: cur.title, story: cur.story, imageUrl: cur.imageUrl,
         mainCount: (curSecret.mainKeywords || []).length, hintCount: (curSecret.hints || []).length,
         settings, status: 'lobby', startedAt: null, endedAt: null,
-        hintsRevealed: [], hintSlotsApplied: 0, hintLog: [], reveal: null, featured: [], tutorial: { on: false, slide: 0 },
+        hintsRevealed: [], hintSlotsApplied: 0, hintLog: [], classLog: [], reveal: null, featured: [], tutorial: { on: false, slide: 0 },
         createdAt: serverTimestamp(), expireAt: Timestamp.fromMillis(Date.now() + 7 * 24 * 3600 * 1000)
       });
       b.set(doc(db, 'rooms', c, 'secret', 'hostKey'), { pin });
@@ -669,6 +726,11 @@ let qrDrawn = null;
 function renderLobby() {
   if ($('vLobby').classList.contains('hidden')) show('vLobby');
   bar(`방 ${roomCode} · 사건 #${esc(room.no)} ${esc(room.title)}`, topRight()); bindTop();
+  const cm = isClass();
+  $('lClass').classList.toggle('hidden', !cm);
+  $('lLive').classList.toggle('hidden', cm);
+  $('tutBar').classList.toggle('hidden', cm);
+  if (cm) { $('startBtn2').disabled = false; return; }
   $('lCode').textContent = roomCode.slice(0, 3) + ' ' + roomCode.slice(3);
   $('lUrl').innerHTML = `${esc(pageUrl('mystery.html'))}<br>접속 후 방 코드 입력 (QR은 코드 자동 입력)`;
   $('lPin').textContent = hostPin || '----';
@@ -753,12 +815,15 @@ function bindFree(root) {
   }));
 }
 $('lPinBtn').onclick = () => $('lPin').classList.toggle('blurred');
-$('startBtn').onclick = async () => {
-  $('startBtn').disabled = true;
+async function startGame(btn) {
+  btn.disabled = true;
   closeFs();
   try { await updateDoc(doc(db, 'rooms', roomCode), { status: 'playing', startedAt: serverTimestamp(), tutorial: { on: false, slide: 0 } }); }
-  catch (e) { toast(explainError(e), 'error'); $('startBtn').disabled = false; }
-};
+  catch (e) { toast(explainError(e), 'error'); btn.disabled = false; }
+}
+$('startBtn').onclick = () => startGame($('startBtn'));
+$('startBtn2').onclick = () => startGame($('startBtn2'));
+function isClass() { return !!(room && room.settings && room.settings.classMode); }
 
 // ---------- 진행 / 종료 ----------
 function teamLabel(id) {
@@ -773,8 +838,9 @@ function msgElapsed(m) {
 function renderGame() {
   if ($('vGame').classList.contains('hidden')) show('vGame');
   const ended = room.status === 'ended';
+  const cm = isClass();
   const timer = ended ? '<span class="pill" style="background:#e7e5e4; color:#1c1917;">🏁 종료</span>'
-    : `<span class="pill mono" id="barTimer" style="background:#fbbf24; color:#1c1917; font-size:15px;">⏱ ${fmt(remainSec(room))} 남음</span>`;
+    : `<span class="pill mono" id="barTimer" style="background:#fbbf24; color:#1c1917; font-size:15px;">${timerText()}</span>`;
   const left = (secret && (room.hintsRevealed || []).length < (secret.hints || []).length && !ended)
     ? `<button class="btn ghost-d" id="hintNowBtn">💡 힌트 ${(room.hintsRevealed || []).length + 1} 지금 공개</button>` : '';
   const endBtn = ended ? '' : '<button class="btn dred" id="endBtn">게임 종료</button>';
@@ -783,11 +849,68 @@ function renderGame() {
   if ($('hintNowBtn')) $('hintNowBtn').onclick = () => revealHint('manual');
   if ($('endBtn')) $('endBtn').onclick = () => confirmClick($('endBtn'), '정말 종료?', () => endGame());
 
-  $('queueWrap').classList.toggle('hidden', ended);
+  $('queueWrap').classList.toggle('hidden', ended || cm);
+  $('classWrap').classList.toggle('hidden', ended || !cm);
+  $('teamCard').classList.toggle('hidden', cm);
   $('endWrap').classList.toggle('hidden', !ended);
-  if (ended) renderEnd(); else renderQueue();
+  if (ended) renderEnd(); else if (cm) renderClass(); else renderQueue();
   renderAnswer(); renderHints(); renderTeamTable();
 }
+
+function timerText() {
+  return isClass() ? `⏱ ${fmt(elapsedSec(room))} 지남` : `⏱ ${fmt(remainSec(room))} 남음`;
+}
+
+// ---------- 교실 모드: 선생님이 받아 적은 질문·정답 시도 ----------
+function classLog() { return room.classLog || []; }
+function classStats() {
+  const log = classLog();
+  return { q: log.filter(x => x.k === 'q').length, g: log.filter(x => x.k === 'g').length };
+}
+function classItemHtml(x, i, withDel) {
+  const no = classLog().slice(0, i + 1).filter(y => y.k === x.k).length;
+  const del = withDel ? `<button class="btn ghost sm" data-cdel="${i}" title="지우기">🗑</button>` : '';
+  if (x.k === 'q') {
+    const a = ANSWERS[x.a] || ANSWERS.nul;
+    return `<div class="hist-item"><span class="muted mono" style="width:44px;">Q${no}</span><span style="flex:1;">${esc(x.t)}</span><span class="pill ${a.cls}">${a.short}</span><span class="muted mono" style="font-size:12px;">${fmt(x.at)}</span>${del}</div>`;
+  }
+  return `<div class="hist-item"><span class="muted mono" style="width:44px;">🎯${no}</span><span style="flex:1;">${esc(x.t || '(정답 말하기)')}</span><span class="pill ${x.v === 'ok' ? 'a-yes' : 'a-no'}">${x.v === 'ok' ? '🎉 정답' : '🤔 아직'}</span><span class="muted mono" style="font-size:12px;">${fmt(x.at)}</span>${del}</div>`;
+}
+function renderClass() {
+  const log = classLog(), st = classStats();
+  $('cCount').textContent = `질문 ${st.q}개 · 정답 시도 ${st.g}번`;
+  const key = log.length + '|' + log.map(x => x.id).join(',');
+  if ($('cLog').dataset.k === key) return;
+  $('cLog').dataset.k = key;
+  $('cLog').innerHTML = log.length ? log.map((x, i) => classItemHtml(x, i, true)).reverse().join('') : '<div class="muted" style="margin-top:6px;">아직 기록이 없어요.</div>';
+  $('cLog').querySelectorAll('[data-cdel]').forEach(b => b.onclick = () => confirmClick(b, '지울까요?', async () => {
+    const x = classLog()[Number(b.dataset.cdel)];
+    try { await updateDoc(doc(db, 'rooms', roomCode), { classLog: arrayRemove(x) }); } catch (e) { toast(explainError(e), 'error'); }
+  }));
+}
+async function classAdd(entry, solved) {
+  if (!room || room.status !== 'playing') return false;
+  entry = { id: Math.random().toString(36).slice(2, 10), at: Math.round(elapsedSec(room)), ...entry };
+  const upd = { classLog: arrayUnion(entry) };
+  if (solved) Object.assign(upd, { status: 'ended', endedAt: serverTimestamp(), classSolved: true, classSolvedSec: entry.at });
+  try { await updateDoc(doc(db, 'rooms', roomCode), upd); return true; }
+  catch (e) { toast(explainError(e), 'error'); return false; }
+}
+document.querySelectorAll('[data-ca]').forEach(b => b.onclick = async () => {
+  const t = $('cQ').value.trim();
+  if (!t) { toast('질문을 먼저 적어 주세요.', 'error'); $('cQ').focus(); return; }
+  b.disabled = true;
+  if (await classAdd({ k: 'q', t, a: b.dataset.ca })) $('cQ').value = '';
+  b.disabled = false; $('cQ').focus();
+});
+$('cNo').onclick = async () => {
+  $('cNo').disabled = true;
+  if (await classAdd({ k: 'g', t: $('cG').value.trim(), v: 'no' })) $('cG').value = '';
+  $('cNo').disabled = false;
+};
+$('cOk').onclick = () => confirmClick($('cOk'), '정답 처리하고 끝낼까요?', async () => {
+  if (await classAdd({ k: 'g', t: $('cG').value.trim(), v: 'ok' }, true)) { $('cG').value = ''; toast('🎉 정답! 이제 [🔓 점수판에 정답 공개]를 눌러 함께 확인하세요.', 'ok'); }
+});
 
 function renderQueue() {
   const pend = messages.filter(m => m.status === 'pending');
@@ -944,14 +1067,14 @@ let tickBusy = false;
 async function tick() {
   if (!room || room.status !== 'playing') return;
   const el = elapsedSec(room);
-  const t = $('barTimer'); if (t) t.textContent = `⏱ ${fmt(remainSec(room))} 남음`;
+  const t = $('barTimer'); if (t) t.textContent = timerText();
   if (tickBusy) return;
   tickBusy = true;
   try {
     if (el >= room.settings.limitSec) await endGame();
     else if ((room.hintSlotsApplied || 0) < slotsDue(room, el)) await revealHint('slot');
   } finally { tickBusy = false; }
-  if (Math.floor(el) % 5 === 0) { renderHints(); renderTeamTable(); }
+  if (Math.floor(el) % 5 === 0) { renderHints(); if (!isClass()) renderTeamTable(); }
 }
 
 function renderAnswer() {
@@ -998,7 +1121,23 @@ function renderTeamTable() {
 }
 
 // ---------- 종료 화면 ----------
+function renderClassEnd() {
+  const st = classStats();
+  $('finalWrap').classList.add('hidden');
+  $('copyBtn').classList.add('hidden');
+  const t = room.classSolved ? room.classSolvedSec : elapsedSec(room);
+  $('finalTable').innerHTML = `<tr><th>결과</th><th>걸린 시간</th><th>질문</th><th>정답 시도</th></tr>
+    <tr><td><b>${room.classSolved ? '<span style="color:#15803d;">🎉 우리 반 정답!</span>' : '<span style="color:#b91c1c;">못 맞힘</span>'}</b></td><td><b>${fmt(t)}</b></td><td>${st.q}개</td><td>${st.g}번</td></tr>`;
+  $('revealBtn').textContent = room.reveal ? '✅ 정답 공개됨 (다시 숨기기)' : '🔓 점수판에 정답 공개';
+  $('histHead').textContent = '질문 기록';
+  $('histNote').textContent = 'TV에 나왔던 질문과 정답 시도예요';
+  $('history').innerHTML = classLog().length ? classLog().map((x, i) => classItemHtml(x, i, false)).join('') : '<div class="muted" style="margin-top:8px;">기록이 없습니다.</div>';
+}
 function renderEnd() {
+  if (isClass()) { renderClassEnd(); return; }
+  $('copyBtn').classList.remove('hidden');
+  $('histHead').textContent = '모둠별 질문 기록';
+  $('histNote').textContent = '⭐을 누르면 점수판 정답 공개 화면에 "결정적 질문"으로 나와요';
   renderFinal();
   const list = rankTeams(teams, room);
   $('finalTable').innerHTML = `<tr><th>순위</th><th>모둠</th><th>이름</th><th>기록</th><th>질문</th><th>오답</th><th>🔑</th><th>결과</th></tr>` +
@@ -1030,7 +1169,7 @@ function renderEnd() {
 }
 $('revealBtn').onclick = () => {
   const n = pendingFinal().length;
-  if (n && !room.reveal) { confirmClick($('revealBtn'), `확인 안 한 제출 ${n}개! 그래도 공개?`, doReveal); return; }
+  if (n && !room.reveal && !isClass()) { confirmClick($('revealBtn'), `확인 안 한 제출 ${n}개! 그래도 공개?`, doReveal); return; }
   doReveal();
 };
 async function doReveal() {
