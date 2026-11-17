@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>명화 경매 · 선생님 가이드 | KIMKO-EDU</title>
+  <style>
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif; background: #fdf8f6; color: #332724; font-size: 16px; line-height: 1.7; word-break: keep-all; }
+    a { color: #b45309; }
+    .top { background: #451a03; color: #fff; }
+    .top .in { max-width: 920px; margin: 0 auto; padding: 14px 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .top a { color: #fde68a; text-decoration: none; font-size: 14px; font-weight: 700; }
+    .top a.btn { background: #f59e0b; color: #1c1917; padding: 7px 14px; border-radius: 10px; }
+    .hero { max-width: 920px; margin: 0 auto; padding: 34px 20px 10px; }
+    .kick { font-size: 13px; font-weight: 800; color: #b45309; letter-spacing: .06em; }
+    h1 { font-size: 34px; margin: 4px 0 8px; line-height: 1.25; color: #451a03; }
+    .lead { font-size: 17px; color: #5c3d2e; margin: 0; }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 10px 20px 80px; }
+    .toc { background: #fff; border: 1px solid #edded9; border-radius: 16px; padding: 16px 20px; margin: 22px 0 10px; }
+    .toc b { font-size: 14px; color: #8c6a5e; }
+    .toc ol { margin: 6px 0 0; padding-left: 22px; columns: 2; column-gap: 30px; font-size: 15px; }
+    .toc a { text-decoration: none; }
+    section { margin-top: 40px; scroll-margin-top: 16px; }
+    h2 { font-size: 24px; margin: 0 0 12px; display: flex; align-items: center; gap: 10px; color: #451a03; }
+    h2 .n { display: inline-flex; width: 32px; height: 32px; border-radius: 50%; background: #78350f; color: #fff; font-size: 16px; align-items: center; justify-content: center; flex: 0 0 32px; }
+    h3 { font-size: 18px; margin: 22px 0 6px; }
+    p { margin: 6px 0; }
+    .card { background: #fff; border: 1px solid #edded9; border-radius: 14px; padding: 14px 18px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .grid3 .card b, .grid2 .card b { display: block; font-size: 16px; margin-bottom: 2px; }
+    .muted { color: #8c6a5e; font-size: 14px; }
+    .tip { background: #fff7ed; border-left: 4px solid #b45309; border-radius: 10px; padding: 10px 14px; margin: 12px 0; font-size: 15px; }
+    .warn { background: #fef2f2; border-left: 4px solid #dc2626; border-radius: 10px; padding: 10px 14px; margin: 12px 0; font-size: 15px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #edded9; font-size: 15px; }
+    th, td { padding: 10px 12px; text-align: left; border-top: 1px solid #f3e8e4; vertical-align: top; }
+    th { background: #fbf0ec; font-size: 13.5px; color: #5c3d2e; border-top: 0; }
+    .time { font-weight: 800; color: #b45309; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .steps { counter-reset: s; list-style: none; padding: 0; margin: 10px 0; }
+    .steps li { counter-increment: s; position: relative; padding: 10px 14px 10px 50px; background: #fff; border: 1px solid #edded9; border-radius: 12px; margin-bottom: 8px; }
+    .steps li::before { content: counter(s); position: absolute; left: 14px; top: 11px; width: 24px; height: 24px; border-radius: 50%; background: #f59e0b; color: #1c1917; font-weight: 900; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+    .rule { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .rule > div { border-radius: 12px; padding: 12px 14px; }
+    .rule .t { font-weight: 900; font-size: 17px; }
+    .r1 { background: #dcfce7; color: #14532d; } .r2 { background: #f3e8ff; color: #581c87; } .r3 { background: #dbeafe; color: #1e3a8a; } .r4 { background: #fee2e2; color: #7f1d1d; }
+    .ex td.c { text-align: center; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .yes { color: #15803d; font-weight: 800; } .no { color: #b91c1c; font-weight: 800; }
+    .faq details { background: #fff; border: 1px solid #edded9; border-radius: 12px; margin-bottom: 8px; }
+    .faq summary { cursor: pointer; padding: 12px 16px; font-weight: 700; list-style: none; }
+    .faq summary::before { content: '＋ '; color: #b45309; font-weight: 900; }
+    .faq details[open] summary::before { content: '－ '; }
+    .faq .a { padding: 0 16px 12px; color: #5c3d2e; font-size: 15px; }
+    kbd { background: #f5f5f4; border: 1px solid #d6d3d1; border-bottom-width: 2px; border-radius: 6px; padding: 1px 6px; font-size: 13px; font-family: inherit; }
+    .pill { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 13px; font-weight: 700; background: #fbf0ec; color: #78350f; }
+    .print { float: right; font-size: 13px; }
+    @media (max-width: 720px) { .grid3, .grid2, .rule { grid-template-columns: 1fr; } .toc ol { columns: 1; } h1 { font-size: 27px; } table { font-size: 14px; } th, td { padding: 8px; } }
+    @media print {
+      .top, .print, .toc { display: none; }
+      body { background: #fff; font-size: 13px; }
+      section { break-inside: avoid-page; margin-top: 22px; }
+      .faq details { break-inside: avoid; } .faq details:not([open]) .a { display: block; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="top"><div class="in">
+  <a href="index.html">← 홈</a>
+  <span style="flex:1"></span>
+  <a href="auction-host.html" class="btn">🧑‍🏫 경매 진행하러 가기</a>
+</div></div>
+
+<div class="hero">
+  <div class="kick">🖼️ 무제한 명화 경매 · 선생님 가이드</div>
+  <h1>얼마를 걸어야 이길까? 눈치와 전략의 12라운드</h1>
+  <p class="lead">조마다 기기 한 대로 몰래 입찰하고, 선생님은 버튼으로 마감과 판정을 합니다. 처음 진행하시는 선생님을 위해 준비부터 최종 발표까지 순서대로 정리했어요. <a href="#" class="print" onclick="window.print(); return false;">🖨️ 인쇄하기</a></p>
+</div>
+
+<div class="wrap">
+  <nav class="toc"><b>목차</b>
+    <ol>
+      <li><a href="#about">명화 경매란?</a></li>
+      <li><a href="#rules">경매 규칙 (판정 방법)</a></li>
+      <li><a href="#prepare">수업 전 준비</a></li>
+      <li><a href="#flow">40분 수업 흐름</a></li>
+      <li><a href="#host">진행자 화면 사용법</a></li>
+      <li><a href="#see">누가 무엇을 볼 수 있나</a></li>
+      <li><a href="#classic">기존 방식과 언제 나눠 쓰나</a></li>
+      <li><a href="#trouble">이럴 땐 이렇게 (문제 해결)</a></li>
+      <li><a href="#tips">수업 운영 팁</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <section id="about">
+    <h2><span class="n">1</span>명화 경매란?</h2>
+    <p>라운드마다 명화 한 점이 경매에 나오고, 각 조는 <b>얼마를 낼지 다른 조 몰래</b> 정합니다. 가장 높게 부른 조가 낙찰받아 점수를 얻지만, 돈은 낙찰받은 조만 냅니다. 같은 금액을 부르면 무효가 되고, 가장 낮게 부른 조는 점수를 잃어요. 12라운드가 끝나면 <b>돈을 가장 많이 쓴 조는 파산</b>으로 꼴찌가 됩니다. 이기려면 점수도 따야 하고, 돈도 아껴야 하는 눈치 게임이에요.</p>
+    <div class="grid3" style="margin-top:12px;">
+      <div class="card"><b>🧑‍🏫 진행자 화면</b><span class="muted">선생님 노트북. 방 만들기, 제출 현황, 마감·판정, 총액 공개, 최종 발표. 입찰 금액이 보이니 학생에게 보이지 않게!</span></div>
+      <div class="card"><b>📺 점수판</b><span class="muted">프로젝터. 입장 QR, 조별 점수·순위, 라운드별 낙찰 조, 3·6·9라운드 총액. 금액은 나오지 않아요.</span></div>
+      <div class="card"><b>🕵️ 학생 화면</b><span class="muted">조별 기기. 금액 입력, 라운드 결과, 우리 조 점수와 쓴 돈. 다른 조 금액은 보이지 않아요.</span></div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section id="rules">
+    <h2><span class="n">2</span>경매 규칙 (판정 방법)</h2>
+    <p>[입찰 마감 · 결과 공개]를 누르면 아래 규칙대로 자동으로 판정됩니다. 기존 명화 경매 화면과 판정 방법이 똑같아요.</p>
+    <div class="rule" style="margin-top:10px;">
+      <div class="r1"><div class="t">💰 최고가 낙찰</div><b>가장 높은 금액을 혼자 부른 조</b>가 낙찰받아 그 라운드 점수(1~4점)를 얻어요. 낸 돈은 그 조의 지출에 쌓여요.</div>
+      <div class="r2"><div class="t">🤝 동점 무효</div>같은 금액을 부른 조가 둘 이상이면 그 금액은 <b>모두 무효</b>. 다음으로 높은 금액 중 <b>혼자 부른</b> 금액이 낙찰돼요. 모두 겹치면 유찰.</div>
+      <div class="r3"><div class="t">⚠️ 최저가 감점</div>가장 낮은 금액을 부른 조는 <b>-1점</b>. 최저 금액이 같은 조가 여럿이면 모두 -1점이에요.</div>
+      <div class="r4"><div class="t">💸 파산 패배</div>12라운드가 끝난 뒤 <b>누적 지출이 가장 많은 조</b>는 점수와 상관없이 최하위예요. 지출이 같으면 모두 파산.</div>
+    </div>
+
+    <h3>예시로 보기</h3>
+    <p class="muted">이번 라운드 점수 2점, 4개 조가 이렇게 입찰했다면:</p>
+    <table class="ex">
+      <tr><th>조</th><th style="text-align:center;">입찰</th><th>결과</th></tr>
+      <tr><td>1조</td><td class="c">5만원</td><td>2조와 같은 금액 → <span class="no">무효</span></td></tr>
+      <tr><td>2조</td><td class="c">5만원</td><td>1조와 같은 금액 → <span class="no">무효</span></td></tr>
+      <tr><td>3조</td><td class="c">3만원</td><td>무효를 빼면 가장 높은 단독 금액 → <span class="yes">낙찰! +2점</span>, 지출 3만원</td></tr>
+      <tr><td>4조</td><td class="c">2만원</td><td>가장 낮은 금액 → <span class="no">-1점</span></td></tr>
+    </table>
+    <p class="muted" style="margin-top:8px;">점수판에는 "3조 낙찰 +2", "4조 -1점"만 나오고, 3만원이라는 금액은 나오지 않아요.</p>
+
+    <h3>순위 정하기</h3>
+    <ul>
+      <li>점수가 높은 조가 위입니다. 최종 발표 전에는 점수만으로 순위를 보여 줘요.</li>
+      <li>최종 발표를 누르면 파산 조가 정해지고, 파산 조는 점수와 상관없이 맨 아래로 내려가요.</li>
+      <li>3·6·9라운드가 끝나면 <b>지금까지 낙찰된 금액의 총합</b>을 공개할 수 있어요. 어느 조가 얼마나 썼는지 짐작하게 만드는 장치예요.</li>
+    </ul>
+  </section>
+
+  <!-- 3 -->
+  <section id="prepare">
+    <h2><span class="n">3</span>수업 전 준비</h2>
+    <h3>준비물</h3>
+    <table>
+      <tr><th style="width:30%;">무엇</th><th>설명</th></tr>
+      <tr><td>선생님 노트북</td><td>진행자 화면을 엽니다. 크롬 브라우저를 추천해요.</td></tr>
+      <tr><td>프로젝터(TV)</td><td>점수판을 띄웁니다.</td></tr>
+      <tr><td>조별 기기 1대</td><td>태블릿·크롬북·휴대폰 모두 가능. <b>기기 1대 = 1조</b>, 3~8조까지 됩니다. 기기가 모자란 조는 선생님이 대신 입력할 수 있어요.</td></tr>
+      <tr><td>인터넷</td><td>학교 와이파이에서 접속되는지 <b>미리 한 번</b> 확인하세요.</td></tr>
+    </table>
+
+    <h3>처음 한 번만: 교사 인증</h3>
+    <ol class="steps">
+      <li><a href="auction-host.html">진행자 화면</a>을 처음 열면 <b>교사 인증</b> 창이 나옵니다.</li>
+      <li><b>교사 코드</b>를 입력하세요. 미스터리 타임과 같은 코드이고, 그 브라우저에서 미스터리 타임을 이미 인증했다면 묻지 않아요.</li>
+      <li>다른 노트북이나 다른 브라우저에서는 한 번 더 입력해야 합니다.</li>
+    </ol>
+    <div class="warn">🔒 교사 코드는 <b>학생 앞에서 입력하지 마세요.</b> 프로젝터에 연결하기 전에 미리 인증해 두세요.</div>
+
+    <h3>프로젝터 연결: "확장" 모드 추천</h3>
+    <p>진행자 화면에는 <b>모든 조의 입찰 금액</b>이 보여요. 노트북 화면과 프로젝터 화면을 <b>따로</b> 써야 학생들이 금액을 보지 못합니다.</p>
+    <div class="grid2">
+      <div class="card"><b>윈도우</b><kbd>Win</kbd> + <kbd>P</kbd> → <strong>확장</strong> 선택</div>
+      <div class="card"><b>맥</b>시스템 설정 → 디스플레이 → <strong>미러링 끄기</strong></div>
+    </div>
+    <p class="muted" style="margin-top:8px;">진행자 화면의 [📺 점수판 열기]로 새 창을 연 뒤 프로젝터 화면 쪽으로 끌어다 놓고 <kbd>F11</kbd>로 전체 화면을 만드세요. 확장이 어렵다면 교실 PC에서 점수판 주소를 따로 열어도 됩니다.</p>
+  </section>
+
+  <!-- 4 -->
+  <section id="flow">
+    <h2><span class="n">4</span>40분 수업 흐름</h2>
+    <table>
+      <tr><th style="width:110px;">시간</th><th>선생님</th><th>학생</th></tr>
+      <tr><td class="time">수업 전</td><td>조 수를 정해 <b>방 만들기</b>, 점수판을 프로젝터에 띄우기</td><td>—</td></tr>
+      <tr><td class="time">0 ~ 7분</td><td>점수판 QR 안내, <a href="#rules">경매 규칙</a> 설명 (예시 표를 칠판에 그려 주면 금방 이해해요)</td><td>QR로 입장, 조 고르기, 조 이름 정하기</td></tr>
+      <tr><td class="time">7 ~ 33분</td><td><b>[▶ 경매 시작]</b> → 라운드마다 점수 정하기 → 마감·결과 공개 → 다음 라운드 (12라운드, 한 라운드 약 2분)</td><td>조끼리 의논해서 입찰, 결과 확인</td></tr>
+      <tr><td class="time">33 ~ 40분</td><td><b>[🏁 최종 발표]</b>로 파산 조 공개 → 순위 발표 → 전략 이야기 나누기</td><td>최종 순위와 조별 지출 확인</td></tr>
+    </table>
+    <div class="tip">💡 시간이 모자라면 라운드마다 "입찰 시간 1분"처럼 말로 정해 주세요. 화면에 타이머는 없고, 선생님이 마감 버튼을 누를 때까지 입찰을 받아요.</div>
+  </section>
+
+  <!-- 5 -->
+  <section id="host">
+    <h2><span class="n">5</span>진행자 화면 사용법</h2>
+
+    <h3>① 방 만들기</h3>
+    <ul>
+      <li><b>조 수:</b> 3~8조 중에서 고르세요. 처음에는 4~5조를 추천해요.</li>
+      <li><b>진행자 PIN:</b> 숫자 4~6자리. 노트북이 꺼져 다른 기기로 이어서 진행할 때 필요하니 <b>꼭 메모</b>해 두세요.</li>
+    </ul>
+
+    <h3>② 대기실</h3>
+    <ul>
+      <li>방 코드와 QR이 나옵니다. 조가 들어오면 <span class="pill">● 접속 중</span>으로 바뀌어요.</li>
+      <li>모든 조가 들어오지 않아도 시작할 수 있어요. 기기가 없는 조는 진행 중에 선생님이 대신 입력하면 됩니다.</li>
+      <li><b>[▶ 경매 시작]</b>을 누르면 1라운드 입찰이 열립니다.</li>
+    </ul>
+
+    <h3>③ 라운드 진행 (입찰 받는 중)</h3>
+    <ol class="steps">
+      <li><b>이번 라운드 초코점수</b>를 <b>[−] [+]</b>로 정하세요 (1~4점, 기본 1점). 학생 화면과 점수판에 바로 보여요. 귀한 명화일수록 점수를 높이면 재미있어요.</li>
+      <li>조들이 입찰하면 표에 <span class="pill">✅ 제출</span>과 금액이 나타납니다. 학생은 마감 전까지 금액을 바꿀 수 있어요.</li>
+      <li>기기가 없거나 꺼진 조는 <b>대신 입력</b> 칸에 금액을 넣고 [저장]을 누르세요.</li>
+      <li>모든 조가 제출해야 <b>[입찰 마감 · 결과 공개]</b> 버튼이 눌립니다. 누르는 순간 입찰이 닫히고 판정 결과가 모든 화면에 나옵니다.</li>
+    </ol>
+
+    <h3>④ 결과 공개 후</h3>
+    <ul>
+      <li>판정 요약에 낙찰 조, 지출 금액, 감점 조, 동점 무효 조가 나와요. <b>금액은 진행자 화면에만</b> 보여요.</li>
+      <li><b>[↩ 이 라운드 다시 입찰받기]</b>: 입력 실수가 있었을 때 두 번 누르면 판정을 취소하고 입찰을 다시 받아요. 조들은 금액을 고칠 수 있어요.</li>
+      <li><b>[N라운드 시작 ▶]</b>: 다음 라운드로 넘어갑니다.</li>
+      <li><b>3·6·9라운드</b>가 끝나면 파란 안내 칸에 지금까지의 낙찰 총액이 나와요. <b>[아이들에게 총합 공개]</b>를 누르면 학생 화면과 점수판에 함께 공개됩니다. 누르지 않으면 공개되지 않아요.</li>
+    </ul>
+
+    <h3>⑤ 최종 발표</h3>
+    <ul>
+      <li>12라운드 결과가 나오면 <b>[🏁 최종 발표 (파산 조 공개)]</b> 버튼이 생겨요. 두 번 눌러야 실행됩니다.</li>
+      <li>파산 조가 정해지고, 모든 조의 점수·순위·쓴 돈이 학생 화면과 점수판에 공개돼요. 점수판에는 우승 조가 크게 나옵니다.</li>
+      <li>오른쪽 <b>조별 누적 현황</b>과 아래 <b>라운드 기록</b> 표로 라운드별 결과를 다시 짚어 줄 수 있어요.</li>
+    </ul>
+    <div class="warn">⚠️ 경매 중에 상단의 <b>[🏠 홈]</b>을 누르면 한 번 더 확인해요. 실수로 닫았다면 진행자 화면을 다시 열고 "최근 만든 방"을 누르면 그대로 이어집니다.</div>
+  </section>
+
+  <!-- 6 -->
+  <section id="see">
+    <h2><span class="n">6</span>누가 무엇을 볼 수 있나</h2>
+    <table>
+      <tr><th>정보</th><th>진행자</th><th>점수판</th><th>학생 (우리 조)</th></tr>
+      <tr><td>각 조의 입찰 금액</td><td class="yes">모두</td><td class="no">안 보임</td><td>우리 조 것만</td></tr>
+      <tr><td>낙찰 조 · 감점 조</td><td class="yes">보임</td><td class="yes">보임</td><td class="yes">보임</td></tr>
+      <tr><td>낙찰 금액</td><td class="yes">보임</td><td class="no">안 보임</td><td>우리 조가 낙찰받았을 때만</td></tr>
+      <tr><td>조별 점수 · 순위</td><td class="yes">보임</td><td class="yes">보임</td><td>우리 조 점수만 (최종 발표 후 전체)</td></tr>
+      <tr><td>조별 누적 지출</td><td class="yes">보임</td><td>최종 발표 후</td><td>우리 조 것만 (최종 발표 후 전체)</td></tr>
+      <tr><td>3·6·9라운드 낙찰 총액</td><td class="yes">보임</td><td>선생님이 공개하면</td><td>선생님이 공개하면</td></tr>
+    </table>
+    <p class="muted" style="margin-top:8px;">입찰 금액은 서버의 보안 규칙으로도 막혀 있어서, 학생이 다른 조 금액을 몰래 볼 수 없어요.</p>
+  </section>
+
+  <!-- 7 -->
+  <section id="classic">
+    <h2><span class="n">7</span>기존 방식과 언제 나눠 쓰나</h2>
+    <p>홈에서 명화 경매를 누르면 세 가지 중에 고를 수 있어요.</p>
+    <div class="grid2">
+      <div class="card"><b>🧑‍🏫 실시간 진행 (이 가이드)</b>조마다 기기가 있을 때. 입찰 금액을 몰래 적는 종이가 필요 없고, 판정과 점수 계산이 모든 화면에 바로 반영돼요.</div>
+      <div class="card"><b>📝 기존 방식 (선생님이 입력)</b>기기가 없거나 인터넷이 불안할 때. 조마다 종이에 금액을 적어 내면 선생님이 화면에 옮겨 적고 판정해요. 4조 고정이에요.</div>
+    </div>
+    <p class="muted" style="margin-top:8px;">두 방식의 판정 규칙은 똑같아요. 기록은 서로 이어지지 않으니 한 수업에서는 한 가지만 쓰세요.</p>
+  </section>
+
+  <!-- 8 -->
+  <section id="trouble" class="faq">
+    <h2><span class="n">8</span>이럴 땐 이렇게 (문제 해결)</h2>
+    <details><summary>노트북이 꺼졌어요 / 다른 기기로 진행하고 싶어요</summary><div class="a">다른 기기에서 진행자 화면을 열고 <b>"진행 중인 방 이어서 하기"</b>에 방 코드를 넣은 뒤, 방을 만들 때 정한 <b>진행자 PIN</b>을 입력하세요. 점수와 입찰 기록이 그대로 이어집니다.</div></details>
+    <details><summary>조 기기가 꺼졌어요 / 기기를 바꾸고 싶어요</summary><div class="a">대기실의 조 자리에서 <b>[자리 비우기]</b>를 두 번 누르세요. 새 기기로 입장해 같은 조 번호를 고르면 이어받습니다. 새로고침 정도는 비우지 않아도 그대로 이어져요. 급하면 그 라운드만 선생님이 <b>대신 입력</b>해도 됩니다.</div></details>
+    <details><summary>학생이 다른 조 번호를 잘못 골랐어요</summary><div class="a">대기실에서 그 조 자리를 <b>[자리 비우기]</b> 하고, 학생 기기에서 페이지를 새로고침한 뒤 맞는 번호를 고르게 하세요.</div></details>
+    <details><summary>마감 버튼이 안 눌려요</summary><div class="a">아직 입찰하지 않은 조가 있어요. 표에서 <span class="pill">⏳ 기다리는 중</span>인 조를 확인하고, 기기가 없는 조라면 <b>대신 입력</b>으로 금액을 넣어 주세요.</div></details>
+    <details><summary>금액을 잘못 입력했다는데 이미 마감했어요</summary><div class="a"><b>[↩ 이 라운드 다시 입찰받기]</b>를 두 번 누르면 판정이 취소되고 입찰이 다시 열려요. 고친 뒤 다시 마감하세요. 이미 공개한 3·6·9라운드 총액도 함께 취소됩니다.</div></details>
+    <details><summary>학생 화면에서 "지금은 입찰할 수 없어요"가 떠요</summary><div class="a">선생님이 이미 마감했거나 다음 라운드가 아직 시작되지 않았을 때 나와요. 다음 라운드가 시작되면 다시 입력할 수 있어요.</div></details>
+    <details><summary>"권한이 없습니다"라는 오류가 떠요</summary><div class="a">Firebase 보안 규칙에 명화 경매 부분이 게시되지 않았을 가능성이 커요. 홈페이지 관리자에게 보안 규칙(firestore.rules)을 최신 버전으로 게시했는지 확인해 달라고 하세요.</div></details>
+    <details><summary>점수판 화면이 멈춘 것 같아요</summary><div class="a">점수판 창을 새로고침(<kbd>F5</kbd>)하세요. 방 코드가 주소에 들어 있어서 바로 다시 연결됩니다.</div></details>
+    <details><summary>학교 와이파이에서 접속이 안 돼요</summary><div class="a">일부 학교망은 외부 서비스(구글 Firebase)를 막기도 해요. 휴대폰 데이터로는 되는지 확인해 보시고, 안 되면 학교 정보 담당 선생님께 <b>firestore.googleapis.com</b>, <b>identitytoolkit.googleapis.com</b>, <b>securetoken.googleapis.com</b>, <b>www.gstatic.com</b> 접속 허용을 요청하세요. 급할 때는 <a href="#classic">기존 방식</a>으로 진행하세요.</div></details>
+  </section>
+
+  <!-- 9 -->
+  <section id="tips">
+    <h2><span class="n">9</span>수업 운영 팁</h2>
+    <div class="grid2">
+      <div class="card"><b>🗣️ 조끼리 작게 의논</b>입찰 전에 "얼마 낼까?"를 조 안에서만 속삭이게 하세요. 다른 조에 들리면 동점 무효 작전에 당해요.</div>
+      <div class="card"><b>🎨 명화 소개 곁들이기</b>라운드마다 오늘의 명화 그림을 TV에 잠깐 보여 주고 점수를 정하면, 미술 감상 수업과도 이어져요.</div>
+      <div class="card"><b>📢 3·6·9 총액은 꼭 공개</b>"지금까지 모두 합쳐 55만원 썼대!"라는 말에 아이들이 다른 조 지출을 계산하기 시작해요. 게임의 핵심 긴장감이에요.</div>
+      <div class="card"><b>💸 파산 규칙 미리 강조</b>처음 설명할 때 "점수 1등이어도 돈을 제일 많이 쓰면 꼴찌"를 꼭 짚어 주세요. 처음엔 다들 크게 질렀다가 후반에 조심해져요.</div>
+      <div class="card"><b>🧮 경제 개념 연결</b>끝난 뒤 "왜 동점이 나왔을까?", "언제 0원을 내는 게 좋을까?"를 이야기하면 기회비용·전략 수업이 돼요.</div>
+      <div class="card"><b>⏱️ 라운드 시간 정하기</b>입찰 시간은 화면에 타이머가 없어요. "30초 남았어요!"처럼 선생님이 말로 재촉해 주면 진행이 빨라져요.</div>
+    </div>
+  </section>
+
+  <p class="muted" style="margin-top:40px; text-align:center;">KIMKO-EDU · 명화 경매 선생님 가이드<br>게임 규칙 출처: 인디스쿨 블레스유 선생님 자료</p>
+</div>
+</body>
+</html>

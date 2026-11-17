@@ -93,7 +93,7 @@
 <div id="vSetup" class="main hidden" style="max-width:640px;">
   <div class="card" style="display:flex; flex-direction:column; gap:14px;">
     <div style="font-size:22px; font-weight:800;">🖼️ 새 경매 방 만들기</div>
-    <div class="note muted" style="line-height:1.6;">조마다 학생 기기 1대로 입장해서, 입찰 금액을 <b>다른 조가 볼 수 없게</b> 직접 입력해요. 판정 규칙은 기존 명화 경매와 같고, 12라운드로 진행합니다.</div>
+    <div class="note muted" style="line-height:1.6;">처음이신가요? <a href="auction-guide.html" target="_blank" rel="noopener" style="color:#b45309; font-weight:700;">📘 선생님 가이드</a>를 먼저 읽어 보세요.<br>조마다 학생 기기 1대로 입장해서, 입찰 금액을 <b>다른 조가 볼 수 없게</b> 직접 입력해요. 판정 규칙은 기존 명화 경매와 같고, 12라운드로 진행합니다.</div>
     <div class="field"><div class="label">조 수 (3~8)</div>
       <select id="sTeams"><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select>
     </div>
@@ -236,7 +236,7 @@ $('tCode').onkeydown = (e) => { if (e.key === 'Enter') submitTeacher(); };
 async function openSetup() {
   stopRoom();
   history.replaceState(null, '', location.pathname);
-  bar('진행자', '');
+  bar('진행자', guideLink + '<a class="btn ghost-d" href="index.html">🏠 홈</a>');
   $('sPin').value = String(Math.floor(1000 + Math.random() * 9000));
   $('createErr').textContent = '';
   renderRecent();
@@ -353,8 +353,9 @@ const man = (n) => `${n}만원`;
 function boardUrl() { return pageUrl('auction-board.html', { room: roomCode }); }
 function studentUrl() { return pageUrl('auction.html', { room: roomCode }); }
 function openBoard() { window.open(boardUrl(), 'auctionBoard', 'popup,width=1280,height=760'); }
+const guideLink = '<a class="btn ghost-d" href="auction-guide.html" target="_blank" rel="noopener" title="새 탭에서 열려요">📘 선생님 가이드</a>';
 function topButtons(extra = '') {
-  return `${extra}<button class="btn ghost-d" id="boardBtn">📺 점수판 열기 ↗</button><a class="btn ghost-d" href="index.html" id="homeBtn">🏠 홈</a>`;
+  return `${extra}<button class="btn ghost-d" id="boardBtn">📺 점수판 열기 ↗</button>${guideLink}<a class="btn ghost-d" href="index.html" id="homeBtn">🏠 홈</a>`;
 }
 function bindTop() {
   const b = $('boardBtn'); if (b) b.onclick = openBoard;
