@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>명화 경매 | KIMKO-EDU</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body { font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif; background: #fdf8f6; color: #332724; font-size: 16px; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .hidden { display: none !important; }
+    .mono { font-variant-numeric: tabular-nums; }
+    .muted { color: #8c6a5e; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 20px; border-radius: 12px; font-weight: 800; border: 1px solid transparent; background: #78350f; color: #fff; white-space: nowrap; }
+    .btn:disabled { background: #e7e5e4 !important; color: #a8a29e !important; cursor: default; }
+    .btn.amb { background: #f59e0b; color: #1c1917; }
+    .btn.ghost { background: #fff; color: #78350f; border-color: #e7c9bd; }
+    .btn.big { padding: 15px 22px; font-size: 19px; border-radius: 14px; }
+    .pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 11px; border-radius: 999px; font-size: 13.5px; font-weight: 700; white-space: nowrap; }
+
+    .hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 30px 20px; background: linear-gradient(180deg, #451a03 0%, #78350f 100%); color: #fff; text-align: center; }
+    .hero h1 { font-size: 32px; margin: 0; font-weight: 900; }
+    .code-in { width: 260px; max-width: 80vw; text-align: center; font-size: 36px; font-weight: 900; letter-spacing: .25em; padding: 12px; border-radius: 14px; border: 3px solid #fbbf24; color: #451a03; }
+    .err { color: #fecaca; font-weight: 700; min-height: 22px; }
+
+    .page { max-width: 640px; margin: 0 auto; padding: 26px 20px 40px; }
+    .seat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 14px; }
+    .seat { border-radius: 16px; padding: 16px; background: #fff; border: 3px solid #edded9; text-align: left; }
+    .seat .n { font-size: 22px; font-weight: 900; }
+    .seat .s { font-size: 13px; margin-top: 2px; }
+    .seat.taken { background: #e7e5e4; color: #a8a29e; border-color: #e7e5e4; cursor: default; }
+    .seat.pick { border-color: #f59e0b; box-shadow: 0 6px 16px rgba(245,158,11,.25); }
+    .name-in { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid #d4c2bc; margin-top: 6px; }
+
+    .top { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: #451a03; color: #fff; flex-wrap: wrap; }
+    .top .team { font-size: 20px; font-weight: 900; }
+    .top .sp { flex: 1; }
+    .top .pill { background: rgba(255,255,255,.14); color: #fff; }
+    .wrap { max-width: 560px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+    .card { background: #fff; border: 1px solid #edded9; border-radius: 18px; padding: 16px 18px; }
+    .score { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; }
+    .score .v { font-size: 34px; font-weight: 900; color: #b45309; line-height: 1.1; }
+    .score .l { font-size: 13px; color: #8c6a5e; font-weight: 700; }
+    .bid-in { width: 100%; font-size: 44px; font-weight: 900; text-align: center; padding: 14px; border: 3px solid #f59e0b; border-radius: 16px; color: #451a03; }
+    .bid-unit { text-align: center; font-weight: 800; color: #78350f; margin-top: 6px; }
+    .note { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: 10px 12px; font-size: 14px; line-height: 1.6; }
+    .result { border-radius: 22px; padding: 22px 20px; text-align: center; }
+    .result.win { background: linear-gradient(160deg, #166534, #15803d); color: #fff; }
+    .result.lose { background: #eff6ff; color: #1e3a8a; }
+    .result.none { background: #fff; border: 1px solid #edded9; }
+    .big { font-size: 28px; font-weight: 900; }
+    .notice b { white-space: nowrap; }
+    .notice { background: #eff6ff; border: 2px dashed #3b82f6; border-radius: 14px; padding: 12px 16px; text-align: center; color: #1e3a8a; font-weight: 700; }
+    table.t { width: 100%; border-collapse: collapse; font-size: 15px; }
+    table.t td, table.t th { padding: 8px 4px; text-align: left; border-top: 1px solid #f3e8e4; }
+    table.t th { font-size: 12px; color: #8c6a5e; border-top: 0; }
+    .bktag { background: #ef4444; color: #fff; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 800; }
+  </style>
+</head>
+<body>
+
+<div id="vCode" class="hero hidden">
+  <div style="font-size:48px;">🖼️</div>
+  <h1>명화 경매</h1>
+  <div style="color:#fde68a;">선생님 화면의 방 코드를 입력하세요</div>
+  <input id="codeIn" class="code-in mono" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="······">
+  <button class="btn amb big" id="codeBtn" style="width:260px; max-width:80vw;">입장하기</button>
+  <div class="err" id="codeErr"></div>
+</div>
+
+<div id="vPick" class="page hidden">
+  <div style="font-size:13px; font-weight:700; color:#b45309;" id="pickMeta"></div>
+  <div style="font-size:26px; font-weight:900; margin-top:2px;">우리 조를 골라 주세요</div>
+  <div class="muted" style="font-size:14px;">이 기기 한 대가 한 조가 됩니다</div>
+  <div class="seat-grid" id="seatGrid"></div>
+  <div style="margin-top:18px;"><div style="font-weight:700; font-size:14px;">조 이름 (선택, 12자 이내)</div>
+    <input id="nameIn" class="name-in" maxlength="12" placeholder="예: 반짝반짝 조"></div>
+  <button class="btn amb big" id="joinBtn" style="width:100%; margin-top:16px;" disabled>조를 골라 주세요</button>
+</div>
+
+<div id="vGame" class="hidden">
+  <div class="top">
+    <span class="team" id="gTeam"></span><span id="gName" style="font-size:14px; color:#fde68a;"></span>
+    <span class="sp"></span>
+    <span class="pill mono" id="gRound"></span>
+  </div>
+  <div class="wrap">
+    <div class="card score">
+      <div><div class="v mono" id="sPts">0점</div><div class="l">우리 조 점수</div></div>
+      <div><div class="v mono" id="sSpent">0만원</div><div class="l">우리 조가 쓴 돈(누적)</div></div>
+    </div>
+
+    <div id="notice" class="notice hidden"></div>
+
+    <div id="gLobby" class="card hidden" style="text-align:center;">
+      <div style="font-size:50px;">🖼️</div>
+      <div style="font-size:23px; font-weight:900; margin-top:4px;">입장 완료!</div>
+      <div class="muted" style="margin-top:6px; line-height:1.6;">선생님이 경매를 시작하면 입찰할 수 있어요.</div>
+      <div class="note" style="margin-top:12px; text-align:left;">
+        💰 낙찰된 조만 돈이 차감돼요. 입찰 금액은 선생님만 알아요.<br>
+        🤝 같은 금액을 낸 조가 있으면 그 금액은 무효!<br>
+        ⚠️ 가장 낮게 입찰한 조는 -1점.<br>
+        💸 12라운드 뒤, 돈을 가장 많이 쓴 조는 파산 패배!
+      </div>
+    </div>
+
+    <div id="gBid" class="card hidden">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+        <span style="font-size:20px; font-weight:900;">이번 낙찰 점수</span><span class="pill" style="background:#fef3c7; color:#92400e; font-size:18px;" id="bPoint"></span>
+      </div>
+      <input id="bidIn" class="bid-in mono" inputmode="numeric" maxlength="7" placeholder="0" autocomplete="off">
+      <div class="bid-unit">만원</div>
+      <button class="btn amb big" id="bidBtn" style="width:100%; margin-top:12px;">입찰하기</button>
+      <div class="note" id="bidInfo" style="margin-top:12px;"></div>
+    </div>
+
+    <div id="gResult" class="hidden"></div>
+    <div id="gFinal" class="card hidden"></div>
+  </div>
+</div>
+
+<div id="vMsg" class="hero hidden"><div style="font-size:44px;">🖼️</div><div id="msgText" style="font-size:20px; font-weight:700; line-height:1.6;"></div><button class="btn amb" onclick="location.href=location.pathname">처음으로</button></div>
+
+<script type="module">
+import {
+  db, ready, esc, toast, explainError, EST,
+  doc, getDoc, setDoc, updateDoc, collection, query, where, onSnapshot, serverTimestamp
+} from './mystery-firebase.js';
+import { TOTAL_ROUNDS, standings } from './auction-core.js';
+
+const $ = (id) => document.getElementById(id);
+const VIEWS = ['vCode', 'vPick', 'vGame', 'vMsg'];
+function view(v) { VIEWS.forEach(x => $(x).classList.toggle('hidden', x !== v)); }
+function message(t) { $('msgText').innerHTML = t; view('vMsg'); }
+const R = (code, ...p) => ['auctionRooms', code, ...p];
+const man = (n) => `${n}만원`;
+
+let uid, code, room = null, teams = [], myBids = {}, myTeamId = null;
+let unsubs = [], bidUnsub = null, picked = null, shownRound = 0;
+
+try { uid = await ready(); }
+catch (e) { message('연결 실패<br>' + esc(explainError(e))); throw e; }
+
+// ============================================================
+// 1. 방 코드
+// ============================================================
+async function enter(c) {
+  $('codeErr').textContent = '';
+  if (!/^\d{6}$/.test(c)) { $('codeErr').textContent = '숫자 6자리를 입력하세요.'; view('vCode'); return; }
+  let s;
+  try { s = await getDoc(doc(db, ...R(c))); } catch (e) { $('codeErr').textContent = explainError(e); view('vCode'); return; }
+  if (!s.exists()) { $('codeErr').textContent = '그 방을 찾을 수 없어요. 코드를 다시 확인하세요.'; view('vCode'); return; }
+  code = c;
+  history.replaceState(null, '', '?room=' + c);
+  unsubs.push(onSnapshot(doc(db, ...R(c)), (d) => { room = d.data(EST); render(); }));
+  unsubs.push(onSnapshot(collection(db, ...R(c, 'teams')), (d) => { teams = d.docs.map(x => ({ id: x.id, ...x.data(EST) })); render(); }));
+}
+$('codeBtn').onclick = () => enter($('codeIn').value.trim());
+$('codeIn').onkeydown = (e) => { if (e.key === 'Enter') enter($('codeIn').value.trim()); };
+$('codeIn').oninput = () => { $('codeIn').value = $('codeIn').value.replace(/\D/g, ''); };
+
+function render() {
+  if (!room) return;
+  const mine = teams.find(t => t.uid === uid);
+  if (mine) {
+    if (myTeamId !== mine.id) { myTeamId = mine.id; listenMyBids(); }
+  } else if (myTeamId) {
+    myTeamId = null;
+    if (bidUnsub) { bidUnsub(); bidUnsub = null; }
+    toast('선생님이 우리 조 자리를 비웠어요. 조를 다시 골라 주세요.', 'error');
+  }
+  if (!myTeamId) { renderPick(); return; }
+  view('vGame');
+  renderGame();
+}
+
+// ============================================================
+// 2. 조 고르기
+// ============================================================
+function renderPick() {
+  view('vPick');
+  $('pickMeta').textContent = `방 ${code.slice(0, 3)} ${code.slice(3)} · 명화 경매`;
+  const ids = Array.from({ length: room.teamCount }, (_, i) => String(i + 1));
+  if (picked && !ids.includes(picked)) picked = null;
+  $('seatGrid').innerHTML = ids.map(id => {
+    const t = teams.find(x => x.id === id);
+    if (t && t.uid) return `<button class="seat taken" disabled><div class="n">${id}조</div><div class="s">이미 사용 중</div></button>`;
+    const sub = t ? '비어 있어요 · 이어받기' : '비어 있어요';
+    return `<button class="seat ${picked === id ? 'pick' : ''}" data-id="${id}"><div class="n">${id}조</div><div class="s" style="color:#b45309; font-weight:700;">${sub}</div></button>`;
+  }).join('');
+  $('seatGrid').querySelectorAll('[data-id]').forEach(b => b.onclick = () => { picked = b.dataset.id; renderPick(); });
+  $('joinBtn').disabled = !picked;
+  $('joinBtn').textContent = picked ? `${picked}조로 들어가기` : '조를 골라 주세요';
+}
+$('joinBtn').onclick = async () => {
+  if (!picked) return;
+  const name = $('nameIn').value.trim().slice(0, 12);
+  const ref = doc(db, ...R(code, 'teams', picked));
+  const exist = teams.find(t => t.id === picked);
+  $('joinBtn').disabled = true;
+  try {
+    if (exist) await updateDoc(ref, { uid, name: name || exist.name || '' });
+    else await setDoc(ref, { uid, name, joinedAt: serverTimestamp() });
+  } catch (e) {
+    toast((e.code || '').includes('permission') ? '다른 기기가 먼저 앉았어요. 다른 조를 골라 주세요.' : explainError(e), 'error');
+    picked = null; renderPick();
+  }
+};
+
+// ============================================================
+// 3. 경매
+// ============================================================
+function listenMyBids() {
+  if (bidUnsub) bidUnsub();
+  bidUnsub = onSnapshot(query(collection(db, ...R(code, 'bids')), where('uid', '==', uid)), (s) => {
+    myBids = {};
+    s.docs.forEach(d => { const x = d.data(EST); if (x.teamNo === myTeamId) myBids[x.round] = x.amount; });
+    render();
+  });
+}
+
+function renderGame() {
+  const N = room.teamCount, st = room.status, r = room.round;
+  const t = teams.find(x => x.id === myTeamId);
+  $('gTeam').textContent = `${myTeamId}조`;
+  $('gName').textContent = t && t.name ? t.name : '';
+  $('gRound').textContent = st === 'lobby' ? '대기 중' : st === 'final' ? '경매 종료' : `${r} / ${TOTAL_ROUNDS} 라운드`;
+
+  const sd = standings(room.results, N, room.final);
+  const me = sd.teams[Number(myTeamId) - 1];
+  let spent = 0;
+  for (let k = 1; k <= TOTAL_ROUNDS; k++) { const x = room.results[k]; if (x && x.winner === myTeamId) spent += myBids[k] || 0; }
+  $('sPts').textContent = `${me.points}점`;
+  $('sSpent').textContent = man(spent);
+
+  // 3·6·9 라운드 총액 (선생님이 공개했을 때만)
+  const rv = (room.reveals || []).slice().sort((a, b) => b.round - a.round)[0];
+  $('notice').classList.toggle('hidden', !rv);
+  if (rv) $('notice').innerHTML = `📢 ${rv.round}라운드까지 낙찰된 금액의 총합은 <b class="mono" style="font-size:22px;">${man(rv.sum)}</b>`;
+
+  ['gLobby', 'gBid', 'gResult', 'gFinal'].forEach(x => $(x).classList.add('hidden'));
+  if (st === 'lobby') $('gLobby').classList.remove('hidden');
+  else if (st === 'bidding') renderBid(r);
+  else if (st === 'result') renderResult(r, spent);
+  else renderFinal(N);
+}
+
+function renderBid(r) {
+  $('gBid').classList.remove('hidden');
+  $('bPoint').textContent = `${room.points[r - 1]}점`;
+  if (shownRound !== r) { $('bidIn').value = myBids[r] != null ? String(myBids[r]) : ''; shownRound = r; }
+  const has = myBids[r] != null;
+  $('bidBtn').textContent = has ? '수정하기' : '입찰하기';
+  $('bidInfo').innerHTML = has
+    ? `✅ <b class="mono">${man(myBids[r])}</b>으로 입찰했어요.<br>선생님이 마감하기 전까지는 바꿀 수 있어요.`
+    : '아직 입찰하지 않았어요. 다른 조가 모르게 금액을 정해 보세요!';
+}
+$('bidIn').oninput = () => { $('bidIn').value = $('bidIn').value.replace(/\D/g, ''); };
+$('bidIn').onkeydown = (e) => { if (e.key === 'Enter') $('bidBtn').click(); };
+$('bidBtn').onclick = async () => {
+  const v = $('bidIn').value.trim();
+  if (!/^\d{1,7}$/.test(v) || Number(v) > 1000000) { toast('금액을 숫자로 입력해 주세요.', 'error'); $('bidIn').focus(); return; }
+  const r = room.round;
+  $('bidBtn').disabled = true;
+  try {
+    await setDoc(doc(db, ...R(code, 'bids', r + '_' + myTeamId)), { uid, teamNo: myTeamId, round: r, amount: Number(v), updatedAt: serverTimestamp() });
+    toast(`${man(Number(v))}으로 입찰했어요!`, 'ok');
+  } catch (e) {
+    toast((e.code || '').includes('permission') ? '지금은 입찰할 수 없어요. (이미 마감됐어요)' : explainError(e), 'error');
+  }
+  $('bidBtn').disabled = false;
+};
+
+function renderResult(r, spent) {
+  const x = room.results[r];
+  const box = $('gResult'); box.classList.remove('hidden');
+  if (!x) { box.innerHTML = '<div class="card">결과를 기다리는 중…</div>'; return; }
+  const won = x.winner === myTeamId;
+  const lost = x.losers.includes(myTeamId);
+  const voided = (x.voidTeams || []).includes(myTeamId);
+  const mine = myBids[r];
+  const lines = [];
+  if (voided) lines.push('🤝 우리 조와 같은 금액이 있어서 <b>입찰이 무효</b>가 됐어요.');
+  if (lost) lines.push('⚠️ 가장 낮게 입찰해서 <b>-1점</b>이에요.');
+  if (!won && !lost && !voided) lines.push('이번엔 낙찰되지 못했어요.');
+  const head = won ? '🎉 낙찰!' : lost ? '😢 아쉬워요' : '🤔 낙찰 실패';
+  const cls = won ? 'win' : lost ? 'lose' : 'none';
+  const winTxt = x.winner == null ? '모두 동점이라 낙찰된 조가 없어요.' : `이번 라운드 낙찰: <b>${x.winner}조</b> (+${x.point}점)`;
+  box.innerHTML = `<div class="result ${cls}">
+    <div class="big">${head}</div>
+    <div style="margin-top:8px; line-height:1.7;">${winTxt}</div>
+    ${won ? `<div style="margin-top:6px;">우리 조 +${x.point}점, 낸 돈 <b class="mono">${man(mine || 0)}</b></div>` : ''}
+    ${lines.map(l => `<div style="margin-top:6px; line-height:1.6;">${l}</div>`).join('')}
+    <div style="margin-top:10px; font-size:14px; opacity:.85;">우리 조 입찰: <b class="mono">${mine != null ? man(mine) : '-'}</b></div>
+    <div style="margin-top:6px; font-size:14px; opacity:.85;">선생님이 다음 라운드를 시작할 때까지 기다려요.</div>
+  </div>`;
+}
+
+function renderFinal(N) {
+  const box = $('gFinal'); box.classList.remove('hidden');
+  const sd = standings(room.results, N, room.final);
+  const list = sd.teams.slice().sort((a, b) => a.rank - b.rank);
+  const me = sd.teams[Number(myTeamId) - 1];
+  const sp = (room.final && room.final.spent) || {};
+  box.innerHTML = `
+    <div style="text-align:center;">
+      <div style="font-size:52px;">${me.bankrupt ? '💸' : me.rank === 1 ? '🏆' : '🏁'}</div>
+      <div style="font-size:26px; font-weight:900;">경매 종료!</div>
+      <div style="margin-top:6px; font-size:18px;">${me.bankrupt ? '돈을 가장 많이 써서 <b>파산 패배</b>예요' : `우리 조 <b>${me.rank}위</b>`}</div>
+    </div>
+    <table class="t mono" style="margin-top:14px;"><tr><th>순위</th><th>조</th><th>점수</th><th>쓴 돈</th><th></th></tr>
+      ${list.map(t => `<tr style="${t.no === Number(myTeamId) ? 'background:#fff7ed; font-weight:800;' : ''}"><td>${t.bankrupt ? '-' : t.rank}</td><td>${t.no}조</td><td>${t.points}점</td><td>${man(sp[t.no] || 0)}</td><td>${t.bankrupt ? '<span class="bktag">파산</span>' : ''}</td></tr>`).join('')}
+    </table>`;
+}
+
+// ============================================================
+// 시작
+// ============================================================
+const qRoom = new URLSearchParams(location.search).get('room');
+if (qRoom) { $('codeIn').value = qRoom; enter(qRoom); }
+else view('vCode');
+</script>
+</body>
+</html>

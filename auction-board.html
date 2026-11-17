@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>명화 경매 · 점수판 | KIMKO-EDU</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body { font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif; background: #1c1209; color: #fff7ed; overflow: hidden; }
+    .hidden { display: none !important; }
+    .mono { font-variant-numeric: tabular-nums; }
+    .stage { height: 100vh; display: flex; flex-direction: column; padding: 2.4vh 3vw; gap: 2vh; }
+    .head { display: flex; align-items: center; gap: 2vw; }
+    .head h1 { margin: 0; font-size: 4.2vh; font-weight: 900; color: #fbbf24; }
+    .rbadge { font-size: 3.6vh; font-weight: 900; background: #fbbf24; color: #451a03; border-radius: 999px; padding: .4vh 2vh; }
+    .phase { font-size: 2.8vh; font-weight: 700; color: #fcd9a8; }
+    .sp { flex: 1; }
+    .cards { flex: 1; min-height: 0; display: grid; gap: 2vh 1.6vw; grid-template-columns: repeat(var(--cols, 4), 1fr); }
+    .tc { background: #2d1f12; border: .5vh solid #5c3d1e; border-radius: 2.4vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 1vh; min-height: 0; }
+    .tc.top { border-color: #fbbf24; background: #3b2810; box-shadow: 0 0 4vh rgba(251,191,36,.35); }
+    .tc.bk { border-color: #ef4444; background: #3a1414; opacity: .9; }
+    .tc.win { animation: pop 1.2s 2; }
+    @keyframes pop { 50% { transform: scale(1.04); box-shadow: 0 0 5vh rgba(34,197,94,.6); } }
+    .tc .tn { font-size: 4vh; font-weight: 900; }
+    .tc .tname { font-size: 2.2vh; color: #fcd9a8; min-height: 2.6vh; max-width: 90%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tc .pts { font-size: min(15vh, 9vw); font-weight: 900; line-height: 1; color: #fff; margin: 1vh 0; }
+    .tc .pts small { font-size: .35em; margin-left: .1em; color: #fcd9a8; }
+    .tc .rk { font-size: 3vh; font-weight: 800; color: #fbbf24; }
+    .tc .tag { position: absolute; top: 1.4vh; right: 1.4vh; font-size: 2.2vh; font-weight: 900; padding: .4vh 1.2vh; border-radius: 1vh; }
+    .tc .tag.bk { background: #ef4444; color: #fff; }
+    .tc .tag.in { background: #22c55e; color: #052e16; }
+    .tc .tag.out { background: #57534e; color: #e7e5e4; }
+    .strip { display: grid; grid-template-columns: repeat(12, 1fr); gap: .8vw; }
+    .chip { background: #2d1f12; border: .3vh solid #5c3d1e; border-radius: 1.4vh; text-align: center; padding: .8vh .2vw; font-size: 2.2vh; line-height: 1.3; min-height: 8vh; }
+    .chip b { display: block; font-size: 2.2vh; color: #fcd9a8; }
+    .chip.cur { border-color: #fbbf24; background: #3b2810; }
+    .chip .w { color: #86efac; font-weight: 900; font-size: 2.8vh; }
+    .chip .l { color: #93c5fd; font-size: 1.8vh; }
+    .banner { background: #1e3a8a; border: .5vh dashed #93c5fd; border-radius: 2vh; text-align: center; padding: 1.6vh 2vw; font-size: 3.6vh; font-weight: 800; }
+    .banner b { font-size: 1.4em; color: #fde68a; }
+    .lobby { flex: 1; display: grid; place-items: center; text-align: center; }
+    .lobby .code { font-size: 14vh; font-weight: 900; letter-spacing: .08em; color: #fbbf24; line-height: 1; }
+    #qr { width: 26vh; height: 26vh; margin: 2vh auto; background: #fff; padding: 1vh; border-radius: 1.4vh; display: flex; align-items: center; justify-content: center; }
+    #qr img, #qr canvas { width: 100% !important; height: 100% !important; }
+    .seats { display: flex; gap: 1.2vw; justify-content: center; flex-wrap: wrap; margin-top: 2vh; }
+    .seat { font-size: 2.8vh; font-weight: 800; padding: 1vh 2vw; border-radius: 1.6vh; border: .3vh dashed #5c3d1e; color: #a8826a; }
+    .seat.on { border-style: solid; border-color: #22c55e; color: #86efac; }
+    .final-title { text-align: center; font-size: 6vh; font-weight: 900; color: #fbbf24; }
+    .msg { display: grid; place-items: center; height: 100vh; font-size: 4vh; text-align: center; padding: 4vw; }
+  </style>
+</head>
+<body>
+
+<div id="vMsg" class="msg">불러오는 중…</div>
+
+<div id="vLobby" class="stage hidden">
+  <div class="head"><h1>🖼️ 무제한 명화 경매</h1><span class="sp"></span><span class="phase">입장 대기 중</span></div>
+  <div class="lobby"><div>
+    <div style="font-size:3vh; color:#fcd9a8;">학생 기기에서 코드를 입력하세요</div>
+    <div class="code mono" id="lCode"></div>
+    <div id="qr"></div>
+    <div class="seats" id="lSeats"></div>
+  </div></div>
+</div>
+
+<div id="vGame" class="stage hidden">
+  <div class="head"><h1>🖼️ 무제한 명화 경매</h1><span class="rbadge mono" id="gRound"></span><span class="phase" id="gPhase"></span><span class="sp"></span></div>
+  <div class="banner hidden" id="banner"></div>
+  <div class="final-title hidden" id="finalTitle"></div>
+  <div class="cards" id="cards"></div>
+  <div class="strip" id="strip"></div>
+</div>
+
+<script type="module">
+import { db, ready, esc, explainError, pageUrl, EST, doc, collection, onSnapshot } from './mystery-firebase.js';
+import { TOTAL_ROUNDS, standings } from './auction-core.js';
+
+const $ = (id) => document.getElementById(id);
+const code = new URLSearchParams(location.search).get('room');
+function msg(t) { $('vMsg').textContent = t; $('vMsg').classList.remove('hidden'); $('vLobby').classList.add('hidden'); $('vGame').classList.add('hidden'); }
+if (!/^\d{6}$/.test(code || '')) { msg('방 코드가 없어요. 진행자 화면의 [📺 점수판 열기] 버튼으로 열어 주세요.'); throw new Error('no room'); }
+
+let uid;
+try { uid = await ready(); } catch (e) { msg('연결 실패: ' + explainError(e)); throw e; }
+
+let room = null, teams = [], qrDrawn = false, lastResultKey = '';
+onSnapshot(doc(db, 'auctionRooms', code), (s) => {
+  if (!s.exists()) { msg('그 방을 찾을 수 없어요.'); return; }
+  room = s.data(EST); render();
+}, (e) => msg('읽을 수 없어요: ' + explainError(e)));
+onSnapshot(collection(db, 'auctionRooms', code, 'teams'), (s) => { teams = s.docs.map(d => ({ id: d.id, ...d.data(EST) })); render(); });
+
+function render() {
+  if (!room) return;
+  $('vMsg').classList.add('hidden');
+  if (room.status === 'lobby') renderLobby(); else renderGame();
+}
+
+function renderLobby() {
+  $('vLobby').classList.remove('hidden'); $('vGame').classList.add('hidden');
+  $('lCode').textContent = code.slice(0, 3) + ' ' + code.slice(3);
+  if (!qrDrawn) {
+    const url = pageUrl('auction.html', { room: code });
+    if (window.QRCode) new window.QRCode($('qr'), { text: url, width: 260, height: 260, colorDark: '#451a03', colorLight: '#ffffff' });
+    else $('qr').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(url)}" alt="QR">`;
+    qrDrawn = true;
+  }
+  $('lSeats').innerHTML = Array.from({ length: room.teamCount }, (_, i) => {
+    const t = teams.find(x => x.id === String(i + 1));
+    return `<span class="seat ${t && t.uid ? 'on' : ''}">${i + 1}조${t && t.uid ? ' ✔' : ''}</span>`;
+  }).join('');
+}
+
+function renderGame() {
+  $('vLobby').classList.add('hidden'); $('vGame').classList.remove('hidden');
+  const N = room.teamCount, st = room.status, r = room.round;
+  const sd = standings(room.results, N, room.final);
+  $('gRound').textContent = st === 'final' ? '경매 종료' : `${r} / ${TOTAL_ROUNDS}R`;
+  $('gPhase').textContent = st === 'bidding' ? `💰 입찰 중 · 이번 낙찰 ${room.points[r - 1]}점` : st === 'result' ? '📣 결과 공개' : '🏁 최종 결과';
+
+  // 3·6·9 라운드 총액 (공개했을 때만)
+  const rv = (room.reveals || []).slice().sort((a, b) => b.round - a.round)[0];
+  $('banner').classList.toggle('hidden', !rv);
+  if (rv) $('banner').innerHTML = `📢 ${rv.round}라운드까지 낙찰된 금액의 총합 <b class="mono">${rv.sum}만원</b>`;
+
+  const cur = room.results[r];
+  const winNo = st === 'result' && cur ? cur.winner : null;
+  const losers = st === 'result' && cur ? cur.losers : [];
+  $('cards').style.setProperty('--cols', N <= 4 ? N : Math.ceil(N / 2));
+  $('cards').innerHTML = sd.teams.map(t => {
+    const seat = teams.find(x => x.id === String(t.no));
+    const top = sd.any && t.rank === 1 && !t.bankrupt;
+    const tag = t.bankrupt ? '<span class="tag bk">💸 파산 패배</span>'
+      : winNo === String(t.no) ? '<span class="tag in">🎉 낙찰 +' + cur.point + '</span>'
+      : losers.includes(String(t.no)) ? '<span class="tag out">-1점</span>' : '';
+    return `<div class="tc ${top ? 'top' : ''} ${t.bankrupt ? 'bk' : ''} ${winNo === String(t.no) ? 'win' : ''}">${tag}
+      <div class="tn">${t.no}조</div><div class="tname">${esc((seat && seat.name) || '')}</div>
+      <div class="pts mono">${t.points}<small>점</small></div>
+      <div class="rk">${t.bankrupt ? '파산 (최하위)' : sd.any ? t.rank + '위' : '-'}</div></div>`;
+  }).join('');
+
+  const ft = $('finalTitle');
+  if (st === 'final') {
+    const winner = sd.teams.filter(t => !t.bankrupt).sort((a, b) => a.rank - b.rank)[0];
+    ft.classList.remove('hidden'); ft.textContent = winner ? `🏆 우승 ${winner.no}조!` : '경매 종료';
+  } else ft.classList.add('hidden');
+
+  $('strip').innerHTML = Array.from({ length: TOTAL_ROUNDS }, (_, i) => {
+    const k = i + 1, x = room.results[k], isCur = k === r && st !== 'final';
+    const inner = x ? (x.winner != null ? `<span class="w">${x.winner}조</span><span class="l">+${x.point}</span>` : '<span class="l">유찰</span>') : '<span class="l">·</span>';
+    return `<div class="chip ${isCur ? 'cur' : ''}"><b class="mono">${k}R</b>${inner}</div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>

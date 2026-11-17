@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>명화 경매 · 진행자 | KIMKO-EDU</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body { font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif; background: #fdf8f6; color: #332724; font-size: 15px; }
+    button { font: inherit; cursor: pointer; }
+    input, select { font: inherit; }
+    .hidden { display: none !important; }
+    .mono { font-variant-numeric: tabular-nums; }
+    .muted { color: #8c6a5e; }
+
+    .appbar { min-height: 54px; display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 8px 18px; background: #451a03; color: #fff; position: sticky; top: 0; z-index: 20; }
+    .appbar .logo { font-weight: 800; font-size: 17px; white-space: nowrap; }
+    .appbar .sp { flex: 1; }
+    .pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 14px; border-radius: 10px; font-size: 14px; font-weight: 700; white-space: nowrap; border: 1px solid transparent; background: #78350f; color: #fff; text-decoration: none; }
+    .btn:disabled { background: #e7e5e4 !important; color: #a8a29e !important; cursor: default; }
+    .btn.amb { background: #f59e0b; color: #1c1917; }
+    .btn.ghost { background: #fff; color: #78350f; border-color: #e7c9bd; }
+    .btn.ghost-d { background: rgba(255,255,255,.12); color: #fff; border-color: rgba(255,255,255,.3); }
+    .btn.red { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+    .btn.green { background: #16a34a; color: #fff; }
+    .btn.big { padding: 13px 22px; font-size: 17px; border-radius: 12px; }
+    .btn.sm { padding: 4px 10px; font-size: 12.5px; border-radius: 8px; }
+    .card { background: #fff; border: 1px solid #edded9; border-radius: 14px; padding: 14px 16px; box-shadow: 0 2px 4px rgba(0,0,0,.03); }
+    .label { font-size: 12px; font-weight: 700; color: #8c6a5e; }
+    .main { max-width: 1180px; margin: 0 auto; padding: 20px; }
+    .field input, .field select { margin-top: 5px; padding: 9px 11px; border: 1px solid #d4c2bc; border-radius: 10px; background: #fff; }
+    .err { color: #b91c1c; font-size: 13.5px; font-weight: 700; margin-top: 8px; min-height: 18px; }
+
+    /* 대기실 */
+    .lobby { display: grid; grid-template-columns: 340px 1fr; gap: 18px; }
+    .code-big { font-size: 52px; font-weight: 900; letter-spacing: .06em; color: #451a03; line-height: 1.1; }
+    #qr { width: 200px; height: 200px; margin: 14px auto 10px; display: flex; align-items: center; justify-content: center; }
+    #qr img, #qr canvas { width: 200px !important; height: 200px !important; }
+    .seats { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+    .seat { border-radius: 14px; padding: 12px 14px; background: #fff; border: 1px solid #bbf7d0; }
+    .seat.empty { border-style: dashed; border-color: #d4c2bc; background: #fbf7f5; color: #a8a29e; }
+    .seat .n { font-size: 18px; font-weight: 800; }
+
+    /* 진행 */
+    .game { display: grid; grid-template-columns: 1fr 340px; gap: 14px; max-width: 1280px; margin: 0 auto; padding: 14px; align-items: start; }
+    .rhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .rnum { font-size: 34px; font-weight: 900; color: #78350f; line-height: 1; }
+    table.t { width: 100%; border-collapse: collapse; font-size: 14px; }
+    table.t td, table.t th { padding: 7px 5px; text-align: left; border-top: 1px solid #f3e8e4; vertical-align: middle; }
+    table.t th { font-size: 12px; color: #8c6a5e; border-top: 0; }
+    .stepper { display: inline-flex; align-items: center; gap: 4px; background: #fff; border: 1px solid #e7c9bd; border-radius: 9px; padding: 2px 4px; font-weight: 800; }
+    .stepper button { border: 0; background: #fef3c7; color: #92400e; width: 28px; height: 28px; border-radius: 7px; font-weight: 900; }
+    .stepper button:disabled { opacity: .4; cursor: default; }
+    .bidin { width: 84px; padding: 6px 8px; border: 1px solid #d4c2bc; border-radius: 8px; text-align: center; }
+    .ok { color: #15803d; font-weight: 700; } .wait { color: #a8a29e; }
+    .sumbox { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: 12px 14px; line-height: 1.8; }
+    .tag-win { color: #dc2626; font-weight: 800; } .tag-loss { color: #2563eb; font-weight: 700; } .tag-spent { color: #15803d; font-weight: 800; } .tag-draw { color: #9333ea; font-weight: 700; }
+    .notice { background: #eff6ff; border: 2px dashed #3b82f6; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-weight: 700; color: #1e3a8a; }
+    .scorecards { display: grid; gap: 10px; }
+    .sc { background: #fcf4f1; border: 1px solid #ebd3cb; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; position: relative; }
+    .sc.top { background: #ffedd5; border-color: #f97316; box-shadow: 0 0 0 2px #f97316; }
+    .sc.bk { background: #fee2e2; border-color: #ef4444; }
+    .sc .tn { font-weight: 800; font-size: 17px; min-width: 38px; }
+    .sc .pt { font-size: 24px; font-weight: 900; color: #b45309; margin-left: auto; }
+    .sc .sp2 { font-size: 12.5px; color: #475569; font-weight: 600; }
+    .bktag { background: #ef4444; color: #fff; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 800; }
+
+    /* 모달 */
+    .modal-bg { position: fixed; inset: 0; background: rgba(28,25,23,.55); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+    .modal { width: 380px; max-width: 100%; background: #fff; border-radius: 18px; padding: 22px; }
+    .modal h3 { margin: 0 0 6px; font-size: 20px; }
+    .modal input { width: 100%; margin-top: 10px; padding: 11px 12px; border: 1px solid #d4c2bc; border-radius: 10px; font-size: 16px; }
+
+    @media (max-width: 900px) { .lobby, .game { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<header class="appbar">
+  <span class="logo">🖼️ 명화 경매</span>
+  <span id="barInfo" style="opacity:.8; font-size:14px;">진행자</span>
+  <span class="sp"></span>
+  <span id="barRight" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;"></span>
+</header>
+
+<div id="vLoading" class="main"><div class="muted" style="padding:40px; text-align:center;">불러오는 중…</div></div>
+
+<!-- ① 방 만들기 -->
+<div id="vSetup" class="main hidden" style="max-width:640px;">
+  <div class="card" style="display:flex; flex-direction:column; gap:14px;">
+    <div style="font-size:22px; font-weight:800;">🖼️ 새 경매 방 만들기</div>
+    <div class="note muted" style="line-height:1.6;">조마다 학생 기기 1대로 입장해서, 입찰 금액을 <b>다른 조가 볼 수 없게</b> 직접 입력해요. 판정 규칙은 기존 명화 경매와 같고, 12라운드로 진행합니다.</div>
+    <div class="field"><div class="label">조 수 (3~8)</div>
+      <select id="sTeams"><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select>
+    </div>
+    <div class="field"><div class="label">진행자 PIN (숫자 4~6자리)</div>
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;"><input id="sPin" inputmode="numeric" maxlength="6" style="width:140px; letter-spacing:.2em;"><span class="muted" style="font-size:13px;">다른 기기에서 이어서 진행할 때 필요해요. 꼭 기억해 두세요.</span></div>
+    </div>
+    <div class="err" id="createErr"></div>
+    <div style="display:flex; justify-content:flex-end;"><button class="btn amb big" id="createBtn">방 만들기 →</button></div>
+  </div>
+  <div class="card" style="margin-top:16px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+    <b>진행 중인 방 이어서 하기</b><span class="muted" style="font-size:13px;">다른 기기에서 만든 방이면 PIN이 필요해요</span>
+    <span style="flex:1"></span>
+    <input id="resumeCode" inputmode="numeric" maxlength="6" placeholder="방 코드 6자리" style="width:140px; padding:8px 10px; border:1px solid #d4c2bc; border-radius:10px;">
+    <button class="btn ghost" id="resumeBtn">이어서 하기</button>
+  </div>
+  <div id="recentBox" class="muted" style="margin-top:10px; font-size:13.5px;"></div>
+</div>
+
+<!-- ② 대기실 -->
+<div id="vLobby" class="main hidden">
+  <div class="lobby">
+    <div class="card" style="text-align:center;">
+      <div class="label">방 코드</div>
+      <div class="code-big mono" id="lCode"></div>
+      <div id="qr"></div>
+      <div class="muted" style="font-size:13px; line-height:1.5;" id="lUrl"></div>
+      <div style="margin-top:12px; font-size:13px;">진행자 PIN <b id="lPin" class="mono" style="filter:blur(6px);">0000</b> <button class="btn ghost sm" id="lPinBtn">보기</button></div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; align-items:center; gap:8px;"><span style="font-weight:800; font-size:18px;">조 자리</span><span class="pill" style="background:#dcfce7; color:#15803d;" id="lCount"></span></div>
+      <div class="seats" id="lSeats"></div>
+      <div class="card" style="font-size:13.5px; line-height:1.6; background:#fbf7f5;">💡 노트북을 프로젝터에 연결하고 <b>[📺 점수판 열기]</b>로 연 창을 프로젝터 화면으로 옮기세요. 점수판에는 입찰 금액이 나오지 않아요.<br>기기가 없는 조는 시작한 뒤 진행자 화면에서 <b>입찰 금액을 직접 입력</b>할 수 있어요.</div>
+      <div style="display:flex; align-items:center; gap:10px; justify-content:flex-end; margin-top:auto;">
+        <span class="muted" style="font-size:13.5px;">1라운드부터 입찰을 받기 시작해요</span>
+        <button class="btn amb big" id="startBtn">▶ 경매 시작</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 진행 -->
+<div id="vGame" class="hidden">
+  <div class="game">
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div class="card" id="panel"></div>
+      <div id="noticeWrap"></div>
+      <div class="card">
+        <b>라운드 기록</b> <span class="muted" style="font-size:13px;">(이 표는 진행자 화면에만 보여요)</span>
+        <table class="t mono" id="logTable" style="margin-top:6px;"></table>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div class="card"><b>🏆 조별 누적 현황</b><div class="scorecards" id="cards" style="margin-top:10px;"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 모달: 교사 인증 -->
+<div id="mAuth" class="modal-bg hidden">
+  <div class="modal">
+    <h3>🔐 교사 인증</h3>
+    <div class="muted" style="font-size:14px;" id="mAuthMsg">이 기기에서 처음 한 번만 입력하면 됩니다.</div>
+    <input id="tCode" type="password" placeholder="교사 코드" autocomplete="off">
+    <div class="err" id="tErr"></div>
+    <button class="btn" style="width:100%; margin-top:6px; padding:11px;" id="tBtn">이 기기 인증하기</button>
+  </div>
+</div>
+<!-- 모달: 진행자 PIN -->
+<div id="mPin" class="modal-bg hidden">
+  <div class="modal">
+    <h3>🔑 진행자 PIN</h3>
+    <div class="muted" style="font-size:14px;">방 <b id="mPinCode"></b>을(를) 만들 때 정한 PIN을 입력하세요.</div>
+    <input id="pinIn" type="password" inputmode="numeric" maxlength="6" placeholder="숫자 4~6자리">
+    <div class="err" id="pinErr"></div>
+    <div style="display:flex; gap:8px; margin-top:6px;"><button class="btn ghost" style="flex:1;" id="pinCancel">취소</button><button class="btn" style="flex:2;" id="pinBtn">진행 권한 받기</button></div>
+  </div>
+</div>
+
+<script type="module">
+import {
+  db, ready, esc, toast, explainError, pageUrl, EST, ms,
+  doc, getDoc, setDoc, updateDoc, collection, onSnapshot, writeBatch, serverTimestamp, Timestamp, deleteField
+} from './mystery-firebase.js';
+import { TOTAL_ROUNDS, MILESTONES, evaluate, standings, spentByTeam, bankruptTeams, sumWinning } from './auction-core.js';
+
+const $ = (id) => document.getElementById(id);
+const views = ['vLoading', 'vSetup', 'vLobby', 'vGame'];
+function show(v) { views.forEach(x => $(x).classList.toggle('hidden', x !== v)); window.scrollTo(0, 0); }
+function bar(info, right) { $('barInfo').innerHTML = info; $('barRight').innerHTML = right || ''; }
+const R = (code, ...p) => ['auctionRooms', code, ...p];
+
+function confirmClick(btn, label, fn) {
+  if (btn.dataset.armed) { delete btn.dataset.armed; fn(); return; }
+  const old = btn.textContent;
+  btn.dataset.armed = '1'; btn.textContent = label;
+  setTimeout(() => { if (btn.dataset.armed) { delete btn.dataset.armed; btn.textContent = old; } }, 3000);
+}
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+
+let uid;
+try { uid = await ready(); }
+catch (e) { $('vLoading').innerHTML = `<div class="card" style="margin:40px auto; max-width:480px;">❌ 연결 실패: ${esc(explainError(e))}</div>`; throw e; }
+
+// ============================================================
+// 교사 인증 (미스터리 타임과 같은 교사 코드)
+// ============================================================
+let isTeacher = (await getDoc(doc(db, 'teachers', uid))).exists();
+let authResolve = null;
+function askTeacher(msg) {
+  $('mAuthMsg').textContent = msg || '이 기기에서 처음 한 번만 입력하면 됩니다.';
+  $('mAuth').classList.remove('hidden');
+  $('tCode').value = ''; $('tErr').textContent = '';
+  setTimeout(() => $('tCode').focus(), 50);
+  return new Promise(r => { authResolve = r; });
+}
+async function submitTeacher() {
+  const code = $('tCode').value.trim();
+  if (!code) return;
+  $('tBtn').disabled = true;
+  try {
+    await setDoc(doc(db, 'teachers', uid), { code, createdAt: serverTimestamp() });
+    isTeacher = true;
+    $('mAuth').classList.add('hidden');
+    toast('✅ 이 기기가 교사 기기로 등록되었습니다.', 'ok');
+    authResolve && authResolve(true);
+  } catch (e) {
+    $('tErr').textContent = (e.code || '').includes('permission') ? '코드가 맞지 않습니다.' : explainError(e);
+  }
+  $('tBtn').disabled = false;
+}
+$('tBtn').onclick = submitTeacher;
+$('tCode').onkeydown = (e) => { if (e.key === 'Enter') submitTeacher(); };
+
+// ============================================================
+// ① 방 만들기
+// ============================================================
+async function openSetup() {
+  stopRoom();
+  history.replaceState(null, '', location.pathname);
+  bar('진행자', '');
+  $('sPin').value = String(Math.floor(1000 + Math.random() * 9000));
+  $('createErr').textContent = '';
+  renderRecent();
+  show('vSetup');
+  if (!isTeacher) await askTeacher();
+}
+function renderRecent() {
+  const r = store.get('auctionRecentRooms') || [];
+  $('recentBox').innerHTML = r.length ? '최근 만든 방: ' + r.slice(0, 5).map(x => `<a href="?room=${esc(x.code)}" style="color:#78350f; font-weight:700; margin-right:10px;">${esc(x.code)} · ${esc(x.teams)}개 조</a>`).join('') : '';
+}
+$('resumeBtn').onclick = () => {
+  const c = $('resumeCode').value.trim();
+  if (!/^\d{6}$/.test(c)) { toast('방 코드 6자리를 입력하세요.', 'error'); return; }
+  openRoom(c);
+};
+
+async function tryCreate(pin, teamCount) {
+  let code = null, lastErr = null;
+  for (let i = 0; i < 6 && !code; i++) {
+    const c = String(Math.floor(100000 + Math.random() * 900000));
+    const b = writeBatch(db);
+    b.set(doc(db, ...R(c)), {
+      hostUid: uid, teamCount, status: 'lobby', round: 1,
+      points: Array(TOTAL_ROUNDS).fill(1), results: {}, reveals: [], final: null,
+      createdAt: serverTimestamp(), expireAt: Timestamp.fromMillis(Date.now() + 7 * 24 * 3600 * 1000)
+    });
+    b.set(doc(db, ...R(c, 'secret', 'hostKey')), { pin });
+    b.set(doc(db, ...R(c, 'hosts', uid)), { pin, createdAt: serverTimestamp() });
+    try { await b.commit(); code = c; } catch (e) { lastErr = e; if (!(e.code || '').includes('permission')) break; }
+  }
+  if (!code) throw lastErr || new Error('방을 만들지 못했습니다.');
+  return code;
+}
+$('createBtn').onclick = async () => {
+  const pin = $('sPin').value.trim();
+  const teamCount = Number($('sTeams').value);
+  if (!/^\d{4,6}$/.test(pin)) { $('createErr').textContent = '진행자 PIN은 숫자 4~6자리로 정해 주세요.'; return; }
+  $('createBtn').disabled = true; $('createErr').textContent = '';
+  try {
+    let code;
+    try { code = await tryCreate(pin, teamCount); }
+    catch (e) {
+      // 교사 코드가 바뀌었을 수 있으니 한 번 다시 인증받고 재시도
+      if (!(e.code || '').includes('permission')) throw e;
+      await askTeacher('교사 코드를 다시 입력해 주세요.');
+      code = await tryCreate(pin, teamCount);
+    }
+    const recent = (store.get('auctionRecentRooms') || []).filter(x => x.code !== code);
+    recent.unshift({ code, teams: teamCount, at: Date.now() });
+    store.set('auctionRecentRooms', recent.slice(0, 8));
+    openRoom(code);
+  } catch (e) { $('createErr').textContent = '❌ ' + explainError(e); }
+  $('createBtn').disabled = false;
+};
+
+// ============================================================
+// 방 열기 (진행자 확인 → 실시간 구독)
+// ============================================================
+let roomCode = null, room = null, teams = [], bidMap = {}, hostPin = '';
+let unsubs = [], dirty = false;
+
+function stopRoom() {
+  unsubs.forEach(u => u()); unsubs = [];
+  roomCode = null; room = null; teams = []; bidMap = {}; hostPin = '';
+}
+async function openRoom(code) {
+  stopRoom();
+  show('vLoading');
+  const rs = await getDoc(doc(db, ...R(code))).catch(() => null);
+  if (!rs || !rs.exists()) { toast('그 방을 찾을 수 없습니다.', 'error'); openSetup(); return; }
+  const hs = await getDoc(doc(db, ...R(code, 'hosts', uid))).catch(() => null);
+  if (!hs || !hs.exists()) {
+    const ok = await askPin(code);
+    if (!ok) { openSetup(); return; }
+  }
+  roomCode = code;
+  history.replaceState(null, '', '?room=' + code);
+  try { hostPin = (await getDoc(doc(db, ...R(code, 'secret', 'hostKey')))).data().pin; } catch (e) {}
+  unsubs.push(onSnapshot(doc(db, ...R(code)), (s) => {
+    if (!s.exists()) { toast('방이 삭제되었습니다.', 'error'); openSetup(); return; }
+    room = s.data(EST); render();
+  }));
+  unsubs.push(onSnapshot(collection(db, ...R(code, 'teams')), (s) => {
+    teams = s.docs.map(d => ({ id: d.id, ...d.data(EST) })); render();
+  }));
+  unsubs.push(onSnapshot(collection(db, ...R(code, 'bids')), (s) => {
+    bidMap = {}; s.docs.forEach(d => { bidMap[d.id] = d.data(EST); }); render();
+  }));
+}
+function askPin(code) {
+  return new Promise((resolve) => {
+    $('mPinCode').textContent = code; $('pinIn').value = ''; $('pinErr').textContent = '';
+    $('mPin').classList.remove('hidden');
+    setTimeout(() => $('pinIn').focus(), 50);
+    const done = (v) => { $('mPin').classList.add('hidden'); resolve(v); };
+    $('pinCancel').onclick = () => done(false);
+    const go = async () => {
+      const pin = $('pinIn').value.trim();
+      try { await setDoc(doc(db, ...R(code, 'hosts', uid)), { pin, createdAt: serverTimestamp() }); done(true); }
+      catch (e) { $('pinErr').textContent = (e.code || '').includes('permission') ? 'PIN이 맞지 않습니다.' : explainError(e); }
+    };
+    $('pinBtn').onclick = go;
+    $('pinIn').onkeydown = (e) => { if (e.key === 'Enter') go(); };
+  });
+}
+
+// ============================================================
+// 그리기
+// ============================================================
+const amountOf = (r, t) => { const b = bidMap[r + '_' + t]; return b ? b.amount : 0; };
+const seated = (no) => teams.find(t => t.id === String(no));
+const tLabel = (no) => { const t = seated(no); return `${no}조${t && t.name ? ' · ' + esc(t.name) : ''}`; };
+const man = (n) => `${n}만원`;
+function boardUrl() { return pageUrl('auction-board.html', { room: roomCode }); }
+function studentUrl() { return pageUrl('auction.html', { room: roomCode }); }
+function openBoard() { window.open(boardUrl(), 'auctionBoard', 'popup,width=1280,height=760'); }
+function topButtons(extra = '') {
+  return `${extra}<button class="btn ghost-d" id="boardBtn">📺 점수판 열기 ↗</button><a class="btn ghost-d" href="index.html" id="homeBtn">🏠 홈</a>`;
+}
+function bindTop() {
+  const b = $('boardBtn'); if (b) b.onclick = openBoard;
+  const h = $('homeBtn');
+  if (h) h.onclick = (e) => {
+    if (room && (room.status === 'bidding' || room.status === 'result')) {
+      e.preventDefault();
+      if (!h.dataset.armed) toast('⚠️ 게임 중에 나가면 학생 화면이 멈춰요. 나가려면 한 번 더 누르세요. (최근 만든 방에서 이어서 할 수 있어요)', 'error');
+      confirmClick(h, '정말 나갈까요?', () => { location.href = 'index.html'; });
+    }
+  };
+}
+
+function typing() { const a = document.activeElement; return !!(a && a.matches && a.matches('#panel input')); }
+document.addEventListener('focusout', () => { if (dirty) setTimeout(() => { if (!typing() && dirty) { dirty = false; render(); } }, 50); });
+
+function render() {
+  if (!room) return;
+  if (room.status === 'lobby') renderLobby();
+  else { if (typing()) { dirty = true; return; } dirty = false; renderGame(); }
+}
+
+// ---------- 대기실 ----------
+let qrDrawn = null;
+function renderLobby() {
+  if ($('vLobby').classList.contains('hidden')) show('vLobby');
+  bar(`방 ${roomCode} · ${room.teamCount}개 조`, topButtons()); bindTop();
+  $('lCode').textContent = roomCode.slice(0, 3) + ' ' + roomCode.slice(3);
+  $('lUrl').innerHTML = `${esc(pageUrl('auction.html'))}<br>접속 후 방 코드 입력 (QR은 코드 자동 입력)`;
+  $('lPin').textContent = hostPin || '----';
+  if (qrDrawn !== roomCode) {
+    $('qr').innerHTML = '';
+    if (window.QRCode) new window.QRCode($('qr'), { text: studentUrl(), width: 200, height: 200, colorDark: '#451a03', colorLight: '#ffffff' });
+    else $('qr').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(studentUrl())}" alt="QR">`;
+    qrDrawn = roomCode;
+  }
+  const N = room.teamCount;
+  const joined = teams.filter(t => t.uid).length;
+  $('lCount').textContent = `${joined} / ${N} 접속`;
+  $('lSeats').innerHTML = Array.from({ length: N }, (_, i) => {
+    const id = String(i + 1), t = seated(id);
+    if (t && t.uid) return `<div class="seat"><div class="n">${id}조</div><div style="font-size:13px; min-height:18px;">${esc(t.name || '')}</div><div style="font-size:12.5px; color:#15803d; margin:2px 0 8px;">● 접속 중</div><button class="btn red sm" data-free="${id}">자리 비우기</button></div>`;
+    return `<div class="seat empty"><div class="n">${id}조</div><div style="font-size:12.5px; margin-top:4px;">○ 빈자리 · 기다리는 중</div></div>`;
+  }).join('');
+  bindFree($('lSeats'));
+}
+function bindFree(root) {
+  root.querySelectorAll('[data-free]').forEach(b => b.onclick = () => confirmClick(b, '정말 비울까요?', async () => {
+    try { await updateDoc(doc(db, ...R(roomCode, 'teams', b.dataset.free)), { uid: '' }); toast(`${b.dataset.free}조 자리를 비웠습니다. 새 기기가 이어받을 수 있어요.`); }
+    catch (e) { toast(explainError(e), 'error'); }
+  }));
+}
+$('lPinBtn').onclick = () => { const s = $('lPin').style; s.filter = s.filter ? '' : 'blur(6px)'; };
+$('startBtn').onclick = async () => {
+  $('startBtn').disabled = true;
+  try { await updateDoc(doc(db, ...R(roomCode)), { status: 'bidding', round: 1 }); }
+  catch (e) { toast(explainError(e), 'error'); $('startBtn').disabled = false; }
+};
+
+// ---------- 진행 ----------
+function renderGame() {
+  if ($('vGame').classList.contains('hidden')) show('vGame');
+  const N = room.teamCount, r = room.round, st = room.status;
+  const phase = st === 'bidding' ? '입찰 받는 중' : st === 'result' ? '결과 공개됨' : '최종 발표 완료';
+  bar(`<b class="mono">${roomCode}</b> · ${st === 'final' ? '경매 종료' : r + ' / ' + TOTAL_ROUNDS + ' 라운드'} · ${phase}`, topButtons()); bindTop();
+
+  if (st === 'bidding') renderBidding(N, r);
+  else if (st === 'result') renderResult(N, r);
+  else renderFinal(N);
+  renderNotice(N);
+  renderCards(N);
+  renderLog(N);
+}
+
+function pointStepper(r, enabled) {
+  const p = room.points[r - 1];
+  return `<span class="stepper"><button data-pt="-1" ${enabled && p > 1 ? '' : 'disabled'}>−</button><span class="mono" style="padding:0 8px; color:#b45309;">${p}점</span><button data-pt="1" ${enabled && p < 4 ? '' : 'disabled'}>+</button></span>`;
+}
+function bindPoint(r) {
+  $('panel').querySelectorAll('[data-pt]').forEach(b => b.onclick = async () => {
+    const pts = room.points.slice(); pts[r - 1] = Math.max(1, Math.min(4, pts[r - 1] + Number(b.dataset.pt)));
+    try { await updateDoc(doc(db, ...R(roomCode)), { points: pts }); } catch (e) { toast(explainError(e), 'error'); }
+  });
+}
+
+function renderBidding(N, r) {
+  const rows = Array.from({ length: N }, (_, i) => {
+    const no = i + 1, b = bidMap[r + '_' + no], t = seated(no);
+    const conn = t && t.uid ? '<span class="ok">● 접속</span>' : '<span class="wait">○ 자리 빔</span>';
+    return `<tr><td><b>${tLabel(no)}</b></td><td>${conn}</td>
+      <td>${b ? `<span class="ok">✅ 제출</span> <b class="mono">${man(b.amount)}</b>` : '<span class="wait">⏳ 기다리는 중</span>'}</td>
+      <td><input class="bidin mono" data-bid="${no}" inputmode="numeric" placeholder="직접 입력"> <button class="btn ghost sm" data-save="${no}">저장</button></td></tr>`;
+  }).join('');
+  const n = Array.from({ length: N }, (_, i) => bidMap[r + '_' + (i + 1)]).filter(Boolean).length;
+  $('panel').innerHTML = `
+    <div class="rhead"><span class="rnum mono">${r}R</span><span class="pill" style="background:#fef3c7; color:#92400e;">입찰 받는 중</span>
+      <span class="muted">제출 <b class="mono">${n} / ${N}</b></span><span style="flex:1"></span>
+      <span class="label">이번 라운드 초코점수</span>${pointStepper(r, true)}</div>
+    <div class="muted" style="font-size:13px; margin:8px 0 4px;">학생은 입찰 금액을 마감 전까지 바꿀 수 있어요. 다른 조 화면에는 금액이 보이지 않습니다.</div>
+    <table class="t"><tr><th>조</th><th>기기</th><th>입찰 (진행자에게만 보임)</th><th>대신 입력</th></tr>${rows}</table>
+    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px; align-items:center;">
+      <span class="muted" style="font-size:13px;" id="judgeHint">${n < N ? `모든 조가 입찰해야 마감할 수 있어요 (${N - n}개 조 남음)` : ''}</span>
+      <button class="btn amb big" id="judgeBtn" ${n < N ? 'disabled' : ''}>입찰 마감 · 결과 공개</button>
+    </div>`;
+  bindPoint(r);
+  $('panel').querySelectorAll('[data-save]').forEach(b => b.onclick = async () => {
+    const no = b.dataset.save, inp = $('panel').querySelector(`[data-bid="${no}"]`), v = inp.value.trim();
+    if (!/^\d{1,7}$/.test(v)) { toast('금액은 0 이상의 정수로 입력하세요.', 'error'); return; }
+    const t = seated(no);
+    try {
+      await setDoc(doc(db, ...R(roomCode, 'bids', r + '_' + no)), { uid: (t && t.uid) || uid, teamNo: String(no), round: r, amount: Number(v), updatedAt: serverTimestamp() });
+      toast(`${no}조 입찰 ${man(Number(v))} 저장`, 'ok');
+    } catch (e) { toast(explainError(e), 'error'); }
+  });
+  $('judgeBtn').onclick = () => judgeRound(N, r);
+}
+
+async function judgeRound(N, r) {
+  const amts = [];
+  for (let t = 1; t <= N; t++) { const b = bidMap[r + '_' + t]; if (!b) { toast(`${t}조 입찰이 아직 없어요.`, 'error'); return; } amts.push(b.amount); }
+  const ev = evaluate(amts);
+  const res = {
+    winner: ev.winner == null ? null : String(ev.winner + 1),
+    point: room.points[r - 1],
+    losers: ev.losers.map(i => String(i + 1)),
+    voidTeams: ev.voidTeams.map(i => String(i + 1))
+  };
+  $('judgeBtn').disabled = true;
+  try { await updateDoc(doc(db, ...R(roomCode)), { status: 'result', ['results.' + r]: res }); }
+  catch (e) { toast(explainError(e), 'error'); $('judgeBtn').disabled = false; }
+}
+
+function summaryHtml(r) {
+  const x = room.results[r];
+  if (!x) return '-';
+  let s = '';
+  if (x.voidTeams && x.voidTeams.length) s += `<span class="tag-draw">동점 무효: ${x.voidTeams.map(t => t + '조').join(', ')}</span><br>`;
+  if (x.winner != null) s += `<span class="tag-win">낙찰: ${x.winner}조 (+${x.point})</span> / <span class="tag-spent">지출: ${man(amountOf(r, x.winner))}</span><br>`;
+  else s += `<span class="muted">모두 동점으로 유찰</span><br>`;
+  s += `<span class="tag-loss">감점(-1): ${x.losers.map(t => t + '조').join(', ')}</span>`;
+  return s;
+}
+
+function renderResult(N, r) {
+  const last = r === TOTAL_ROUNDS;
+  $('panel').innerHTML = `
+    <div class="rhead"><span class="rnum mono">${r}R</span><span class="pill" style="background:#dcfce7; color:#15803d;">결과 공개됨</span></div>
+    <div class="sumbox" style="margin-top:10px;">${summaryHtml(r)}</div>
+    <div class="muted" style="font-size:13px; margin-top:8px;">학생·점수판에는 낙찰 조와 감점만 보이고, <b>낙찰 금액은 보이지 않아요.</b></div>
+    <div style="display:flex; justify-content:space-between; gap:8px; margin-top:12px; flex-wrap:wrap;">
+      <button class="btn ghost" id="reopenBtn">↩ 이 라운드 다시 입찰받기</button>
+      ${last ? '<button class="btn amb big" id="finalBtn">🏁 최종 발표 (파산 조 공개)</button>' : `<button class="btn amb big" id="nextBtn">${r + 1}라운드 시작 ▶</button>`}
+    </div>`;
+  $('reopenBtn').onclick = () => confirmClick($('reopenBtn'), '정말 다시 열까요?', async () => {
+    try {
+      await updateDoc(doc(db, ...R(roomCode)), { status: 'bidding', ['results.' + r]: deleteField(), reveals: (room.reveals || []).filter(x => x.round < r) });
+      toast('입찰을 다시 받습니다. 조들은 금액을 바꿀 수 있어요.');
+    } catch (e) { toast(explainError(e), 'error'); }
+  });
+  if (last) $('finalBtn').onclick = () => confirmClick($('finalBtn'), '정말 최종 발표?', finalize);
+  else $('nextBtn').onclick = async () => {
+    try { await updateDoc(doc(db, ...R(roomCode)), { status: 'bidding', round: r + 1 }); } catch (e) { toast(explainError(e), 'error'); }
+  };
+}
+
+async function finalize() {
+  const N = room.teamCount;
+  const spent = spentByTeam(room.results, amountOf, N);
+  const bk = bankruptTeams(spent);
+  try {
+    await updateDoc(doc(db, ...R(roomCode)), {
+      status: 'final',
+      final: { spent: Object.fromEntries(spent.map((v, i) => [String(i + 1), v])), bankrupt: bk.map(String) }
+    });
+  } catch (e) { toast(explainError(e), 'error'); }
+}
+
+function renderFinal(N) {
+  const sd = standings(room.results, N, room.final);
+  const list = sd.teams.slice().sort((a, b) => a.rank - b.rank);
+  $('panel').innerHTML = `
+    <div class="rhead"><span style="font-size:26px; font-weight:900;">🏁 최종 결과</span><span style="flex:1"></span>
+      <button class="btn ghost" id="newBtn">새 경매 만들기</button></div>
+    <table class="t mono" style="margin-top:10px;"><tr><th>순위</th><th>조</th><th>점수</th><th>누적 지출</th><th></th></tr>
+      ${list.map(t => `<tr><td><b>${t.bankrupt ? '-' : t.rank}</b></td><td>${tLabel(t.no)}</td><td><b>${t.points}점</b></td><td>${man(room.final.spent[t.no] || 0)}</td><td>${t.bankrupt ? '<span class="bktag">파산 패배</span>' : ''}</td></tr>`).join('')}
+    </table>`;
+  $('newBtn').onclick = () => confirmClick($('newBtn'), '정말 나갈까요?', openSetup);
+}
+
+// 3·6·9 라운드 총액 공개
+function renderNotice(N) {
+  const w = $('noticeWrap');
+  const r = room.round;
+  if (room.status !== 'result' || !MILESTONES.includes(r)) { w.innerHTML = ''; return; }
+  const sum = sumWinning(room.results, amountOf, r);
+  const revealed = (room.reveals || []).some(x => x.round === r);
+  w.innerHTML = `<div class="notice"><span>📢 <b>${r}라운드 종료!</b> 지금까지 낙찰 총액: <b class="mono" style="font-size:20px;">${man(sum)}</b></span><span style="flex:1"></span>
+    ${revealed ? '<span class="pill" style="background:#dbeafe; color:#1d4ed8;">학생·점수판에 공개됨</span>' : '<button class="btn" style="background:#2563eb;" id="revealBtn">아이들에게 총합 공개</button>'}</div>`;
+  if (!revealed) $('revealBtn').onclick = async () => {
+    try { await updateDoc(doc(db, ...R(roomCode)), { reveals: [...(room.reveals || []).filter(x => x.round !== r), { round: r, sum }] }); toast(`${r}라운드 총액을 공개했어요.`, 'ok'); }
+    catch (e) { toast(explainError(e), 'error'); }
+  };
+}
+
+function renderCards(N) {
+  const sd = standings(room.results, N, room.final);
+  const spent = spentByTeam(room.results, amountOf, N);
+  $('cards').innerHTML = sd.teams.map(t => {
+    const top = sd.any && t.rank === 1 && !t.bankrupt;
+    return `<div class="sc ${top ? 'top' : ''} ${t.bankrupt ? 'bk' : ''}"><span class="tn">${t.no}조</span>
+      <div><div class="sp2">사용 누적 ${man(spent[t.no - 1])}</div><div class="sp2">${t.bankrupt ? '<span class="bktag">파산 패배</span>' : sd.any ? t.rank + '위' : '-'}</div></div>
+      <span class="pt mono">${t.points}점</span></div>`;
+  }).join('');
+}
+
+function renderLog(N) {
+  let rows = '<tr><th>R</th><th>점수</th><th>결과</th></tr>';
+  for (let r = 1; r <= TOTAL_ROUNDS; r++) {
+    const done = !!room.results[r], cur = r === room.round && room.status !== 'final';
+    rows += `<tr style="${cur ? 'background:#fff7ed;' : ''}"><td><b>${r}R</b></td><td>${room.points[r - 1]}점</td><td style="font-size:13px;">${done ? summaryHtml(r) : '<span class="wait">' + (cur ? (room.status === 'bidding' ? '입찰 중' : '') : '대기') + '</span>'}</td></tr>`;
+  }
+  $('logTable').innerHTML = rows;
+}
+
+// ============================================================
+// 시작
+// ============================================================
+const startRoom = new URLSearchParams(location.search).get('room');
+if (startRoom && /^\d{6}$/.test(startRoom)) openRoom(startRoom);
+else openSetup();
+</script>
+</body>
+</html>
