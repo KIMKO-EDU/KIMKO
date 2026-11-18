@@ -36,10 +36,14 @@
     .err { color: #b91c1c; font-size: 13.5px; font-weight: 700; margin-top: 8px; min-height: 18px; }
 
     /* 대기실 */
-    .lobby { display: grid; grid-template-columns: 340px 1fr; gap: 18px; }
+    .lobby { display: grid; grid-template-columns: 380px 1fr; gap: 18px; }
     .code-big { font-size: 52px; font-weight: 900; letter-spacing: .06em; color: #451a03; line-height: 1.1; }
-    #qr { width: 200px; height: 200px; margin: 14px auto 10px; display: flex; align-items: center; justify-content: center; }
-    #qr img, #qr canvas { width: 200px !important; height: 200px !important; }
+    #qr { width: 300px; height: 300px; max-width: 100%; margin: 14px auto 10px; display: flex; align-items: center; justify-content: center; }
+    #qr img, #qr canvas { width: 300px !important; height: 300px !important; max-width: 100%; }
+    .art { display: flex; gap: 14px; align-items: center; margin-top: 12px; background: #fbf7f5; border: 1px solid #edded9; border-radius: 12px; padding: 10px; }
+    .art canvas { width: 200px; aspect-ratio: 4/3; border-radius: 8px; border: 4px solid #c9a24b; background: #eee; flex: none; }
+    .art .st { color: #d97706; font-size: 20px; letter-spacing: 2px; }
+    @media (max-width: 560px) { .art { flex-direction: column; align-items: flex-start; } }
     .seats { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
     .seat { border-radius: 14px; padding: 12px 14px; background: #fff; border: 1px solid #bbf7d0; }
     .seat.empty { border-style: dashed; border-color: #d4c2bc; background: #fbf7f5; color: #a8a29e; }
@@ -177,7 +181,7 @@ import {
   db, ready, esc, toast, explainError, pageUrl, EST, ms,
   doc, getDoc, setDoc, updateDoc, collection, onSnapshot, writeBatch, serverTimestamp, Timestamp, deleteField
 } from './mystery-firebase.js';
-import { TOTAL_ROUNDS, MILESTONES, evaluate, standings, spentByTeam, bankruptTeams, sumWinning } from './auction-core.js';
+import { TOTAL_ROUNDS, MILESTONES, TIERS, evaluate, standings, spentByTeam, bankruptTeams, sumWinning, makeRounds, drawArt, stars, roundPoint } from './auction-core.js';
 
 const $ = (id) => document.getElementById(id);
 const views = ['vLoading', 'vSetup', 'vLobby', 'vGame'];
@@ -258,9 +262,10 @@ async function tryCreate(pin, teamCount) {
   for (let i = 0; i < 6 && !code; i++) {
     const c = String(Math.floor(100000 + Math.random() * 900000));
     const b = writeBatch(db);
+    const art = makeRounds(TOTAL_ROUNDS, true);   // 라운드별 그림(등급 1~5 = 점수), 5점 그림은 최소 1번
     b.set(doc(db, ...R(c)), {
       hostUid: uid, teamCount, status: 'lobby', round: 1,
-      points: Array(TOTAL_ROUNDS).fill(1), results: {}, reveals: [], final: null,
+      art, points: art.map(a => a.tier), results: {}, reveals: [], final: null,
       createdAt: serverTimestamp(), expireAt: Timestamp.fromMillis(Date.now() + 7 * 24 * 3600 * 1000)
     });
     b.set(doc(db, ...R(c, 'secret', 'hostKey')), { pin });
@@ -388,7 +393,7 @@ function renderLobby() {
   $('lPin').textContent = hostPin || '----';
   if (qrDrawn !== roomCode) {
     $('qr').innerHTML = '';
-    if (window.QRCode) new window.QRCode($('qr'), { text: studentUrl(), width: 200, height: 200, colorDark: '#451a03', colorLight: '#ffffff' });
+    if (window.QRCode) new window.QRCode($('qr'), { text: studentUrl(), width: 300, height: 300, colorDark: '#451a03', colorLight: '#ffffff' });
     else $('qr').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(studentUrl())}" alt="QR">`;
     qrDrawn = roomCode;
   }
@@ -430,13 +435,23 @@ function renderGame() {
   renderLog(N);
 }
 
+// 이번 라운드 그림 (그림 없이 만든 예전 방이면 점수만 직접 고르기)
+function artBox(r, id) {
+  const a = room.art && room.art[r - 1];
+  if (!a) return '';
+  return `<div class="art"><canvas id="${id}"></canvas><div><div class="label">${r}라운드 경매품 · ${esc(TIERS[a.tier].name)}</div>
+    <div style="font-size:21px; font-weight:900;">「${esc(a.title)}」</div><div class="st">${stars(a.tier)}</div>
+    <div style="font-weight:800; color:#b45309;">낙찰 점수 ${a.tier}점</div></div></div>`;
+}
+function paintArt(r, id) { const a = room.art && room.art[r - 1], c = $(id); if (a && c) drawArt(c, a.tier, a.seed); }
 function pointStepper(r, enabled) {
-  const p = room.points[r - 1];
-  return `<span class="stepper"><button data-pt="-1" ${enabled && p > 1 ? '' : 'disabled'}>−</button><span class="mono" style="padding:0 8px; color:#b45309;">${p}점</span><button data-pt="1" ${enabled && p < 4 ? '' : 'disabled'}>+</button></span>`;
+  if (room.art) return `<span class="pill" style="background:#fef3c7; color:#92400e; font-size:15px;">낙찰 ${roundPoint(room, r)}점 · 랜덤</span>`;
+  const p = roundPoint(room, r);
+  return `<span class="stepper"><button data-pt="-1" ${enabled && p > 1 ? '' : 'disabled'}>−</button><span class="mono" style="padding:0 8px; color:#b45309;">${p}점</span><button data-pt="1" ${enabled && p < 5 ? '' : 'disabled'}>+</button></span>`;
 }
 function bindPoint(r) {
   $('panel').querySelectorAll('[data-pt]').forEach(b => b.onclick = async () => {
-    const pts = room.points.slice(); pts[r - 1] = Math.max(1, Math.min(4, pts[r - 1] + Number(b.dataset.pt)));
+    const pts = room.points.slice(); pts[r - 1] = Math.max(1, Math.min(5, pts[r - 1] + Number(b.dataset.pt)));
     try { await updateDoc(doc(db, ...R(roomCode)), { points: pts }); } catch (e) { toast(explainError(e), 'error'); }
   });
 }
@@ -453,14 +468,15 @@ function renderBidding(N, r) {
   $('panel').innerHTML = `
     <div class="rhead"><span class="rnum mono">${r}R</span><span class="pill" style="background:#fef3c7; color:#92400e;">입찰 받는 중</span>
       <span class="muted">제출 <b class="mono">${n} / ${N}</b></span><span style="flex:1"></span>
-      <span class="label">이번 라운드 초코점수</span>${pointStepper(r, true)}</div>
+      <span class="label">이번 라운드 점수</span>${pointStepper(r, true)}</div>
+    ${artBox(r, 'pArt')}
     <div class="muted" style="font-size:13px; margin:8px 0 4px;">학생은 입찰 금액을 마감 전까지 바꿀 수 있어요. 다른 조 화면에는 금액이 보이지 않습니다.</div>
     <table class="t"><tr><th>조</th><th>기기</th><th>입찰 (진행자에게만 보임)</th><th>대신 입력</th></tr>${rows}</table>
     <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px; align-items:center;">
       <span class="muted" style="font-size:13px;" id="judgeHint">${n < N ? `모든 조가 입찰해야 마감할 수 있어요 (${N - n}개 조 남음)` : ''}</span>
       <button class="btn amb big" id="judgeBtn" ${n < N ? 'disabled' : ''}>입찰 마감 · 결과 공개</button>
     </div>`;
-  bindPoint(r);
+  bindPoint(r); paintArt(r, 'pArt');
   $('panel').querySelectorAll('[data-save]').forEach(b => b.onclick = async () => {
     const no = b.dataset.save, inp = $('panel').querySelector(`[data-bid="${no}"]`), v = inp.value.trim();
     if (!/^\d{1,7}$/.test(v)) { toast('금액은 0 이상의 정수로 입력하세요.', 'error'); return; }
@@ -479,7 +495,7 @@ async function judgeRound(N, r) {
   const ev = evaluate(amts);
   const res = {
     winner: ev.winner == null ? null : String(ev.winner + 1),
-    point: room.points[r - 1],
+    point: roundPoint(room, r),
     losers: ev.losers.map(i => String(i + 1)),
     voidTeams: ev.voidTeams.map(i => String(i + 1))
   };
@@ -503,6 +519,7 @@ function renderResult(N, r) {
   const last = r === TOTAL_ROUNDS;
   $('panel').innerHTML = `
     <div class="rhead"><span class="rnum mono">${r}R</span><span class="pill" style="background:#dcfce7; color:#15803d;">결과 공개됨</span></div>
+    ${artBox(r, 'pArt')}
     <div class="sumbox" style="margin-top:10px;">${summaryHtml(r)}</div>
     <div class="muted" style="font-size:13px; margin-top:8px;">학생·점수판에는 낙찰 조와 감점만 보이고, <b>낙찰 금액은 보이지 않아요.</b></div>
     <div style="display:flex; justify-content:space-between; gap:8px; margin-top:12px; flex-wrap:wrap;">
@@ -515,6 +532,7 @@ function renderResult(N, r) {
       toast('입찰을 다시 받습니다. 조들은 금액을 바꿀 수 있어요.');
     } catch (e) { toast(explainError(e), 'error'); }
   });
+  paintArt(r, 'pArt');
   if (last) $('finalBtn').onclick = () => confirmClick($('finalBtn'), '정말 최종 발표?', finalize);
   else $('nextBtn').onclick = async () => {
     try { await updateDoc(doc(db, ...R(roomCode)), { status: 'bidding', round: r + 1 }); } catch (e) { toast(explainError(e), 'error'); }
@@ -575,7 +593,7 @@ function renderLog(N) {
   let rows = '<tr><th>R</th><th>점수</th><th>결과</th></tr>';
   for (let r = 1; r <= TOTAL_ROUNDS; r++) {
     const done = !!room.results[r], cur = r === room.round && room.status !== 'final';
-    rows += `<tr style="${cur ? 'background:#fff7ed;' : ''}"><td><b>${r}R</b></td><td>${room.points[r - 1]}점</td><td style="font-size:13px;">${done ? summaryHtml(r) : '<span class="wait">' + (cur ? (room.status === 'bidding' ? '입찰 중' : '') : '대기') + '</span>'}</td></tr>`;
+    rows += `<tr style="${cur ? 'background:#fff7ed;' : ''}"><td><b>${r}R</b></td><td>${roundPoint(room, r)}점${room.art ? `<div class="muted" style="font-size:12px;">${esc(room.art[r - 1].title)}</div>` : ''}</td><td style="font-size:13px;">${done ? summaryHtml(r) : '<span class="wait">' + (cur ? (room.status === 'bidding' ? '입찰 중' : '') : '대기') + '</span>'}</td></tr>`;
   }
   $('logTable').innerHTML = rows;
 }

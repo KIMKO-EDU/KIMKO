@@ -41,9 +41,27 @@
     .chip .l { color: #93c5fd; font-size: 1.8vh; }
     .banner { background: #1e3a8a; border: .5vh dashed #93c5fd; border-radius: 2vh; text-align: center; padding: 1.6vh 2vw; font-size: 3.6vh; font-weight: 800; }
     .banner b { font-size: 1.4em; color: #fde68a; }
-    .lobby { flex: 1; display: grid; place-items: center; text-align: center; }
-    .lobby .code { font-size: 14vh; font-weight: 900; letter-spacing: .08em; color: #fbbf24; line-height: 1; }
-    #qr { width: 26vh; height: 26vh; margin: 2vh auto; background: #fff; padding: 1vh; border-radius: 1.4vh; display: flex; align-items: center; justify-content: center; }
+    .lobby { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4vw; text-align: center; padding: 0 2vw; }
+    .lobby .code { white-space: nowrap; font-size: min(15vh, 8.5vw); font-weight: 900; letter-spacing: .08em; color: #fbbf24; line-height: 1; margin-top: 1vh; }
+    #qr { width: min(66vh, 44vw); height: min(66vh, 44vw); background: #fff; padding: 2vh; border-radius: 2vh; display: flex; align-items: center; justify-content: center; }
+    .body { flex: 1; min-height: 0; display: grid; gap: 2vw; }
+    .body.withart { grid-template-columns: 1.3fr 1fr; }
+    .artp { min-height: 0; display: flex; flex-direction: column; align-items: center; gap: 1vh; }
+    .frame { flex: 1; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center; position: relative; }
+    .frame canvas { width: auto; height: auto; max-width: 100%; max-height: 100%; display: block; border: 1.6vh solid #c9a24b; border-radius: .6vh; box-shadow: 0 0 0 .5vh #6b4f1d, 0 2vh 5vh rgba(0,0,0,.6); background: #222; }
+    .sold { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-12deg); font-size: 9vh; font-weight: 900; padding: 1vh 3vh; border: 1vh solid currentColor; border-radius: 2vh; background: rgba(0,0,0,.55); white-space: nowrap; }
+    .sold.y { color: #4ade80; } .sold.n { color: #e7e5e4; }
+    .atitle { font-size: 4.4vh; font-weight: 900; color: #fff; text-align: center; line-height: 1.2; }
+    .ameta { font-size: 2.8vh; font-weight: 800; color: #fcd9a8; display: flex; gap: 1.6vw; align-items: center; }
+    .ameta .st { color: #fbbf24; font-size: 3.6vh; letter-spacing: .3vh; }
+    .ameta .pt { background: #fbbf24; color: #451a03; border-radius: 999px; padding: .2vh 1.6vh; }
+    .body.withart .cards { grid-template-columns: repeat(var(--cols, 1), 1fr); grid-auto-rows: 1fr; }
+    .body.withart .tc { flex-direction: row; justify-content: space-between; padding: 0 2vw; gap: 1vw; }
+    .body.withart .tc .who { text-align: left; min-width: 0; flex: 1; }
+    .body.withart .tc .tname { max-width: 100%; }
+    .body.withart .tc .pts { font-size: min(10vh, 6vw); margin: 0; }
+    .body.withart .tc .rk { min-width: 5em; text-align: right; }
+    .body.withart .tc .tag { top: .6vh; right: .8vw; font-size: 1.8vh; }
     #qr img, #qr canvas { width: 100% !important; height: 100% !important; }
     .seats { display: flex; gap: 1.2vw; justify-content: center; flex-wrap: wrap; margin-top: 2vh; }
     .seat { font-size: 2.8vh; font-weight: 800; padding: 1vh 2vw; border-radius: 1.6vh; border: .3vh dashed #5c3d1e; color: #a8826a; }
@@ -59,24 +77,30 @@
 <div id="vLobby" class="stage hidden">
   <div class="head"><h1>🖼️ 무제한 명화 경매</h1><span class="sp"></span><span class="phase">입장 대기 중</span></div>
   <div class="lobby"><div>
-    <div style="font-size:3vh; color:#fcd9a8;">학생 기기에서 코드를 입력하세요</div>
+    <div style="font-size:3.4vh; color:#fcd9a8;">📱 QR을 찍거나, 학생 화면에 방 코드를 입력하세요</div>
     <div class="code mono" id="lCode"></div>
-    <div id="qr"></div>
     <div class="seats" id="lSeats"></div>
-  </div></div>
+  </div><div id="qr"></div></div>
 </div>
 
 <div id="vGame" class="stage hidden">
   <div class="head"><h1>🖼️ 무제한 명화 경매</h1><span class="rbadge mono" id="gRound"></span><span class="phase" id="gPhase"></span><span class="sp"></span></div>
   <div class="banner hidden" id="banner"></div>
   <div class="final-title hidden" id="finalTitle"></div>
-  <div class="cards" id="cards"></div>
+  <div class="body" id="body">
+    <div class="artp hidden" id="artp">
+      <div class="frame"><canvas id="artC"></canvas><div class="sold hidden" id="sold"></div></div>
+      <div class="atitle" id="aTitle"></div>
+      <div class="ameta"><span id="aTier"></span><span class="st" id="aStars"></span><span class="pt mono" id="aPt"></span></div>
+    </div>
+    <div class="cards" id="cards"></div>
+  </div>
   <div class="strip" id="strip"></div>
 </div>
 
 <script type="module">
 import { db, ready, esc, explainError, pageUrl, EST, doc, collection, onSnapshot } from './mystery-firebase.js';
-import { TOTAL_ROUNDS, standings } from './auction-core.js';
+import { TOTAL_ROUNDS, TIERS, standings, drawArt, stars, roundPoint } from './auction-core.js';
 
 const $ = (id) => document.getElementById(id);
 const code = new URLSearchParams(location.search).get('room');
@@ -86,7 +110,7 @@ if (!/^\d{6}$/.test(code || '')) { msg('방 코드가 없어요. 진행자 화�
 let uid;
 try { uid = await ready(); } catch (e) { msg('연결 실패: ' + explainError(e)); throw e; }
 
-let room = null, teams = [], qrDrawn = false, lastResultKey = '';
+let room = null, teams = [], qrDrawn = false, drawnArt = '';
 onSnapshot(doc(db, 'auctionRooms', code), (s) => {
   if (!s.exists()) { msg('그 방을 찾을 수 없어요.'); return; }
   room = s.data(EST); render();
@@ -104,7 +128,7 @@ function renderLobby() {
   $('lCode').textContent = code.slice(0, 3) + ' ' + code.slice(3);
   if (!qrDrawn) {
     const url = pageUrl('auction.html', { room: code });
-    if (window.QRCode) new window.QRCode($('qr'), { text: url, width: 260, height: 260, colorDark: '#451a03', colorLight: '#ffffff' });
+    if (window.QRCode) new window.QRCode($('qr'), { text: url, width: 600, height: 600, colorDark: '#451a03', colorLight: '#ffffff' });
     else $('qr').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(url)}" alt="QR">`;
     qrDrawn = true;
   }
@@ -119,7 +143,7 @@ function renderGame() {
   const N = room.teamCount, st = room.status, r = room.round;
   const sd = standings(room.results, N, room.final);
   $('gRound').textContent = st === 'final' ? '경매 종료' : `${r} / ${TOTAL_ROUNDS}R`;
-  $('gPhase').textContent = st === 'bidding' ? `💰 입찰 중 · 이번 낙찰 ${room.points[r - 1]}점` : st === 'result' ? '📣 결과 공개' : '🏁 최종 결과';
+  $('gPhase').textContent = st === 'bidding' ? `💰 입찰 중 · 이번 낙찰 ${roundPoint(room, r)}점` : st === 'result' ? '📣 결과 공개' : '🏁 최종 결과';
 
   // 3·6·9 라운드 총액 (공개했을 때만)
   const rv = (room.reveals || []).slice().sort((a, b) => b.round - a.round)[0];
@@ -129,7 +153,22 @@ function renderGame() {
   const cur = room.results[r];
   const winNo = st === 'result' && cur ? cur.winner : null;
   const losers = st === 'result' && cur ? cur.losers : [];
-  $('cards').style.setProperty('--cols', N <= 4 ? N : Math.ceil(N / 2));
+  // 이번 라운드 그림 (그림 없이 만든 예전 방이면 점수판만)
+  const art = st !== 'final' && room.art && room.art[r - 1];
+  $('body').classList.toggle('withart', !!art);
+  $('artp').classList.toggle('hidden', !art);
+  if (art) {
+    const key = r + ':' + art.seed;
+    if (drawnArt !== key) { drawArt($('artC'), art.tier, art.seed); drawnArt = key; }
+    $('aTitle').textContent = `「${art.title}」`;
+    $('aTier').textContent = TIERS[art.tier].name;
+    $('aStars').textContent = stars(art.tier);
+    $('aPt').textContent = `낙찰 ${art.tier}점`;
+    const sold = $('sold');
+    if (st === 'result' && cur) { sold.classList.remove('hidden'); sold.className = 'sold ' + (cur.winner != null ? 'y' : 'n'); sold.textContent = cur.winner != null ? `🔨 낙찰! ${cur.winner}조` : '유찰'; }
+    else sold.className = 'sold hidden';
+  }
+  $('cards').style.setProperty('--cols', art ? (N <= 4 ? 1 : 2) : (N <= 4 ? N : Math.ceil(N / 2)));
   $('cards').innerHTML = sd.teams.map(t => {
     const seat = teams.find(x => x.id === String(t.no));
     const top = sd.any && t.rank === 1 && !t.bankrupt;
@@ -137,7 +176,7 @@ function renderGame() {
       : winNo === String(t.no) ? '<span class="tag in">🎉 낙찰 +' + cur.point + '</span>'
       : losers.includes(String(t.no)) ? '<span class="tag out">-1점</span>' : '';
     return `<div class="tc ${top ? 'top' : ''} ${t.bankrupt ? 'bk' : ''} ${winNo === String(t.no) ? 'win' : ''}">${tag}
-      <div class="tn">${t.no}조</div><div class="tname">${esc((seat && seat.name) || '')}</div>
+      <div class="who"><div class="tn">${t.no}조</div><div class="tname">${esc((seat && seat.name) || '')}</div></div>
       <div class="pts mono">${t.points}<small>점</small></div>
       <div class="rk">${t.bankrupt ? '파산 (최하위)' : sd.any ? t.rank + '위' : '-'}</div></div>`;
   }).join('');

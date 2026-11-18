@@ -111,6 +111,11 @@
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
         <span style="font-size:20px; font-weight:900;">이번 낙찰 점수</span><span class="pill" style="background:#fef3c7; color:#92400e; font-size:18px;" id="bPoint"></span>
       </div>
+      <div id="bArt" class="hidden" style="text-align:center; margin-bottom:12px;">
+        <canvas id="bArtC" style="width:100%; max-width:360px; aspect-ratio:4/3; border:8px solid #c9a24b; border-radius:6px; background:#eee;"></canvas>
+        <div style="font-size:19px; font-weight:900; margin-top:6px;" id="bTitle"></div>
+        <div class="muted" style="font-size:14px;" id="bTier"></div>
+      </div>
       <input id="bidIn" class="bid-in mono" inputmode="numeric" maxlength="7" placeholder="0" autocomplete="off">
       <div class="bid-unit">만원</div>
       <button class="btn amb big" id="bidBtn" style="width:100%; margin-top:12px;">입찰하기</button>
@@ -129,7 +134,7 @@ import {
   db, ready, esc, toast, explainError, EST,
   doc, getDoc, setDoc, updateDoc, collection, query, where, onSnapshot, serverTimestamp
 } from './mystery-firebase.js';
-import { TOTAL_ROUNDS, standings } from './auction-core.js';
+import { TOTAL_ROUNDS, TIERS, standings, drawArt, stars, roundPoint } from './auction-core.js';
 
 const $ = (id) => document.getElementById(id);
 const VIEWS = ['vCode', 'vPick', 'vGame', 'vMsg'];
@@ -139,7 +144,7 @@ const R = (code, ...p) => ['auctionRooms', code, ...p];
 const man = (n) => `${n}만원`;
 
 let uid, code, room = null, teams = [], myBids = {}, myTeamId = null;
-let unsubs = [], bidUnsub = null, picked = null, shownRound = 0;
+let unsubs = [], bidUnsub = null, picked = null, shownRound = 0, drawnArt = '';
 
 try { uid = await ready(); }
 catch (e) { message('연결 실패<br>' + esc(explainError(e))); throw e; }
@@ -250,7 +255,14 @@ function renderGame() {
 
 function renderBid(r) {
   $('gBid').classList.remove('hidden');
-  $('bPoint').textContent = `${room.points[r - 1]}점`;
+  $('bPoint').textContent = `${roundPoint(room, r)}점`;
+  const art = room.art && room.art[r - 1];
+  $('bArt').classList.toggle('hidden', !art);
+  if (art && drawnArt !== r + ':' + art.seed) {
+    drawArt($('bArtC'), art.tier, art.seed); drawnArt = r + ':' + art.seed;
+    $('bTitle').textContent = `「${art.title}」`;
+    $('bTier').textContent = `${TIERS[art.tier].name} · ${stars(art.tier)}`;
+  }
   if (shownRound !== r) { $('bidIn').value = myBids[r] != null ? String(myBids[r]) : ''; shownRound = r; }
   const has = myBids[r] != null;
   $('bidBtn').textContent = has ? '수정하기' : '입찰하기';
